@@ -250,43 +250,58 @@
         }
 
         .modal-card {
-            width: min(560px, 96vw);
+            width: min(720px, 96vw);
             background: #fff;
             border: 1px solid var(--line);
-            border-radius: 14px;
-            padding: 14px;
+            border-radius: 16px;
+            padding: 16px;
             box-shadow: 0 18px 40px rgba(14, 40, 44, .22);
         }
 
         .modal-head {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             gap: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #dbe6e1;
+        }
+
+        .modal-title-wrap {
+            display: grid;
+            gap: 4px;
         }
 
         .modal-head h3 {
             margin: 0;
             font-family: "Space Grotesk", sans-serif;
-            font-size: 1.06rem;
+            font-size: 1.12rem;
+        }
+
+        .modal-head p {
+            margin: 0;
+            font-size: .78rem;
+            color: var(--muted);
+            line-height: 1.4;
         }
 
         .close-btn {
             border: 1px solid #c4d3cd;
             border-radius: 8px;
             background: #fff;
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 1.1rem;
             line-height: 1;
+            color: #466168;
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: 1fr 170px 150px;
-            gap: 10px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
         }
 
         .field {
@@ -296,6 +311,14 @@
 
         .field.full {
             grid-column: 1 / -1;
+        }
+
+        .section-label {
+            margin: 6px 0 -2px;
+            font-size: .76rem;
+            color: #5f757a;
+            font-weight: 700;
+            letter-spacing: .02em;
         }
 
         label {
@@ -346,6 +369,8 @@
             display: flex;
             justify-content: space-between;
             gap: 8px;
+            border-top: 1px solid #dbe6e1;
+            padding-top: 12px;
         }
 
         .btn-danger {
@@ -354,7 +379,7 @@
             border-radius: 10px;
             background: #fff1f1;
             color: #9b2525;
-            padding: 0 12px;
+            padding: 0 14px;
             font-weight: 700;
             cursor: pointer;
             display: none;
@@ -372,7 +397,7 @@
             border-radius: 10px;
             background: #fff;
             color: #35555c;
-            padding: 0 12px;
+            padding: 0 16px;
             font-weight: 700;
             cursor: pointer;
         }
@@ -383,9 +408,16 @@
             border-radius: 10px;
             background: linear-gradient(120deg, #29947b, #1f7a67);
             color: #fff;
-            padding: 0 14px;
+            padding: 0 18px;
             font-weight: 700;
             cursor: pointer;
+        }
+
+        .btn-danger:disabled,
+        .btn-secondary:disabled,
+        .btn-primary:disabled {
+            opacity: .6;
+            cursor: not-allowed;
         }
 
         @media (max-width: 1080px) {
@@ -397,6 +429,11 @@
             .form-grid { grid-template-columns: 1fr; }
             .modal-actions { flex-direction: column; }
             .btn-group { width: 100%; margin-left: 0; }
+            .btn-group .btn-secondary,
+            .btn-group .btn-primary,
+            .btn-danger {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -408,13 +445,58 @@
                 Login sebagai
                 <strong>{{ $authUser['username'] ?? 'user' }}</strong>
             </div>
+            @php
+                $levelId = (int) ($authUser['levelid'] ?? 0);
+                $allowedMenuKeys = null;
+                if (\Illuminate\Support\Facades\Schema::hasTable('level_sidebar_access')) {
+                    if ($levelId > 0) {
+                        $allowedMenuKeys = \Illuminate\Support\Facades\DB::table('level_sidebar_access')
+                            ->where('levelid', $levelId)
+                            ->pluck('menu_key')
+                            ->all();
+                    } else {
+                        $allowedMenuKeys = [];
+                    }
+                }
+                $canAccessSidebarMenu = static function (string $menuKey) use ($allowedMenuKeys): bool {
+                    if (in_array($menuKey, ['dashboard', 'account', 'logout'], true)) {
+                        return true;
+                    }
+                    if ($allowedMenuKeys === null) {
+                        return true;
+                    }
+                    return in_array($menuKey, $allowedMenuKeys, true);
+                };
+            @endphp
             <nav class="sidebar-menu">
                 <a href="{{ route('dashboard') }}" class="sidebar-menu-item">Dashboard</a>
+                @if ($canAccessSidebarMenu('data-blok'))
                 <a href="{{ route('dashboard.data-blok') }}" class="sidebar-menu-item active">Data Blok</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-plot'))
                 <a href="{{ route('dashboard.data-plot') }}" class="sidebar-menu-item">Data Plot</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-almarhum'))
                 <a href="{{ route('dashboard.data-almarhum') }}" class="sidebar-menu-item">Data Almarhum</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-kontak-keluarga'))
+                <a href="{{ route('dashboard.data-kontak-keluarga') }}" class="sidebar-menu-item">Data Kontak Keluarga</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-user'))
                 <a href="{{ route('dashboard.data-user') }}" class="sidebar-menu-item">Data User</a>
+                @endif
+                @if ($canAccessSidebarMenu('activity-log'))
+                <a href="{{ route('dashboard.activity-log') }}" class="sidebar-menu-item">Activity Log</a>
+                @endif
+                @if ($canAccessSidebarMenu('restore-data'))
+                <a href="#" class="sidebar-menu-item">Restore Data</a>
+                @endif
+                @if ($canAccessSidebarMenu('hak-akses'))
+                <a href="{{ route('dashboard.hak-akses') }}" class="sidebar-menu-item">Hak Akses</a>
+                @endif
+                @if ($canAccessSidebarMenu('settings'))
                 <a href="{{ route('dashboard.settings') }}" class="sidebar-menu-item">Pengaturan</a>
+                @endif
             </nav>
             <div class="sidebar-bottom">
                 <a href="{{ route('dashboard.account') }}" class="sidebar-menu-item">Akun</a>
@@ -429,7 +511,7 @@
             <div class="head">
                 <div>
                     <h1>Data Blok</h1>
-                    <p>Kelola tambah, edit, dan hapus data blok.</p>
+                    <p id="lokasi-blok">Kelola tambah, edit, hapus, dan posisi blok pada denah.</p>
                 </div>
                 <button type="button" class="add-btn" id="openModalBtn">+ Tambah Blok</button>
             </div>
@@ -444,6 +526,8 @@
                             <th>Nama Blok</th>
                             <th>Warna</th>
                             <th>Maks Plot</th>
+                            <th>Posisi X</th>
+                            <th>Posisi Y</th>
                             <th>Total Petak</th>
                             <th>Terisi</th>
                             <th>Kosong</th>
@@ -463,6 +547,8 @@
                                     </div>
                                 </td>
                                 <td><span class="badge">{{ (int) ($block->max_plots ?? 15) }}</span></td>
+                                <td>{{ isset($block->map_x) ? (int) $block->map_x : '-' }}</td>
+                                <td>{{ isset($block->map_y) ? (int) $block->map_y : '-' }}</td>
                                 <td><span class="badge">{{ (int) $block->total_plots }}</span></td>
                                 <td>{{ (int) $block->occupied_plots }}</td>
                                 <td>{{ (int) $block->empty_plots }}</td>
@@ -476,6 +562,8 @@
                                         data-block-color="{{ $block->map_color ?: '#D8E4DF' }}"
                                         data-block-description="{{ e($block->description ?? '') }}"
                                         data-block-max-plots="{{ (int) ($block->max_plots ?? 15) }}"
+                                        data-block-map-x="{{ isset($block->map_x) ? (int) $block->map_x : '' }}"
+                                        data-block-map-y="{{ isset($block->map_y) ? (int) $block->map_y : '' }}"
                                     >
                                         Edit
                                     </button>
@@ -483,7 +571,7 @@
                             </tr>
                         @empty
                             <tr id="emptyRow">
-                                <td colspan="9">Belum ada data blok.</td>
+                                <td colspan="11">Belum ada data blok.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -495,16 +583,21 @@
     <div class="modal" id="blockModal" aria-hidden="true">
         <div class="modal-card">
             <div class="modal-head">
-                <h3 id="modalTitle">Tambah Blok</h3>
+                <div class="modal-title-wrap">
+                    <h3 id="modalTitle">Tambah Blok</h3>
+                    <p>Lengkapi data blok dan atur posisi tampil di denah.</p>
+                </div>
                 <button type="button" class="close-btn" id="closeModalBtn">x</button>
             </div>
 
             <form id="blockForm">
                 <input type="hidden" id="blockIdField">
                 <div class="form-grid">
-                    <div class="field">
+                    <div class="section-label full">Informasi Blok</div>
+
+                    <div class="field full">
                         <label for="blockNameField">Nama Blok</label>
-                        <input id="blockNameField" type="text" required>
+                        <input id="blockNameField" type="text" placeholder="Contoh: Blok A" required>
                     </div>
 
                     <div class="field">
@@ -554,7 +647,7 @@
             const saveModalBtn = document.getElementById('saveModalBtn');
             const deleteBlockBtn = document.getElementById('deleteBlockBtn');
             const formErrorBox = document.getElementById('formErrorBox');
-            const csrfToken = document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute('content') || '';
+            const csrfToken = '{{ csrf_token() }}';
             const baseUrl = "{{ url('/dashboard/data-blok') }}";
             let mode = 'create';
 
@@ -608,6 +701,10 @@
                 modal.setAttribute('aria-hidden', 'true');
             }
 
+            function renderCoordinate(value) {
+                return Number.isFinite(value) ? String(value) : '-';
+            }
+
             function renderRow(block, index) {
                 const description = block.description ? block.description : '-';
                 return `
@@ -621,6 +718,8 @@
                             </div>
                         </td>
                         <td><span class="badge">${block.max_plots || 15}</span></td>
+                        <td>${renderCoordinate(block.map_x)}</td>
+                        <td>${renderCoordinate(block.map_y)}</td>
                         <td><span class="badge">${block.total_plots}</span></td>
                         <td>${block.occupied_plots}</td>
                         <td>${block.empty_plots}</td>
@@ -634,6 +733,8 @@
                                 data-block-color="${block.map_color || '#D8E4DF'}"
                                 data-block-description="${(block.description || '').replace(/\"/g, '&quot;')}"
                                 data-block-max-plots="${block.max_plots || 15}"
+                                data-block-map-x="${Number.isFinite(block.map_x) ? block.map_x : ''}"
+                                data-block-map-y="${Number.isFinite(block.map_y) ? block.map_y : ''}"
                             >
                                 Edit
                             </button>
@@ -775,7 +876,7 @@
 
                     const remainingRows = tableBody.querySelectorAll('tr[id^=\"row-block-\"]');
                     if (remainingRows.length === 0) {
-                        tableBody.innerHTML = '<tr id="emptyRow"><td colspan="9">Belum ada data blok.</td></tr>';
+                        tableBody.innerHTML = '<tr id="emptyRow"><td colspan="11">Belum ada data blok.</td></tr>';
                     } else {
                         refreshRowNumbers();
                     }
@@ -792,3 +893,8 @@
     </script>
 </body>
 </html>
+
+
+
+
+

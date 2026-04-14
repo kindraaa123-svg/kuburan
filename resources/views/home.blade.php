@@ -312,6 +312,7 @@
             background: color-mix(in srgb, var(--block-color) 18%, #ffffff);
             box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
             cursor: default;
+            z-index: 3;
         }
 
         .block-badge {
@@ -339,10 +340,130 @@
             color: #fff;
             text-shadow: 0 1px 1px rgba(0, 0, 0, .22);
             cursor: default;
+            z-index: 4;
         }
 
         .plot-occupied { background: var(--danger); }
         .plot-empty { background: var(--ok); }
+
+        .road-lane {
+            position: absolute;
+            background: #e7ecea;
+            border: 1px solid #c3d0cc;
+            border-radius: 8px;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .road-lane::after {
+            content: "";
+            position: absolute;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent 0,
+                transparent 9px,
+                #ffffff 9px,
+                #ffffff 16px
+            );
+            opacity: 0.8;
+        }
+
+        .road-lane-vertical::after {
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background: repeating-linear-gradient(
+                180deg,
+                transparent 0,
+                transparent 9px,
+                #ffffff 9px,
+                #ffffff 16px
+            );
+        }
+
+        .road-lane-horizontal::after {
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+
+        .entrance-gate {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            border-radius: 999px;
+            border: 1px solid #9cb7af;
+            background: #e5f2ed;
+            color: #19453f;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .02em;
+            z-index: 6;
+            box-shadow: 0 6px 16px rgba(18, 54, 61, 0.12);
+            cursor: default;
+        }
+
+        .entrance-gate::before {
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: #1f7a67;
+        }
+
+        .main-road {
+            position: absolute;
+            left: calc(50% - 36px);
+            bottom: 62px;
+            width: 72px;
+            height: calc(100% - 130px);
+            border-radius: 10px;
+            background: #e7ecea;
+            border: 1px solid #c3d0cc;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .main-road::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background: repeating-linear-gradient(
+                180deg,
+                transparent 0,
+                transparent 9px,
+                #ffffff 9px,
+                #ffffff 16px
+            );
+            opacity: 0.85;
+        }
+
+        .road-label {
+            position: absolute;
+            left: calc(50% + 44px);
+            bottom: 140px;
+            border-radius: 8px;
+            border: 1px solid #c0ceca;
+            background: #eef3f1;
+            color: #2d5158;
+            font-size: .66rem;
+            font-weight: 700;
+            padding: 5px 7px;
+            z-index: 5;
+        }
 
         .hover-card {
             position: fixed;
@@ -497,6 +618,30 @@
             white-space: nowrap;
         }
 
+        .chatbot-fab {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 80;
+            width: 48px;
+            height: 48px;
+            border-radius: 999px;
+            border: 1px solid #0f5d4e;
+            background: var(--brand);
+            color: #fff;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 24px rgba(31, 122, 103, 0.28);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .chatbot-fab:hover {
+            filter: brightness(1.05);
+        }
+
         @media (max-width: 1080px) {
             .stats {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -534,6 +679,10 @@
             .footer-copy {
                 margin-top: 6px;
                 display: block;
+            }
+            .chatbot-fab {
+                right: 12px;
+                bottom: 12px;
             }
         }
     </style>
@@ -625,6 +774,128 @@
                 <div class="map-viewport" id="mapViewport">
                     <div class="map-scene" id="mapScene" style="width: {{ $mapWidth }}px; height: {{ $mapHeight }}px;">
                         @foreach ($blockMaps as $blockMap)
+                            @php
+                                $roadGap = 20;
+                                $lane = 14;
+                                $roadX = (float) $blockMap['x'] - $roadGap;
+                                $roadY = (float) $blockMap['y'] - $roadGap;
+                                $roadW = (float) $blockMap['width'] + ($roadGap * 2);
+                                $roadH = (float) $blockMap['height'] + ($roadGap * 2);
+                            @endphp
+                            <div
+                                class="road-lane road-lane-horizontal"
+                                style="
+                                    left: {{ $roadX }}px;
+                                    top: {{ $roadY }}px;
+                                    width: {{ $roadW }}px;
+                                    height: {{ $lane }}px;
+                                "></div>
+                            <div
+                                class="road-lane road-lane-horizontal"
+                                style="
+                                    left: {{ $roadX }}px;
+                                    top: {{ $roadY + $roadH - $lane }}px;
+                                    width: {{ $roadW }}px;
+                                    height: {{ $lane }}px;
+                                "></div>
+                            <div
+                                class="road-lane road-lane-vertical"
+                                style="
+                                    left: {{ $roadX }}px;
+                                    top: {{ $roadY }}px;
+                                    width: {{ $lane }}px;
+                                    height: {{ $roadH }}px;
+                                "></div>
+                            <div
+                                class="road-lane road-lane-vertical"
+                                style="
+                                    left: {{ $roadX + $roadW - $lane }}px;
+                                    top: {{ $roadY }}px;
+                                    width: {{ $lane }}px;
+                                    height: {{ $roadH }}px;
+                                "></div>
+                        @endforeach
+
+                        @php
+                            $entranceTarget = collect($blockMaps)->first(function (array $item): bool {
+                                return strcasecmp(trim((string) ($item['name'] ?? '')), 'blok b') === 0;
+                            });
+                            if (! $entranceTarget) {
+                                $entranceTarget = $blockMaps[1] ?? ($blockMaps[0] ?? null);
+                            }
+                            $entranceLeft = $entranceTarget
+                                ? ((float) $entranceTarget['x'] + ((float) $entranceTarget['width'] / 2))
+                                : ((float) $mapWidth / 2);
+
+                            $mainTarget = collect($blockMaps)->first(function (array $item): bool {
+                                return strcasecmp(trim((string) ($item['name'] ?? '')), 'blok a') === 0;
+                            });
+                            if (! $mainTarget) {
+                                $mainTarget = $blockMaps[0] ?? null;
+                            }
+
+                            $branchLane = 14.0;
+                            $mainRoadCenterX = $entranceLeft;
+                            $mainRoadBottomY = (float) $mapHeight - 68.0;
+                            $mainTargetX = $mainTarget
+                                ? ((float) $mainTarget['x'] + ((float) $mainTarget['width'] / 2))
+                                : $mainRoadCenterX;
+                            $mainTargetY = $mainTarget
+                                ? ((float) $mainTarget['y'] + ((float) $mainTarget['height'] / 2))
+                                : ($mainRoadBottomY - 180.0);
+                            $mainVerticalYStart = min($mainRoadBottomY, $mainTargetY);
+                            $mainVerticalHeight = abs($mainRoadBottomY - $mainTargetY);
+                            $mainHorizontalXStart = min($mainRoadCenterX, $mainTargetX);
+                            $mainHorizontalWidth = abs($mainRoadCenterX - $mainTargetX);
+                            $mainTargetId = (int) ($mainTarget['id'] ?? 0);
+                        @endphp
+                        <div
+                            class="road-lane road-lane-vertical"
+                            style="
+                                left: {{ $mainRoadCenterX - ($branchLane / 2) }}px;
+                                top: {{ $mainVerticalYStart }}px;
+                                width: {{ $branchLane }}px;
+                                height: {{ $mainVerticalHeight }}px;
+                            "></div>
+                        <div
+                            class="road-lane road-lane-horizontal"
+                            style="
+                                left: {{ $mainHorizontalXStart }}px;
+                                top: {{ $mainTargetY - ($branchLane / 2) }}px;
+                                width: {{ $mainHorizontalWidth }}px;
+                                height: {{ $branchLane }}px;
+                            "></div>
+                        @foreach ($blockMaps as $branchBlock)
+                            @php
+                                $branchId = (int) ($branchBlock['id'] ?? 0);
+                                $blockCenterX = (float) $branchBlock['x'] + ((float) $branchBlock['width'] / 2);
+                                $blockCenterY = (float) $branchBlock['y'] + ((float) $branchBlock['height'] / 2);
+                                $verticalYStart = min($mainRoadBottomY, $blockCenterY);
+                                $verticalHeight = abs($mainRoadBottomY - $blockCenterY);
+                                $horizontalXStart = min($mainRoadCenterX, $blockCenterX);
+                                $horizontalWidth = abs($mainRoadCenterX - $blockCenterX);
+                            @endphp
+                            @if ($branchId !== $mainTargetId)
+                                <div
+                                    class="road-lane road-lane-vertical"
+                                    style="
+                                        left: {{ $mainRoadCenterX - ($branchLane / 2) }}px;
+                                        top: {{ $verticalYStart }}px;
+                                        width: {{ $branchLane }}px;
+                                        height: {{ $verticalHeight }}px;
+                                    "></div>
+                                <div
+                                    class="road-lane road-lane-horizontal"
+                                    style="
+                                        left: {{ $horizontalXStart }}px;
+                                        top: {{ $blockCenterY - ($branchLane / 2) }}px;
+                                        width: {{ $horizontalWidth }}px;
+                                        height: {{ $branchLane }}px;
+                                    "></div>
+                            @endif
+                        @endforeach
+
+                        @foreach ($blockMaps as $blockMap)
                             <div
                                 class="block-area"
                                 style="
@@ -657,6 +928,8 @@
                                 {{ $plot['plot_number'] }}
                             </div>
                         @endforeach
+
+                        <div class="entrance-gate" style="left: {{ $entranceLeft }}px;">Pintu Masuk Utama</div>
                     </div>
                 </div>
             </div>
@@ -664,6 +937,8 @@
             <div class="legend">
                 <span><i class="dot" style="background: var(--danger);"></i> Terisi</span>
                 <span><i class="dot" style="background: var(--ok);"></i> Kosong</span>
+                <span><i class="dot" style="background: #e5f2ed;"></i> Pintu Masuk</span>
+                <span><i class="dot" style="background: #e7ecea;"></i> Jalur Jalan</span>
             </div>
         </section>
     </main>
@@ -699,6 +974,8 @@
         </div>
         <a class="hover-action" id="hoverDetailBtn" href="#">Lihat Lebih Detail</a>
     </div>
+
+    <a class="chatbot-fab" href="{{ route('chatbot') }}" aria-label="Buka Chatbot" title="Chatbot">Chat</a>
 
     <script>
         (() => {

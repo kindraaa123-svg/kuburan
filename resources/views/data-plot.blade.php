@@ -463,13 +463,58 @@
                 Login sebagai
                 <strong>{{ $authUser['username'] ?? 'user' }}</strong>
             </div>
+            @php
+                $levelId = (int) ($authUser['levelid'] ?? 0);
+                $allowedMenuKeys = null;
+                if (\Illuminate\Support\Facades\Schema::hasTable('level_sidebar_access')) {
+                    if ($levelId > 0) {
+                        $allowedMenuKeys = \Illuminate\Support\Facades\DB::table('level_sidebar_access')
+                            ->where('levelid', $levelId)
+                            ->pluck('menu_key')
+                            ->all();
+                    } else {
+                        $allowedMenuKeys = [];
+                    }
+                }
+                $canAccessSidebarMenu = static function (string $menuKey) use ($allowedMenuKeys): bool {
+                    if (in_array($menuKey, ['dashboard', 'account', 'logout'], true)) {
+                        return true;
+                    }
+                    if ($allowedMenuKeys === null) {
+                        return true;
+                    }
+                    return in_array($menuKey, $allowedMenuKeys, true);
+                };
+            @endphp
             <nav class="sidebar-menu">
                 <a href="{{ route('dashboard') }}" class="sidebar-menu-item">Dashboard</a>
+                @if ($canAccessSidebarMenu('data-blok'))
                 <a href="{{ route('dashboard.data-blok') }}" class="sidebar-menu-item">Data Blok</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-plot'))
                 <a href="{{ route('dashboard.data-plot') }}" class="sidebar-menu-item active">Data Plot</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-almarhum'))
                 <a href="{{ route('dashboard.data-almarhum') }}" class="sidebar-menu-item">Data Almarhum</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-kontak-keluarga'))
+                <a href="{{ route('dashboard.data-kontak-keluarga') }}" class="sidebar-menu-item">Data Kontak Keluarga</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-user'))
                 <a href="{{ route('dashboard.data-user') }}" class="sidebar-menu-item">Data User</a>
+                @endif
+                @if ($canAccessSidebarMenu('activity-log'))
+                <a href="{{ route('dashboard.activity-log') }}" class="sidebar-menu-item">Activity Log</a>
+                @endif
+                @if ($canAccessSidebarMenu('restore-data'))
+                <a href="#" class="sidebar-menu-item">Restore Data</a>
+                @endif
+                @if ($canAccessSidebarMenu('hak-akses'))
+                <a href="{{ route('dashboard.hak-akses') }}" class="sidebar-menu-item">Hak Akses</a>
+                @endif
+                @if ($canAccessSidebarMenu('settings'))
                 <a href="{{ route('dashboard.settings') }}" class="sidebar-menu-item">Pengaturan</a>
+                @endif
             </nav>
             <div class="sidebar-bottom">
                 <a href="{{ route('dashboard.account') }}" class="sidebar-menu-item">Akun</a>
@@ -579,7 +624,7 @@
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="addPlotTitle">
             <div class="modal-head">
                 <h3 id="addPlotTitle">Tambah Plot</h3>
-                <button type="button" class="modal-close" id="closeAddPlotModal">✕</button>
+                <button type="button" class="modal-close" id="closeAddPlotModal">?</button>
             </div>
 
             <form method="POST" action="{{ route('dashboard.data-plot.store') }}" id="addPlotForm">
@@ -626,6 +671,7 @@
                 </div>
 
                 <div class="modal-actions">
+                    <button type="button" class="btn-danger" id="deletePlotBtn" style="display:none;">Hapus Plot</button>
                     <button type="button" class="btn-secondary" id="cancelAddPlotBtn">Batal</button>
                     <button type="submit" class="btn-primary" id="saveAddPlotBtn">Simpan Plot</button>
                 </div>
@@ -654,6 +700,7 @@
             const closeBtn = document.getElementById('closeAddPlotModal');
             const cancelBtn = document.getElementById('cancelAddPlotBtn');
             const saveBtn = document.getElementById('saveAddPlotBtn');
+            const deletePlotBtn = document.getElementById('deletePlotBtn');
             const FALLBACK_CANVAS_WIDTH = 480;
             const FALLBACK_CANVAS_HEIGHT = 300;
             const FALLBACK_PLOT_WIDTH = 60;
@@ -1025,9 +1072,11 @@
                 if (mode === 'edit') {
                     modalTitle.textContent = `Edit Plot - ${blockName}`;
                     saveBtn.textContent = 'Simpan Perubahan';
+                    deletePlotBtn.style.display = 'inline-block';
                 } else {
                     modalTitle.textContent = `Tambah Plot - ${blockName}`;
                     saveBtn.textContent = 'Simpan Plot';
+                    deletePlotBtn.style.display = 'none';
                 }
             };
 
@@ -1275,6 +1324,76 @@
                 }
             });
 
+            deletePlotBtn.addEventListener('click', async () => {
+                const editPlotId = (editPlotIdInput.value || '').trim();
+                if (!editPlotId || modalMode !== 'edit') {
+                    return;
+                }
+
+                setModalError();
+                if (!window.confirm('Yakin ingin menghapus plot ini?')) {
+                    return;
+                }
+
+                const token = addPlotForm.querySelector('input[name=\"_token\"]')?.value || '';
+                deletePlotBtn.disabled = true;
+
+                try {
+                    const response = await fetch(`${baseDataPlotUrl}/${editPlotId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': token,
+                        },
+                    });
+
+                    const payload = await response.json().catch(() => ({}));
+
+                    if (response.status === 401) {
+                        window.location.href = '/login';
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        setModalError(payload.message || 'Gagal menghapus plot.');
+                        return;
+                    }
+
+                    const blockId = String(payload.data?.block_id || blockIdInput.value || '');
+                    if (activePlotElement) {
+                        activePlotElement.remove();
+                    }
+
+                    updateBlockHeadMeta(
+                        blockId,
+                        Number(payload.data?.total_plots || 0),
+                        Number(payload.data?.occupied_plots || 0),
+                        Number(payload.data?.max_plots || DEFAULT_MAX_PLOTS_PER_BLOCK),
+                    );
+
+                    const buttonForBlock = activeBlockButton
+                        || Array.from(openButtons).find((button) => (button.dataset.blockId || '') === blockId)
+                        || null;
+                    setButtonStateByTotal(
+                        buttonForBlock,
+                        Number(payload.data?.total_plots || 0),
+                        Number(payload.data?.max_plots || DEFAULT_MAX_PLOTS_PER_BLOCK),
+                    );
+
+                    if (activeBlockData) {
+                        const removeId = toNumber(editPlotId, 0);
+                        activeBlockData.plots = activeBlockData.plots.filter((plot) => toNumber(plot.plotid, 0) !== removeId);
+                    }
+
+                    closeModal();
+                } catch (error) {
+                    setModalError('Terjadi kesalahan jaringan. Coba lagi.');
+                } finally {
+                    deletePlotBtn.disabled = false;
+                }
+            });
+
             window.addEventListener('resize', () => {
                 if (modal.classList.contains('show')) {
                     renderMiniMap();
@@ -1305,3 +1424,11 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+

@@ -377,13 +377,58 @@
                 Login sebagai
                 <strong>{{ $authUser['username'] ?? 'user' }}</strong>
             </div>
+            @php
+                $levelId = (int) ($authUser['levelid'] ?? 0);
+                $allowedMenuKeys = null;
+                if (\Illuminate\Support\Facades\Schema::hasTable('level_sidebar_access')) {
+                    if ($levelId > 0) {
+                        $allowedMenuKeys = \Illuminate\Support\Facades\DB::table('level_sidebar_access')
+                            ->where('levelid', $levelId)
+                            ->pluck('menu_key')
+                            ->all();
+                    } else {
+                        $allowedMenuKeys = [];
+                    }
+                }
+                $canAccessSidebarMenu = static function (string $menuKey) use ($allowedMenuKeys): bool {
+                    if (in_array($menuKey, ['dashboard', 'account', 'logout'], true)) {
+                        return true;
+                    }
+                    if ($allowedMenuKeys === null) {
+                        return true;
+                    }
+                    return in_array($menuKey, $allowedMenuKeys, true);
+                };
+            @endphp
             <nav class="sidebar-menu">
                 <a href="{{ route('dashboard') }}" class="sidebar-menu-item">Dashboard</a>
+                @if ($canAccessSidebarMenu('data-blok'))
                 <a href="{{ route('dashboard.data-blok') }}" class="sidebar-menu-item">Data Blok</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-plot'))
                 <a href="{{ route('dashboard.data-plot') }}" class="sidebar-menu-item">Data Plot</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-almarhum'))
                 <a href="{{ route('dashboard.data-almarhum') }}" class="sidebar-menu-item">Data Almarhum</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-kontak-keluarga'))
+                <a href="{{ route('dashboard.data-kontak-keluarga') }}" class="sidebar-menu-item">Data Kontak Keluarga</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-user'))
                 <a href="{{ route('dashboard.data-user') }}" class="sidebar-menu-item active">Data User</a>
+                @endif
+                @if ($canAccessSidebarMenu('activity-log'))
+                <a href="{{ route('dashboard.activity-log') }}" class="sidebar-menu-item">Activity Log</a>
+                @endif
+                @if ($canAccessSidebarMenu('restore-data'))
+                <a href="#" class="sidebar-menu-item">Restore Data</a>
+                @endif
+                @if ($canAccessSidebarMenu('hak-akses'))
+                <a href="{{ route('dashboard.hak-akses') }}" class="sidebar-menu-item">Hak Akses</a>
+                @endif
+                @if ($canAccessSidebarMenu('settings'))
                 <a href="{{ route('dashboard.settings') }}" class="sidebar-menu-item">Pengaturan</a>
+                @endif
             </nav>
             <div class="sidebar-bottom">
                 <a href="{{ route('dashboard.account') }}" class="sidebar-menu-item">Akun</a>
@@ -560,3 +605,11 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+

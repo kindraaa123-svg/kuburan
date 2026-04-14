@@ -18,6 +18,8 @@ class Block extends Model
         'description',
         'map_color',
         'max_plots',
+        'map_x',
+        'map_y',
     ];
 
     public function gravePlots(): HasMany

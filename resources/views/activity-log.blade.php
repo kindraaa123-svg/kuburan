@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pengaturan Website</title>
+    <title>Activity Log</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@600;700&display=swap');
 
@@ -13,9 +13,6 @@
             --line: #d2dfda;
             --text: #163036;
             --muted: #657c81;
-            --brand: #1f7a67;
-            --brand-soft: #e8f3ef;
-            --danger: #c44a4a;
         }
 
         * { box-sizing: border-box; }
@@ -113,7 +110,7 @@
         }
 
         .main-card {
-            padding: 16px;
+            padding: 14px;
         }
 
         .head h1 {
@@ -128,141 +125,59 @@
             font-size: .84rem;
         }
 
-        .status {
-            margin-top: 12px;
-            border: 1px solid #b8d4c9;
-            background: var(--brand-soft);
-            color: #175247;
-            border-radius: 10px;
-            padding: 10px;
-            font-size: .83rem;
-            font-weight: 700;
-        }
-
-        .error {
-            margin-top: 12px;
-            border: 1px solid #e3b5b5;
-            background: #fdeeee;
-            color: var(--danger);
-            border-radius: 10px;
-            padding: 10px;
-            font-size: .83rem;
-            font-weight: 700;
-        }
-
-        .form-card {
+        .table-wrap {
             margin-top: 12px;
             border: 1px solid var(--line);
             border-radius: 12px;
-            background: #fbfdfc;
-            padding: 14px;
+            overflow: auto;
+            background: #fff;
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-        }
-
-        .field {
-            display: grid;
-            gap: 6px;
-        }
-
-        .field.full {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            font-size: .78rem;
-            color: var(--muted);
-            font-weight: 700;
-        }
-
-        input {
+        table {
             width: 100%;
-            min-height: 44px;
-            border: 1px solid #c7d7d1;
-            border-radius: 10px;
-            padding: 0 12px;
-            background: #fff;
-            color: var(--text);
-            font-size: .9rem;
+            border-collapse: collapse;
+            min-width: 1100px;
         }
 
-        input[type="file"] {
-            padding-top: 10px;
-            padding-bottom: 8px;
-        }
-
-        .preview {
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        th, td {
+            border-bottom: 1px solid #e3ece8;
             padding: 10px;
-            border: 1px dashed #c2d3cd;
-            border-radius: 10px;
-            background: #f7fbf9;
+            text-align: left;
+            font-size: .82rem;
+            vertical-align: top;
         }
 
-        .preview img {
-            width: 64px;
-            height: 64px;
-            object-fit: cover;
-            border-radius: 10px;
-            border: 1px solid #c7d7d1;
-            background: #fff;
-        }
-
-        .preview span {
-            font-size: .8rem;
-            color: var(--muted);
-        }
-
-        .actions {
-            margin-top: 12px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-        }
-
-        .btn {
-            min-height: 42px;
-            border: 1px solid #1f735f;
-            border-radius: 10px;
-            background: linear-gradient(120deg, #29947b, #1f7a67);
-            color: #fff;
+        th {
+            background: #f6fbf9;
             font-weight: 700;
-            padding: 0 16px;
-            cursor: pointer;
+            color: #27464d;
+            white-space: nowrap;
+        }
+
+        td.detail {
+            max-width: 360px;
+            white-space: normal;
+            word-break: break-word;
+            color: #425d63;
+        }
+
+        tr:hover td {
+            background: #fbfefd;
+        }
+
+        .empty {
+            text-align: center;
+            color: var(--muted);
+            padding: 18px;
         }
 
         @media (max-width: 1080px) {
             .layout { grid-template-columns: 1fr; }
             .sidebar { position: static; max-height: none; }
         }
-
-        @media (max-width: 700px) {
-            .grid { grid-template-columns: 1fr; }
-        }
     </style>
 </head>
 <body>
-    @php
-        $logo = $setting->systemlogo;
-        $logoUrl = null;
-        if ($logo) {
-            if (\Illuminate\Support\Str::startsWith($logo, ['http://', 'https://', '/'])) {
-                $logoUrl = $logo;
-            } elseif (\Illuminate\Support\Str::startsWith($logo, 'storage/')) {
-                $logoUrl = asset($logo);
-            } else {
-                $logoUrl = asset('storage/' . ltrim($logo, '/'));
-            }
-        }
-    @endphp
-
     <main class="layout">
         <aside class="sidebar">
             <h2 class="logo">Dashboard Kuburan</h2>
@@ -311,7 +226,7 @@
                 <a href="{{ route('dashboard.data-user') }}" class="sidebar-menu-item">Data User</a>
                 @endif
                 @if ($canAccessSidebarMenu('activity-log'))
-                <a href="{{ route('dashboard.activity-log') }}" class="sidebar-menu-item">Activity Log</a>
+                <a href="{{ route('dashboard.activity-log') }}" class="sidebar-menu-item active">Activity Log</a>
                 @endif
                 @if ($canAccessSidebarMenu('restore-data'))
                 <a href="#" class="sidebar-menu-item">Restore Data</a>
@@ -320,7 +235,7 @@
                 <a href="{{ route('dashboard.hak-akses') }}" class="sidebar-menu-item">Hak Akses</a>
                 @endif
                 @if ($canAccessSidebarMenu('settings'))
-                <a href="{{ route('dashboard.settings') }}" class="sidebar-menu-item active">Pengaturan</a>
+                <a href="{{ route('dashboard.settings') }}" class="sidebar-menu-item">Pengaturan</a>
                 @endif
             </nav>
             <div class="sidebar-bottom">
@@ -334,66 +249,50 @@
 
         <section class="main-card">
             <div class="head">
-                <h1>Pengaturan Website</h1>
-                <p>Kelola identitas website: nama, logo, alamat, contact, dan manager.</p>
+                <h1>Activity Log</h1>
+                <p>Riwayat aktivitas sesi pengguna terbaru.</p>
             </div>
 
-            @if (session('status'))
-                <div class="status">{{ session('status') }}</div>
-            @endif
-
-            @if ($errors->any())
-                <div class="error">{{ $errors->first() }}</div>
-            @endif
-
-            <form class="form-card" method="POST" action="{{ route('dashboard.settings.update') }}" enctype="multipart/form-data">
-                @csrf
-                <div class="grid">
-                    <div class="field full">
-                        <label for="website_name">Nama Website</label>
-                        <input id="website_name" name="website_name" type="text" value="{{ old('website_name', $setting->systemname) }}" required>
-                    </div>
-
-                    <div class="field">
-                        <label for="contact">Contact</label>
-                        <input id="contact" name="contact" type="text" value="{{ old('contact', $setting->systemcontact) }}" placeholder="0812xxxxxxx / 021-xxxx">
-                    </div>
-
-                    <div class="field">
-                        <label for="manager">Manager</label>
-                        <input id="manager" name="manager" type="text" value="{{ old('manager', $setting->systemmanager) }}" placeholder="Nama manager">
-                    </div>
-
-                    <div class="field full">
-                        <label for="address">Address</label>
-                        <input id="address" name="address" type="text" value="{{ old('address', $setting->systemaddress) }}" placeholder="Alamat lengkap">
-                    </div>
-
-                    <div class="field">
-                        <label for="logo_file">Upload Logo</label>
-                        <input id="logo_file" name="logo_file" type="file" accept=".png,.jpg,.jpeg,.webp,.svg">
-                    </div>
-                </div>
-
-                <div class="preview">
-                    @if ($logoUrl)
-                        <img src="{{ $logoUrl }}" alt="Logo website" onerror="this.style.display='none'">
-                    @else
-                        <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='100%25' height='100%25' fill='%23e7efec'/%3E%3Ctext x='50%25' y='53%25' dominant-baseline='middle' text-anchor='middle' fill='%23678288' font-size='14' font-family='Arial'%3ELOGO%3C/text%3E%3C/svg%3E" alt="Logo kosong">
-                    @endif
-                    <span>Logo saat ini</span>
-                </div>
-
-                <div class="actions">
-                    <button class="btn" type="submit">Simpan Pengaturan</button>
-                </div>
-            </form>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Jam</th>
+                            <th>Nama</th>
+                            <th>Username</th>
+                            <th>IP Address</th>
+                            <th>Longitude</th>
+                            <th>Latitude</th>
+                            <th>Aksi</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($logs as $log)
+                            <tr>
+                                <td>{{ $log['tanggal'] }}</td>
+                                <td>{{ $log['jam'] }}</td>
+                                <td>{{ $log['nama'] }}</td>
+                                <td>{{ $log['username'] }}</td>
+                                <td>{{ $log['ip_address'] }}</td>
+                                <td>{{ $log['longitude'] }}</td>
+                                <td>{{ $log['latitude'] }}</td>
+                                <td>{{ $log['aksi'] }}</td>
+                                <td class="detail">{{ $log['detail'] }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="9" class="empty">Belum ada data activity log.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </section>
     </main>
 </body>
 </html>
-
-
 
 
 

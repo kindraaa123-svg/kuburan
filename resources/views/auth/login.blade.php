@@ -167,6 +167,12 @@
             box-shadow: 0 0 0 3px rgba(31, 122, 99, 0.14);
         }
 
+        .captcha-widget {
+            min-height: 78px;
+            display: flex;
+            align-items: center;
+        }
+
         .btn {
             margin-top: 4px;
             min-height: 48px;
@@ -227,6 +233,8 @@
 
             <form method="POST" action="{{ route('login.submit') }}">
                 @csrf
+                <input type="hidden" name="latitude" id="latitudeInput" value="{{ old('latitude') }}">
+                <input type="hidden" name="longitude" id="longitudeInput" value="{{ old('longitude') }}">
                 <div>
                     <label for="username">Username</label>
                     <input id="username" name="username" type="text" value="{{ old('username') }}" required autofocus>
@@ -235,11 +243,52 @@
                     <label for="password">Password</label>
                     <input id="password" name="password" type="password" required>
                 </div>
+                <div class="captcha-widget">
+                    @if (config('services.recaptcha.site_key'))
+                        <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                    @else
+                        <div class="msg msg-err" style="margin:0;">Google reCAPTCHA belum dikonfigurasi.</div>
+                    @endif
+                </div>
                 <button class="btn" type="submit">Login Sekarang</button>
             </form>
 
             <p class="hint">Jika gagal login, pastikan kembali username dan password yang dimasukkan.</p>
         </section>
     </main>
+    @if (config('services.recaptcha.site_key'))
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    @endif
+    <script>
+        (() => {
+            const latitudeInput = document.getElementById('latitudeInput');
+            const longitudeInput = document.getElementById('longitudeInput');
+
+            if (!latitudeInput || !longitudeInput || !('geolocation' in navigator)) {
+                return;
+            }
+
+            const hasOldValue = latitudeInput.value !== '' || longitudeInput.value !== '';
+            if (hasOldValue) {
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    latitudeInput.value = String(position.coords.latitude);
+                    longitudeInput.value = String(position.coords.longitude);
+                },
+                () => {
+                    latitudeInput.value = '';
+                    longitudeInput.value = '';
+                },
+                {
+                    enableHighAccuracy: false,
+                    timeout: 10000,
+                    maximumAge: 120000,
+                }
+            );
+        })();
+    </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 13, 2026 at 01:54 AM
+-- Generation Time: Apr 14, 2026 at 06:48 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -24,6 +24,51 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `activity_logs`
+--
+
+CREATE TABLE `activity_logs` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` int(10) UNSIGNED DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `username` varchar(255) DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `longitude` varchar(50) DEFAULT NULL,
+  `latitude` varchar(50) DEFAULT NULL,
+  `action` varchar(120) NOT NULL,
+  `detail` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `activity_logs`
+--
+
+INSERT INTO `activity_logs` (`id`, `user_id`, `name`, `username`, `ip_address`, `longitude`, `latitude`, `action`, `detail`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Update Hak Akses', 'Memperbarui pengaturan hak akses menu sidebar per level.', '2026-04-13 07:42:23', '2026-04-13 07:42:23'),
+(2, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Update Hak Akses', 'Memperbarui pengaturan hak akses menu sidebar per level.', '2026-04-13 07:42:26', '2026-04-13 07:42:26'),
+(3, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Update Hak Akses', 'Memperbarui pengaturan hak akses menu sidebar per level.', '2026-04-13 07:42:31', '2026-04-13 07:42:31'),
+(4, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Update Hak Akses', 'Memperbarui pengaturan hak akses menu sidebar per level.', '2026-04-13 07:44:34', '2026-04-13 07:44:34'),
+(5, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Update Hak Akses', 'Memperbarui pengaturan hak akses menu sidebar per level.', '2026-04-13 07:44:38', '2026-04-13 07:44:38'),
+(6, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Update Hak Akses', 'Memperbarui pengaturan hak akses menu sidebar per level.', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(7, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Hapus Kontak Keluarga', 'Menghapus kontak keluarga #13 \"Keluarga 3\" untuk almarhum #13 \"Almarhum 3\" pada plot #13.', '2026-04-13 07:57:51', '2026-04-13 07:57:51'),
+(8, 1, '-', 'superadmin', '127.0.0.1', NULL, NULL, 'Logout', 'User logout dari sistem.', '2026-04-13 08:10:32', '2026-04-13 08:10:32'),
+(9, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Login', 'User login ke sistem.', '2026-04-14 07:43:22', '2026-04-14 07:43:22'),
+(10, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Blok', 'Mengedit data blok #11. warna peta dari \"#10b981\" ke \"#10B981\", posisi X denah dari \"(kosong)\" ke \"134\", posisi Y denah dari \"(kosong)\" ke \"169\".', '2026-04-14 08:24:43', '2026-04-14 08:24:43'),
+(11, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Blok', 'Mengedit data blok #11. posisi X denah dari \"134\" ke \"301\", posisi Y denah dari \"169\" ke \"187\".', '2026-04-14 08:29:12', '2026-04-14 08:29:12'),
+(12, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Blok', 'Mengedit data blok #22. posisi X denah dari \"(kosong)\" ke \"518\", posisi Y denah dari \"(kosong)\" ke \"184\".', '2026-04-14 08:29:17', '2026-04-14 08:29:17'),
+(13, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Blok', 'Mengedit data blok #23. posisi X denah dari \"(kosong)\" ke \"723\", posisi Y denah dari \"(kosong)\" ke \"170\".', '2026-04-14 08:29:22', '2026-04-14 08:29:22'),
+(14, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Blok', 'Mengedit data blok #11. posisi X denah dari \"301\" ke \"115\", posisi Y denah dari \"187\" ke \"181\".', '2026-04-14 08:29:36', '2026-04-14 08:29:36'),
+(15, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Blok', 'Mengedit data blok #11. posisi X denah dari \"115\" ke \"49\", posisi Y denah dari \"181\" ke \"209\".', '2026-04-14 08:33:28', '2026-04-14 08:33:28'),
+(16, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Blok', 'Mengedit data blok #22. posisi X denah dari \"518\" ke \"409\", posisi Y denah dari \"184\" ke \"223\".', '2026-04-14 08:33:33', '2026-04-14 08:33:33'),
+(17, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Blok', 'Mengedit data blok #11. posisi X denah dari \"49\" ke \"2\", posisi Y denah dari \"209\" ke \"213\".', '2026-04-14 08:39:16', '2026-04-14 08:39:16'),
+(18, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Blok A (X:2->-365, Y:213->-115); Blok B (X:409->336, Y:223->-95); Blok C (X:723->810, Y:170->-100).', '2026-04-14 09:09:37', '2026-04-14 09:09:37'),
+(19, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Tambah Plot', 'Menambah plot #32 (blok #23, nomor plot \"C-01\").', '2026-04-14 09:29:30', '2026-04-14 09:29:30');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `blocks`
 --
 
@@ -32,6 +77,8 @@ CREATE TABLE `blocks` (
   `block_name` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
   `map_color` varchar(20) DEFAULT NULL,
+  `map_x` int(11) DEFAULT NULL,
+  `map_y` int(11) DEFAULT NULL,
   `max_plots` int(10) UNSIGNED NOT NULL DEFAULT 15,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -41,10 +88,10 @@ CREATE TABLE `blocks` (
 -- Dumping data for table `blocks`
 --
 
-INSERT INTO `blocks` (`blockid`, `block_name`, `description`, `map_color`, `max_plots`, `created_at`, `updated_at`) VALUES
-(11, 'Blok A', 'Blok utama dengan 10 plot', '#10b981', 15, '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
-(22, 'Blok B', 'Kuburan Premium', '#C12F2F', 15, '2026-04-12 16:11:01', '2026-04-12 10:14:23'),
-(23, 'Blok C', NULL, '#A42382', 15, '2026-04-12 10:00:30', '2026-04-12 10:00:30');
+INSERT INTO `blocks` (`blockid`, `block_name`, `description`, `map_color`, `map_x`, `map_y`, `max_plots`, `created_at`, `updated_at`) VALUES
+(11, 'Blok A', 'Blok utama dengan 10 plot', '#10B981', -365, -115, 15, '2026-04-11 10:32:08', '2026-04-14 09:09:36'),
+(22, 'Blok B', 'Kuburan Premium', '#C12F2F', 336, -95, 15, '2026-04-12 16:11:01', '2026-04-14 09:09:36'),
+(23, 'Blok C', NULL, '#A42382', 810, -100, 15, '2026-04-12 10:00:30', '2026-04-14 09:09:36');
 
 -- --------------------------------------------------------
 
@@ -120,7 +167,8 @@ INSERT INTO `deceased` (`deceasedid`, `plotid`, `full_name`, `gender`, `birth_da
 (24, 27, 'Almarhum Dummy 7', 'female', '1959-04-11', '2026-02-23', '2026-02-24', 'Kristen', 'DUMMY-ID-0007', 'Jl. Dummy No. 7, Kota Contoh', 'Data dummy almarhum ke-7', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
 (25, 28, 'Almarhum Dummy 8', 'male', '1958-04-11', '2026-02-22', '2026-02-23', 'Islam', 'DUMMY-ID-0008', 'Jl. Dummy No. 8, Kota Contoh', 'Data dummy almarhum ke-8', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
 (26, 29, 'Almarhum Dummy 9', 'female', '1957-04-11', '2026-02-21', '2026-02-22', 'Kristen', 'DUMMY-ID-0009', 'Jl. Dummy No. 9, Kota Contoh', 'Data dummy almarhum ke-9', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
-(27, 30, 'Almarhum Dummy 10', 'male', '1956-04-11', '2026-02-20', '2026-02-21', 'Islam', 'DUMMY-ID-0010', 'Jl. Dummy No. 10, Kota Contoh', 'Data dummy almarhum ke-10', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44');
+(27, 30, 'Almarhum Dummy 10', 'male', '1956-04-11', '2026-02-20', '2026-02-21', 'Islam', 'DUMMY-ID-0010', 'Jl. Dummy No. 10, Kota Contoh', 'Data dummy almarhum ke-10', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
+(28, 14, 'Holly Stephens', 'female', '1999-09-03', '1983-02-28', '2013-11-25', 'Non est iste impedit', '958', 'Aut ex ipsum optio', 'Blanditiis aut ex il', 'deceased-photos/pcqdW3JMsNBXqVInQacUscw6y2QKAKUMZGay9VP8.png', '2026-04-12 23:05:09', '2026-04-12 23:05:09');
 
 -- --------------------------------------------------------
 
@@ -193,7 +241,6 @@ CREATE TABLE `families` (
 INSERT INTO `families` (`familyid`, `deceased_id`, `family_name`, `relationship_status`, `phone_number`, `email`, `address`, `notes`, `created_at`, `updated_at`) VALUES
 (11, 11, 'Keluarga 1', 'Suami/Istri', '08123000001', 'keluarga1@dummy.test', 'Alamat keluarga 1', 'Kontak dummy', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
 (12, 12, 'Keluarga 2', 'Anak', '08123000002', 'keluarga2@dummy.test', 'Alamat keluarga 2', 'Kontak dummy', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
-(13, 13, 'Keluarga 3', 'Suami/Istri', '08123000003', 'keluarga3@dummy.test', 'Alamat keluarga 3', 'Kontak dummy', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
 (14, 14, 'Keluarga 5', 'Suami/Istri', '08123000005', 'keluarga5@dummy.test', 'Alamat keluarga 5', 'Kontak dummy', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
 (15, 15, 'Keluarga 7', 'Suami/Istri', '08123000007', 'keluarga7@dummy.test', 'Alamat keluarga 7', 'Kontak dummy', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
 (16, 16, 'Keluarga 9', 'Suami/Istri', '08123000009', 'keluarga9@dummy.test', 'Alamat keluarga 9', 'Kontak dummy', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
@@ -238,14 +285,15 @@ INSERT INTO `grave_plots` (`plotid`, `block_id`, `plot_number`, `row_number`, `p
 (11, 11, 'A-01', '1', 40.00, 40.00, 60.00, 40.00, 'occupied', 'Plot dummy 1', '2026-04-11 10:32:08', '2026-04-12 16:46:28'),
 (12, 11, 'A-02', '1', 130.00, 40.00, 60.00, 40.00, 'occupied', 'Plot dummy 2', '2026-04-11 10:32:08', '2026-04-11 08:21:44'),
 (13, 11, 'A-03', '1', 220.00, 40.00, 60.00, 40.00, 'occupied', 'Plot dummy 3', '2026-04-11 10:32:08', '2026-04-11 08:21:44'),
-(14, 11, 'A-04', '1', 310.00, 40.00, 60.00, 40.00, 'empty', 'Plot dummy 4', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
+(14, 11, 'A-04', '1', 310.00, 40.00, 60.00, 40.00, 'occupied', 'Plot dummy 4', '2026-04-11 10:32:08', '2026-04-12 23:05:09'),
 (15, 11, 'A-05', '1', 400.00, 40.00, 60.00, 40.00, 'occupied', 'Plot dummy 5', '2026-04-11 10:32:08', '2026-04-11 08:21:44'),
 (16, 11, 'A-06', '2', 40.00, 130.00, 60.00, 40.00, 'empty', 'Plot dummy 6', '2026-04-11 10:32:08', '2026-04-11 15:28:16'),
 (17, 11, 'A-07', '2', 130.00, 130.00, 60.00, 40.00, 'occupied', 'Plot dummy 7', '2026-04-11 10:32:08', '2026-04-11 08:21:44'),
 (18, 11, 'A-08', '2', 220.00, 130.00, 60.00, 40.00, 'empty', 'Plot dummy 8', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
 (19, 11, 'A-09', '2', 310.00, 130.00, 60.00, 40.00, 'occupied', 'Plot dummy 9', '2026-04-11 10:32:08', '2026-04-11 08:21:44'),
 (20, 11, 'A-10', '2', 400.00, 130.00, 60.00, 40.00, 'occupied', 'Plot dummy 10', '2026-04-11 10:32:08', '2026-04-11 08:21:44'),
-(31, 22, 'B-01', NULL, 24.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-12 10:40:49', '2026-04-12 10:40:49');
+(31, 22, 'B-01', NULL, 24.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-12 10:40:49', '2026-04-12 10:40:49'),
+(32, 23, 'C-01', NULL, 24.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-14 09:29:30', '2026-04-14 09:29:30');
 
 -- --------------------------------------------------------
 
@@ -265,6 +313,41 @@ CREATE TABLE `level` (
 INSERT INTO `level` (`levelid`, `levelname`) VALUES
 (1, 'Superadmin'),
 (2, 'Admin');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `level_sidebar_access`
+--
+
+CREATE TABLE `level_sidebar_access` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `levelid` int(10) UNSIGNED NOT NULL,
+  `menu_key` varchar(100) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `level_sidebar_access`
+--
+
+INSERT INTO `level_sidebar_access` (`id`, `levelid`, `menu_key`, `created_at`, `updated_at`) VALUES
+(64, 1, 'data-blok', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(65, 1, 'data-plot', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(66, 1, 'data-almarhum', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(67, 1, 'data-kontak-keluarga', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(68, 1, 'data-user', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(69, 1, 'activity-log', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(70, 1, 'restore-data', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(71, 1, 'hak-akses', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(72, 1, 'settings', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(73, 2, 'data-blok', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(74, 2, 'data-plot', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(75, 2, 'data-almarhum', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(76, 2, 'data-kontak-keluarga', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(77, 2, 'data-user', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
+(78, 2, 'activity-log', '2026-04-13 07:53:54', '2026-04-13 07:53:54');
 
 -- --------------------------------------------------------
 
@@ -294,7 +377,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (9, '2026_04_11_100500_create_system_settings_table', 4),
 (10, '2026_04_11_173500_normalize_grave_plot_statuses', 4),
 (11, '2026_04_13_000001_add_profile_fields_to_legacy_user_table', 5),
-(12, '2026_04_13_000002_add_max_plots_to_blocks_table', 6);
+(12, '2026_04_13_000002_add_max_plots_to_blocks_table', 6),
+(13, '2026_04_13_000001_create_activity_logs_table', 7),
+(14, '2026_04_13_000003_create_level_sidebar_access_table', 7),
+(15, '2026_04_14_000004_add_map_coordinates_to_blocks_table', 8);
 
 -- --------------------------------------------------------
 
@@ -327,9 +413,9 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('4G6kt1WH4CjBn3JUQc8tlJd5GzlNidfVI0g4EpnJ', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZ1JzeWpZdDhCUHExRDJ2UDdDYzJBb3lRbG9HT2VhSUJnUk01YVFFNCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1776038036),
-('ErgAEFIH16XX6lbMFEGqsZfDxlIU16VcjycWoQOo', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoibGVZVlFpZHpENlQ4aUd0ME9pY0JCTUtlMndXRTlqRVo4Qm9laWNtQyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fX0=', 1776035515),
-('zuwvKwTrV3bbQDOOlmL1Gn92TqVuzkz5N69xmX08', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiUGdkT2pBaHR2NE52Z2N5cmZ4TTdTZndZNlRLaHJHMVFwZjRFNW9JTyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MTEwOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvbWVkaWEvZGVjZWFzZWQtcGhvdG8/cGF0aD1kZWNlYXNlZC1waG90b3MlMkZCd095Uk9qbWJFTXA4eEVvU2ZqdHc2ZnNDZE9Ga3BiY01mcm9BTk5YLnBuZyI7czo1OiJyb3V0ZSI7czoyMDoibWVkaWEuZGVjZWFzZWQtcGhvdG8iO31zOjk6ImF1dGhfdXNlciI7YTozOntzOjI6ImlkIjtpOjE7czo4OiJ1c2VybmFtZSI7czoxMDoic3VwZXJhZG1pbiI7czo3OiJsZXZlbGlkIjtpOjE7fX0=', 1776038000);
+('0MRvaLgop0qB1coKRYSBdaGRDuCOu5nnYYN8crfU', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoidkROQnFXbDBxbDRZRDRVYWlVRWVBM2F2RTNBS1R4ZENIaktBUXNtdSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MTEwOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvbWVkaWEvZGVjZWFzZWQtcGhvdG8/cGF0aD1kZWNlYXNlZC1waG90b3MlMkZwY3FkVzNKTXNOQlhxVkluUWFjVXNjdzZ5MlFLQUtVTVpHYXk5VlA4LnBuZyI7czo1OiJyb3V0ZSI7czoyMDoibWVkaWEuZGVjZWFzZWQtcGhvdG8iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjk6ImF1dGhfdXNlciI7YTo2OntzOjI6ImlkIjtpOjE7czo4OiJ1c2VybmFtZSI7czoxMDoic3VwZXJhZG1pbiI7czo3OiJsZXZlbGlkIjtpOjE7czo0OiJuYW1lIjtzOjEyOiJTdXBlcmFkbWluDQoiO3M6ODoibGF0aXR1ZGUiO047czo5OiJsb25naXR1ZGUiO047fX0=', 1776185209),
+('4hd0PJa32ZDgFHKzy257j4tCDKZeT6wPwlDsTo03', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiYW5rTUlrd1JETWw4UDFkaGlTRlB3dGZkVE45UWM5WE82YVU2N2NLeCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1776177788),
+('Hh3Sm2CV1qvRxyMobx6KOGVRB34jv3IgNK4AbtSV', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoidFdyNmVHRlFnN1JZc2hjMTA3V3RiWWt6TzhUWUJCbG54YkdPZTZuNCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9jaGF0Ym90IjtzOjU6InJvdXRlIjtzOjc6ImNoYXRib3QiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1776185253);
 
 -- --------------------------------------------------------
 
@@ -379,6 +465,13 @@ INSERT INTO `user` (`userid`, `username`, `password`, `levelid`, `reset_password
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `activity_logs_user_id_index` (`user_id`);
 
 --
 -- Indexes for table `blocks`
@@ -437,6 +530,14 @@ ALTER TABLE `level`
   ADD PRIMARY KEY (`levelid`);
 
 --
+-- Indexes for table `level_sidebar_access`
+--
+ALTER TABLE `level_sidebar_access`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `level_sidebar_access_unique` (`levelid`,`menu_key`),
+  ADD KEY `level_sidebar_access_levelid_index` (`levelid`);
+
+--
 -- Indexes for table `migrations`
 --
 ALTER TABLE `migrations`
@@ -473,6 +574,12 @@ ALTER TABLE `user`
 --
 
 --
+-- AUTO_INCREMENT for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+
+--
 -- AUTO_INCREMENT for table `blocks`
 --
 ALTER TABLE `blocks`
@@ -488,7 +595,7 @@ ALTER TABLE `cemetery_blocks`
 -- AUTO_INCREMENT for table `deceased`
 --
 ALTER TABLE `deceased`
-  MODIFY `deceasedid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `deceasedid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `deceased_records`
@@ -512,7 +619,7 @@ ALTER TABLE `families`
 -- AUTO_INCREMENT for table `grave_plots`
 --
 ALTER TABLE `grave_plots`
-  MODIFY `plotid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `plotid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `level`
@@ -521,10 +628,16 @@ ALTER TABLE `level`
   MODIFY `levelid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT for table `level_sidebar_access`
+--
+ALTER TABLE `level_sidebar_access`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
+
+--
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `role`

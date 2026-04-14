@@ -267,6 +267,17 @@
             color: #fff;
         }
 
+        .btn-danger {
+            border: 1px solid #cb6a6a;
+            background: #fae4e4;
+            color: #7a1f1f;
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: .82rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
         .detail-link {
             text-decoration: none;
             color: #11493e;
@@ -316,13 +327,58 @@
                 Login sebagai
                 <strong>{{ $authUser['username'] ?? 'user' }}</strong>
             </div>
+            @php
+                $levelId = (int) ($authUser['levelid'] ?? 0);
+                $allowedMenuKeys = null;
+                if (\Illuminate\Support\Facades\Schema::hasTable('level_sidebar_access')) {
+                    if ($levelId > 0) {
+                        $allowedMenuKeys = \Illuminate\Support\Facades\DB::table('level_sidebar_access')
+                            ->where('levelid', $levelId)
+                            ->pluck('menu_key')
+                            ->all();
+                    } else {
+                        $allowedMenuKeys = [];
+                    }
+                }
+                $canAccessSidebarMenu = static function (string $menuKey) use ($allowedMenuKeys): bool {
+                    if (in_array($menuKey, ['dashboard', 'account', 'logout'], true)) {
+                        return true;
+                    }
+                    if ($allowedMenuKeys === null) {
+                        return true;
+                    }
+                    return in_array($menuKey, $allowedMenuKeys, true);
+                };
+            @endphp
             <nav class="sidebar-menu">
                 <a href="{{ route('dashboard') }}" class="sidebar-menu-item">Dashboard</a>
+                @if ($canAccessSidebarMenu('data-blok'))
                 <a href="{{ route('dashboard.data-blok') }}" class="sidebar-menu-item">Data Blok</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-plot'))
                 <a href="{{ route('dashboard.data-plot') }}" class="sidebar-menu-item">Data Plot</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-almarhum'))
                 <a href="{{ route('dashboard.data-almarhum') }}" class="sidebar-menu-item active">Data Almarhum</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-kontak-keluarga'))
+                <a href="{{ route('dashboard.data-kontak-keluarga') }}" class="sidebar-menu-item">Data Kontak Keluarga</a>
+                @endif
+                @if ($canAccessSidebarMenu('data-user'))
                 <a href="{{ route('dashboard.data-user') }}" class="sidebar-menu-item">Data User</a>
+                @endif
+                @if ($canAccessSidebarMenu('activity-log'))
+                <a href="{{ route('dashboard.activity-log') }}" class="sidebar-menu-item">Activity Log</a>
+                @endif
+                @if ($canAccessSidebarMenu('restore-data'))
+                <a href="#" class="sidebar-menu-item">Restore Data</a>
+                @endif
+                @if ($canAccessSidebarMenu('hak-akses'))
+                <a href="{{ route('dashboard.hak-akses') }}" class="sidebar-menu-item">Hak Akses</a>
+                @endif
+                @if ($canAccessSidebarMenu('settings'))
                 <a href="{{ route('dashboard.settings') }}" class="sidebar-menu-item">Pengaturan</a>
+                @endif
             </nav>
             <div class="sidebar-bottom">
                 <a href="{{ route('dashboard.account') }}" class="sidebar-menu-item">Akun</a>
@@ -482,6 +538,7 @@
 
                 <div class="modal-actions">
                     <a href="#" id="deceasedDetailLink" class="detail-link" style="display:none;">Buka Detail</a>
+                    <button type="button" class="btn-danger" id="deleteDeceasedBtn" style="display:none;">Hapus</button>
                     <button type="button" class="btn-secondary" id="cancelDeceasedModal">Batal</button>
                     <button type="submit" class="btn-primary" id="submitDeceasedBtn">Simpan</button>
                 </div>
@@ -502,11 +559,14 @@
             const plotLabelInput = document.getElementById('plotLabelInput');
             const submitBtn = document.getElementById('submitDeceasedBtn');
             const detailLink = document.getElementById('deceasedDetailLink');
+            const deleteBtn = document.getElementById('deleteDeceasedBtn');
             const photoInput = document.getElementById('photo');
             const photoPreviewWrap = document.getElementById('photoPreviewWrap');
             const photoPreview = document.getElementById('photoPreview');
             const slotButtons = document.querySelectorAll('[data-plot-slot]');
             const baseUrl = "{{ url('/dashboard/data-almarhum') }}";
+            const csrfToken = '{{ csrf_token() }}';
+            let currentSlotButton = null;
             let objectPreviewUrl = null;
 
             const fields = {
@@ -574,8 +634,47 @@
                 });
             }
 
+            const applyDeceasedToSlot = (slot, data) => {
+                if (!slot || !data) return;
+                slot.dataset.deceasedId = String(data.deceasedid || '');
+                slot.dataset.fullName = data.full_name || '';
+                slot.dataset.gender = data.gender || '';
+                slot.dataset.birthDate = data.birth_date || '';
+                slot.dataset.deathDate = data.death_date || '';
+                slot.dataset.burialDate = data.burial_date || '';
+                slot.dataset.religion = data.religion || '';
+                slot.dataset.identityNumber = data.identity_number || '';
+                slot.dataset.address = data.address || '';
+                slot.dataset.description = data.description || '';
+                slot.dataset.photoUrl = data.photo_url || '';
+                slot.classList.remove('plot-empty');
+                slot.classList.add('plot-occupied');
+                const plotNumber = (slot.dataset.plotNumber || '').trim();
+                slot.title = `Plot ${plotNumber} - ${data.full_name || 'Almarhum'}`;
+            };
+
+            const clearDeceasedFromSlot = (slot) => {
+                if (!slot) return;
+                slot.dataset.deceasedId = '';
+                slot.dataset.fullName = '';
+                slot.dataset.gender = '';
+                slot.dataset.birthDate = '';
+                slot.dataset.deathDate = '';
+                slot.dataset.burialDate = '';
+                slot.dataset.religion = '';
+                slot.dataset.identityNumber = '';
+                slot.dataset.address = '';
+                slot.dataset.description = '';
+                slot.dataset.photoUrl = '';
+                slot.classList.remove('plot-occupied');
+                slot.classList.add('plot-empty');
+                const plotNumber = (slot.dataset.plotNumber || '').trim();
+                slot.title = `Plot ${plotNumber} - KOSONG`;
+            };
+
             slotButtons.forEach((button) => {
                 button.addEventListener('click', () => {
+                    currentSlotButton = button;
                     const deceasedId = (button.dataset.deceasedId || '').trim();
                     const plotId = (button.dataset.plotId || '').trim();
                     const plotNumber = (button.dataset.plotNumber || '').trim();
@@ -594,6 +693,7 @@
                         methodInput.value = 'PUT';
                         detailLink.style.display = 'inline-block';
                         detailLink.href = `{{ url('/deceased') }}/${deceasedId}`;
+                        deleteBtn.style.display = 'inline-block';
                         const currentPhotoUrl = (button.dataset.photoUrl || '').trim();
                         clearObjectPreview();
                         setPreviewPhoto(currentPhotoUrl);
@@ -616,6 +716,7 @@
                         methodInput.value = '';
                         detailLink.style.display = 'none';
                         detailLink.href = '#';
+                        deleteBtn.style.display = 'none';
                         clearObjectPreview();
                         setPreviewPhoto('');
                         setFieldValues({
@@ -639,6 +740,82 @@
                 });
             });
 
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+                if (methodInput.value === 'PUT') {
+                    formData.set('_method', 'PUT');
+                }
+
+                submitBtn.disabled = true;
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: formData,
+                    });
+
+                    const payload = await response.json().catch(() => ({}));
+                    if (!response.ok) {
+                        const firstErrorKey = payload?.errors ? Object.keys(payload.errors)[0] : null;
+                        const firstError = firstErrorKey ? (payload.errors[firstErrorKey]?.[0] || null) : null;
+                        window.alert(firstError || payload.message || 'Gagal menyimpan data almarhum.');
+                        return;
+                    }
+
+                    applyDeceasedToSlot(currentSlotButton, payload.data || {});
+                    closeModal();
+                } catch (error) {
+                    window.alert('Gagal menyimpan data almarhum.');
+                } finally {
+                    submitBtn.disabled = false;
+                }
+            });
+
+            deleteBtn.addEventListener('click', async () => {
+                const deceasedId = (deceasedIdInput.value || '').trim();
+                if (!deceasedId) return;
+
+                const ok = window.confirm('Hapus data almarhum ini?');
+                if (!ok) return;
+
+                deleteBtn.disabled = true;
+                try {
+                    const body = new URLSearchParams();
+                    body.set('_token', csrfToken);
+                    body.set('_method', 'DELETE');
+
+                    const response = await fetch(`${baseUrl}/${deceasedId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                        },
+                        body: body.toString(),
+                    });
+
+                    const payload = await response.json().catch(() => ({}));
+                    if (!response.ok) {
+                        window.alert(payload.message || 'Gagal menghapus data almarhum.');
+                        return;
+                    }
+
+                    clearDeceasedFromSlot(currentSlotButton);
+                    closeModal();
+                } catch (error) {
+                    window.alert('Gagal menghapus data almarhum.');
+                } finally {
+                    deleteBtn.disabled = false;
+                }
+            });
+
             closeBtn.addEventListener('click', closeModal);
             cancelBtn.addEventListener('click', closeModal);
             modal.addEventListener('click', (event) => {
@@ -655,3 +832,11 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
