@@ -287,6 +287,12 @@
             cursor: move;
             touch-action: none;
             user-select: none;
+            background-color: #f8fbfa;
+            background-image:
+                linear-gradient(90deg, rgba(19, 42, 47, 0.08) 1px, transparent 1px),
+                linear-gradient(rgba(19, 42, 47, 0.08) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-repeat: repeat;
         }
 
         .map-viewport.dragging {
@@ -299,10 +305,13 @@
             top: 0;
             transform-origin: 0 0;
             border-radius: 10px;
-            background:
-                linear-gradient(90deg, rgba(19, 42, 47, 0.05) 1px, transparent 1px) 0 0 / 40px 40px,
-                linear-gradient(rgba(19, 42, 47, 0.05) 1px, transparent 1px) 0 0 / 40px 40px,
-                #f8fbfa;
+            background-color: #f8fbfa;
+            background-image:
+                linear-gradient(90deg, rgba(19, 42, 47, 0.12) 1px, transparent 1px),
+                linear-gradient(rgba(19, 42, 47, 0.12) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 0 0;
+            background-repeat: repeat;
         }
 
         .block-area {
