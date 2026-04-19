@@ -5,70 +5,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data User</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@600;700&display=swap');
 
         :root {
-            --bg: #edf3f1;
-            --card: #ffffff;
-            --line: #d2dfda;
-            --text: #163036;
-            --muted: #657c81;
-            --brand-soft: #e8f3ef;
+            --bg-top: #2c0915;
+            --bg-bottom: #080306;
+            --shell-line: rgba(255, 225, 230, 0.14);
+            --card-bg: rgba(247, 239, 236, 0.98);
+            --card-line: rgba(115, 38, 54, 0.2);
+            --text: #2b1017;
+            --muted: #77525b;
+            --sidebar-bg: rgba(28, 7, 14, 0.88);
+            --sidebar-line: rgba(255, 231, 235, 0.14);
+            --sidebar-text: #fff2ee;
+            --sidebar-muted: #dfbec3;
+            --brand: #7a1129;
+            --brand-soft: rgba(122, 17, 41, 0.09);
+            --danger: #92223b;
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         body {
             margin: 0;
-            font-family: "DM Sans", sans-serif;
+            font-family: "Manrope", sans-serif;
             color: var(--text);
             background:
-                radial-gradient(800px 420px at 0% -10%, #d8e8e2 0%, transparent 60%),
-                radial-gradient(800px 420px at 100% 110%, #dce9e4 0%, transparent 60%),
-                var(--bg);
+                radial-gradient(920px 520px at -8% -10%, rgba(170, 44, 73, 0.4) 0%, transparent 58%),
+                radial-gradient(760px 440px at 106% 110%, rgba(124, 18, 43, 0.4) 0%, transparent 64%),
+                linear-gradient(180deg, var(--bg-top) 0%, #14070d 45%, var(--bg-bottom) 100%);
         }
 
         .layout {
             display: grid;
-            grid-template-columns: 290px 1fr;
+            grid-template-columns: 300px minmax(0, 1fr);
             min-height: 100vh;
-            gap: 12px;
-            width: min(1320px, 96vw);
-            margin: 12px auto;
+            gap: 14px;
+            width: min(1360px, calc(100vw - 28px));
+            margin: 14px auto;
         }
 
-        .sidebar, .main-card {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 16px;
-            box-shadow: 0 12px 24px rgba(14, 40, 44, .08);
+        .sidebar,
+        .main-card {
+            border-radius: 22px;
+            border: 1px solid var(--shell-line);
+            overflow: hidden;
         }
 
         .sidebar {
-            padding: 14px;
+            padding: 16px;
             display: grid;
             grid-template-rows: auto auto 1fr auto;
-            gap: 12px;
-            max-height: calc(100vh - 24px);
+            gap: 14px;
+            max-height: calc(100vh - 28px);
             position: sticky;
-            top: 12px;
+            top: 14px;
+            background:
+                linear-gradient(180deg, rgba(255, 241, 243, 0.08), rgba(255, 241, 243, 0) 22%),
+                var(--sidebar-bg);
+            box-shadow: 0 26px 54px rgba(22, 4, 9, 0.4);
+            backdrop-filter: blur(8px);
         }
 
         .logo {
             margin: 0;
             font-family: "Space Grotesk", sans-serif;
-            font-size: 1.05rem;
+            font-size: 1.02rem;
+            letter-spacing: 0.03em;
+            color: var(--sidebar-text);
         }
 
         .user-box {
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 10px;
-            background: #f8fcfa;
-            font-size: .82rem;
+            border: 1px solid var(--sidebar-line);
+            border-radius: 14px;
+            padding: 11px 12px;
+            background: rgba(255, 241, 243, 0.08);
+            color: var(--sidebar-muted);
+            font-size: 0.8rem;
         }
 
-        .user-box strong { display: block; font-size: .92rem; margin-top: 3px; }
+        .user-box strong {
+            display: block;
+            margin-top: 3px;
+            font-size: 0.92rem;
+            color: var(--sidebar-text);
+        }
 
         .sidebar-menu {
             display: grid;
@@ -83,35 +106,53 @@
 
         .sidebar-menu-item {
             display: block;
-            border: 1px solid #d8e4df;
-            border-radius: 10px;
-            padding: 10px;
-            background: #fbfdfc;
-            color: var(--text);
+            border: 1px solid var(--sidebar-line);
+            border-radius: 12px;
+            padding: 10px 12px;
+            background: rgba(255, 241, 243, 0.05);
+            color: var(--sidebar-text);
             text-decoration: none;
             font-weight: 700;
-            font-size: .88rem;
+            font-size: 0.86rem;
+            transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+        }
+
+        .sidebar-menu-item:hover {
+            transform: translateX(2px);
+            background: rgba(255, 241, 243, 0.12);
+            border-color: rgba(255, 241, 243, 0.28);
         }
 
         .sidebar-menu-item.active {
-            border-color: #9cc3b8;
-            background: #eaf4f0;
-            color: #175347;
+            border-color: rgba(255, 188, 199, 0.7);
+            background: rgba(122, 17, 41, 0.38);
+            color: #fff7f4;
         }
 
         .logout-btn {
             width: 100%;
             min-height: 42px;
-            border: 1px solid #bbcfca;
-            border-radius: 10px;
-            background: #eef6f3;
-            color: #184e43;
+            border: 1px solid rgba(255, 241, 243, 0.24);
+            border-radius: 12px;
+            background: rgba(255, 241, 243, 0.08);
+            color: var(--sidebar-text);
             font-weight: 700;
             cursor: pointer;
+            transition: background-color 0.16s ease, border-color 0.16s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 241, 243, 0.14);
+            border-color: rgba(255, 241, 243, 0.38);
         }
 
         .main-card {
-            padding: 16px;
+            padding: 20px;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0) 24%),
+                var(--card-bg);
+            border-color: var(--card-line);
+            box-shadow: 0 28px 58px rgba(22, 4, 9, 0.34);
         }
 
         .head {
@@ -125,41 +166,45 @@
         .head h1 {
             margin: 0;
             font-family: "Space Grotesk", sans-serif;
-            font-size: 1.35rem;
+            font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+            letter-spacing: -0.01em;
         }
 
         .head p {
-            margin: 6px 0 0;
+            margin: 8px 0 0;
             color: var(--muted);
-            font-size: .84rem;
+            font-size: 0.87rem;
         }
 
         .add-btn {
-            min-height: 40px;
-            border: 1px solid #1f735f;
-            border-radius: 10px;
-            background: linear-gradient(120deg, #29947b, #1f7a67);
+            min-height: 42px;
+            border: 1px solid #6d0f24;
+            border-radius: 12px;
+            background: linear-gradient(130deg, #a52142 0%, var(--brand) 52%, #4a0615 100%);
             color: #fff;
-            font-weight: 700;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
             padding: 0 14px;
             cursor: pointer;
+            box-shadow: 0 14px 24px rgba(84, 9, 24, 0.24);
         }
 
         .status {
             margin-top: 12px;
-            border: 1px solid #b8d4c9;
+            border: 1px solid rgba(122, 17, 41, 0.22);
             background: var(--brand-soft);
-            color: #175247;
-            border-radius: 10px;
-            padding: 10px;
-            font-size: .83rem;
+            color: var(--brand);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 0.83rem;
             font-weight: 700;
         }
 
         .status.error {
-            border-color: #e3b5b5;
-            background: #fdeeee;
-            color: #c44a4a;
+            border-color: rgba(146, 34, 59, 0.25);
+            background: rgba(146, 34, 59, 0.1);
+            color: var(--danger);
         }
 
         .status ul {
@@ -169,36 +214,41 @@
 
         .table-wrap {
             margin-top: 12px;
-            border: 1px solid var(--line);
-            border-radius: 12px;
+            border: 1px solid rgba(115, 38, 54, 0.18);
+            border-radius: 14px;
             overflow: auto;
             background: #fff;
         }
 
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             min-width: 640px;
         }
 
         th,
         td {
             padding: 10px 12px;
-            border-bottom: 1px solid #e3ece8;
-            font-size: .86rem;
+            border-bottom: 1px solid #ecdde1;
+            font-size: 0.86rem;
             text-align: left;
         }
 
         th {
-            background: #f5faf8;
-            color: #2f5158;
-            font-size: .78rem;
+            position: sticky;
+            top: 0;
+            background: #f5e8eb;
+            color: #5a2532;
+            font-size: 0.76rem;
             text-transform: uppercase;
-            letter-spacing: .02em;
+            letter-spacing: 0.05em;
+            font-weight: 800;
+            z-index: 2;
         }
 
         tbody tr:hover {
-            background: #f9fcfb;
+            background: #fdf6f7;
         }
 
         .empty {
@@ -220,10 +270,10 @@
         .btn-action {
             min-height: 34px;
             border-radius: 8px;
-            border: 1px solid #b8cbc5;
-            background: #f2f8f5;
-            color: #19493f;
-            font-size: .76rem;
+            border: 1px solid #b89aa3;
+            background: #f8eff2;
+            color: #6b3141;
+            font-size: 0.76rem;
             font-weight: 700;
             padding: 0 10px;
             cursor: pointer;
@@ -231,21 +281,21 @@
         }
 
         .btn-reset {
-            border-color: #9abeb2;
-            background: #eaf5f0;
-            color: #155246;
+            border-color: rgba(122, 17, 41, 0.26);
+            background: rgba(122, 17, 41, 0.1);
+            color: #7a1129;
         }
 
         .btn-delete {
-            border-color: #e0b8b8;
-            background: #fceeee;
-            color: #9e3131;
+            border-color: rgba(146, 34, 59, 0.28);
+            background: rgba(146, 34, 59, 0.12);
+            color: #92223b;
         }
 
         .btn-disabled {
-            border-color: #d8e4df;
-            background: #f4f8f6;
-            color: #7d9296;
+            border-color: #e2cfd4;
+            background: #f6eff1;
+            color: #9e7d85;
             cursor: not-allowed;
         }
 
@@ -255,7 +305,7 @@
             display: none;
             align-items: center;
             justify-content: center;
-            background: rgba(16, 38, 44, .45);
+            background: rgba(26, 6, 12, 0.62);
             z-index: 40;
             padding: 14px;
         }
@@ -266,11 +316,11 @@
 
         .modal-card {
             width: min(700px, 96vw);
-            background: #fff;
-            border: 1px solid var(--line);
+            background: #fff8f6;
+            border: 1px solid rgba(115, 38, 54, 0.2);
             border-radius: 14px;
             padding: 14px;
-            box-shadow: 0 18px 40px rgba(14, 40, 44, .22);
+            box-shadow: 0 24px 48px rgba(22, 4, 9, 0.38);
         }
 
         .modal-head {
@@ -285,12 +335,14 @@
             margin: 0;
             font-family: "Space Grotesk", sans-serif;
             font-size: 1.06rem;
+            color: #4f1f2a;
         }
 
         .close-btn {
-            border: 1px solid #c4d3cd;
+            border: 1px solid #d8c0c7;
             border-radius: 8px;
             background: #fff;
+            color: #6f3a48;
             width: 32px;
             height: 32px;
             cursor: pointer;
@@ -314,20 +366,29 @@
         }
 
         label {
-            font-size: .78rem;
+            font-size: 0.78rem;
             color: var(--muted);
-            font-weight: 700;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
         }
 
         input,
         select {
             width: 100%;
-            border: 1px solid #c7d7d1;
+            border: 1px solid rgba(110, 52, 63, 0.2);
             border-radius: 10px;
             padding: 10px 12px;
-            font-size: .9rem;
+            font-size: 0.9rem;
             color: var(--text);
             background: #fff;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: rgba(122, 17, 41, 0.46);
+            box-shadow: 0 0 0 4px rgba(122, 17, 41, 0.1);
         }
 
         .modal-actions {
@@ -339,10 +400,10 @@
 
         .btn-secondary {
             min-height: 40px;
-            border: 1px solid #c4d3cd;
+            border: 1px solid #d8c0c7;
             border-radius: 10px;
             background: #fff;
-            color: #35555c;
+            color: #6f3a48;
             padding: 0 12px;
             font-weight: 700;
             cursor: pointer;
@@ -350,22 +411,45 @@
 
         .btn-primary {
             min-height: 40px;
-            border: 1px solid #1f735f;
+            border: 1px solid #6d0f24;
             border-radius: 10px;
-            background: linear-gradient(120deg, #29947b, #1f7a67);
+            background: linear-gradient(130deg, #a52142 0%, var(--brand) 52%, #4a0615 100%);
             color: #fff;
             padding: 0 14px;
             font-weight: 700;
             cursor: pointer;
         }
 
-        @media (max-width: 1080px) {
-            .layout { grid-template-columns: 1fr; }
-            .sidebar { position: static; max-height: none; }
+        @media (max-width: 1120px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                max-height: none;
+            }
         }
 
         @media (max-width: 700px) {
-            .form-grid { grid-template-columns: 1fr; }
+            .layout {
+                width: calc(100vw - 16px);
+                margin: 8px auto;
+                gap: 10px;
+            }
+
+            .main-card,
+            .sidebar {
+                border-radius: 16px;
+            }
+
+            .main-card {
+                padding: 14px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -421,7 +505,7 @@
                 <a href="{{ route('dashboard.activity-log') }}" class="sidebar-menu-item">Activity Log</a>
                 @endif
                 @if ($canAccessSidebarMenu('restore-data'))
-                <a href="#" class="sidebar-menu-item">Restore Data</a>
+                <a href="{{ route('dashboard.restore-data') }}" class="sidebar-menu-item">Restore Data</a>
                 @endif
                 @if ($canAccessSidebarMenu('hak-akses'))
                 <a href="{{ route('dashboard.hak-akses') }}" class="sidebar-menu-item">Hak Akses</a>

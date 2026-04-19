@@ -5,72 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pengaturan Website</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@600;700&display=swap');
 
         :root {
-            --bg: #edf3f1;
-            --card: #ffffff;
-            --line: #d2dfda;
-            --text: #163036;
-            --muted: #657c81;
-            --brand: #1f7a67;
-            --brand-soft: #e8f3ef;
-            --danger: #c44a4a;
+            --bg-top: #2c0915;
+            --bg-bottom: #080306;
+            --shell-line: rgba(255, 225, 230, 0.14);
+            --card-bg: rgba(247, 239, 236, 0.98);
+            --card-line: rgba(115, 38, 54, 0.2);
+            --text: #2b1017;
+            --muted: #77525b;
+            --sidebar-bg: rgba(28, 7, 14, 0.88);
+            --sidebar-line: rgba(255, 231, 235, 0.14);
+            --sidebar-text: #fff2ee;
+            --sidebar-muted: #dfbec3;
+            --brand: #7a1129;
+            --brand-strong: #540918;
+            --brand-soft: rgba(122, 17, 41, 0.09);
+            --danger: #92223b;
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         body {
             margin: 0;
-            font-family: "DM Sans", sans-serif;
+            font-family: "Manrope", sans-serif;
             color: var(--text);
             background:
-                radial-gradient(800px 420px at 0% -10%, #d8e8e2 0%, transparent 60%),
-                radial-gradient(800px 420px at 100% 110%, #dce9e4 0%, transparent 60%),
-                var(--bg);
+                radial-gradient(920px 520px at -8% -10%, rgba(170, 44, 73, 0.4) 0%, transparent 58%),
+                radial-gradient(760px 440px at 106% 110%, rgba(124, 18, 43, 0.4) 0%, transparent 64%),
+                linear-gradient(180deg, var(--bg-top) 0%, #14070d 45%, var(--bg-bottom) 100%);
         }
 
         .layout {
             display: grid;
-            grid-template-columns: 290px 1fr;
+            grid-template-columns: 300px minmax(0, 1fr);
             min-height: 100vh;
-            gap: 12px;
-            width: min(1320px, 96vw);
-            margin: 12px auto;
+            gap: 14px;
+            width: min(1360px, calc(100vw - 28px));
+            margin: 14px auto;
         }
 
-        .sidebar, .main-card {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 16px;
-            box-shadow: 0 12px 24px rgba(14, 40, 44, .08);
+        .sidebar,
+        .main-card {
+            border-radius: 22px;
+            border: 1px solid var(--shell-line);
+            overflow: hidden;
         }
 
         .sidebar {
-            padding: 14px;
+            padding: 16px;
             display: grid;
             grid-template-rows: auto auto 1fr auto;
-            gap: 12px;
-            max-height: calc(100vh - 24px);
+            gap: 14px;
+            max-height: calc(100vh - 28px);
             position: sticky;
-            top: 12px;
+            top: 14px;
+            background:
+                linear-gradient(180deg, rgba(255, 241, 243, 0.08), rgba(255, 241, 243, 0) 22%),
+                var(--sidebar-bg);
+            box-shadow: 0 26px 54px rgba(22, 4, 9, 0.4);
+            backdrop-filter: blur(8px);
         }
 
         .logo {
             margin: 0;
             font-family: "Space Grotesk", sans-serif;
-            font-size: 1.05rem;
+            font-size: 1.02rem;
+            letter-spacing: 0.03em;
+            color: var(--sidebar-text);
         }
 
         .user-box {
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 10px;
-            background: #f8fcfa;
-            font-size: .82rem;
+            border: 1px solid var(--sidebar-line);
+            border-radius: 14px;
+            padding: 11px 12px;
+            background: rgba(255, 241, 243, 0.08);
+            color: var(--sidebar-muted);
+            font-size: 0.8rem;
         }
 
-        .user-box strong { display: block; font-size: .92rem; margin-top: 3px; }
+        .user-box strong {
+            display: block;
+            margin-top: 3px;
+            font-size: 0.92rem;
+            color: var(--sidebar-text);
+        }
 
         .sidebar-menu {
             display: grid;
@@ -85,83 +107,104 @@
 
         .sidebar-menu-item {
             display: block;
-            border: 1px solid #d8e4df;
-            border-radius: 10px;
-            padding: 10px;
-            background: #fbfdfc;
-            color: var(--text);
+            border: 1px solid var(--sidebar-line);
+            border-radius: 12px;
+            padding: 10px 12px;
+            background: rgba(255, 241, 243, 0.05);
+            color: var(--sidebar-text);
             text-decoration: none;
             font-weight: 700;
-            font-size: .88rem;
+            font-size: 0.86rem;
+            transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+        }
+
+        .sidebar-menu-item:hover {
+            transform: translateX(2px);
+            background: rgba(255, 241, 243, 0.12);
+            border-color: rgba(255, 241, 243, 0.28);
         }
 
         .sidebar-menu-item.active {
-            border-color: #9cc3b8;
-            background: #eaf4f0;
-            color: #175347;
+            border-color: rgba(255, 188, 199, 0.7);
+            background: rgba(122, 17, 41, 0.38);
+            color: #fff7f4;
         }
 
         .logout-btn {
             width: 100%;
             min-height: 42px;
-            border: 1px solid #bbcfca;
-            border-radius: 10px;
-            background: #eef6f3;
-            color: #184e43;
+            border: 1px solid rgba(255, 241, 243, 0.24);
+            border-radius: 12px;
+            background: rgba(255, 241, 243, 0.08);
+            color: var(--sidebar-text);
             font-weight: 700;
             cursor: pointer;
+            transition: background-color 0.16s ease, border-color 0.16s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 241, 243, 0.14);
+            border-color: rgba(255, 241, 243, 0.38);
         }
 
         .main-card {
-            padding: 16px;
+            padding: 20px;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0) 24%),
+                var(--card-bg);
+            border-color: var(--card-line);
+            box-shadow: 0 28px 58px rgba(22, 4, 9, 0.34);
         }
 
         .head h1 {
             margin: 0;
             font-family: "Space Grotesk", sans-serif;
-            font-size: 1.35rem;
+            font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+            letter-spacing: -0.01em;
         }
 
         .head p {
-            margin: 6px 0 0;
+            margin: 8px 0 0;
             color: var(--muted);
-            font-size: .84rem;
+            font-size: 0.87rem;
+            line-height: 1.55;
+            max-width: 680px;
         }
 
         .status {
             margin-top: 12px;
-            border: 1px solid #b8d4c9;
+            border: 1px solid rgba(122, 17, 41, 0.22);
             background: var(--brand-soft);
-            color: #175247;
-            border-radius: 10px;
-            padding: 10px;
-            font-size: .83rem;
+            color: var(--brand);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 0.83rem;
             font-weight: 700;
         }
 
         .error {
             margin-top: 12px;
-            border: 1px solid #e3b5b5;
-            background: #fdeeee;
+            border: 1px solid rgba(146, 34, 59, 0.25);
+            background: rgba(146, 34, 59, 0.1);
             color: var(--danger);
-            border-radius: 10px;
-            padding: 10px;
-            font-size: .83rem;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 0.83rem;
             font-weight: 700;
         }
 
         .form-card {
-            margin-top: 12px;
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            background: #fbfdfc;
-            padding: 14px;
+            margin-top: 14px;
+            border: 1px solid rgba(115, 38, 54, 0.18);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.66);
+            padding: 16px;
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
+            gap: 12px;
         }
 
         .field {
@@ -174,20 +217,33 @@
         }
 
         label {
-            font-size: .78rem;
+            font-size: 0.78rem;
             color: var(--muted);
-            font-weight: 700;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
         }
 
         input {
             width: 100%;
-            min-height: 44px;
-            border: 1px solid #c7d7d1;
-            border-radius: 10px;
+            min-height: 46px;
+            border: 1px solid rgba(110, 52, 63, 0.18);
+            border-radius: 12px;
             padding: 0 12px;
-            background: #fff;
+            background: rgba(255, 253, 252, 0.95);
             color: var(--text);
-            font-size: .9rem;
+            font-size: 0.92rem;
+            transition: border-color 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        input::placeholder {
+            color: #aa8a91;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: rgba(122, 17, 41, 0.46);
+            box-shadow: 0 0 0 4px rgba(122, 17, 41, 0.1);
         }
 
         input[type="file"] {
@@ -196,14 +252,14 @@
         }
 
         .preview {
-            margin-top: 8px;
+            margin-top: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px;
-            border: 1px dashed #c2d3cd;
-            border-radius: 10px;
-            background: #f7fbf9;
+            padding: 11px;
+            border: 1px dashed rgba(115, 38, 54, 0.24);
+            border-radius: 12px;
+            background: rgba(255, 245, 246, 0.76);
         }
 
         .preview img {
@@ -211,17 +267,17 @@
             height: 64px;
             object-fit: cover;
             border-radius: 10px;
-            border: 1px solid #c7d7d1;
+            border: 1px solid rgba(115, 38, 54, 0.18);
             background: #fff;
         }
 
         .preview span {
-            font-size: .8rem;
+            font-size: 0.8rem;
             color: var(--muted);
         }
 
         .actions {
-            margin-top: 12px;
+            margin-top: 14px;
             display: flex;
             justify-content: flex-end;
             gap: 8px;
@@ -229,22 +285,54 @@
 
         .btn {
             min-height: 42px;
-            border: 1px solid #1f735f;
-            border-radius: 10px;
-            background: linear-gradient(120deg, #29947b, #1f7a67);
+            border: 1px solid #6d0f24;
+            border-radius: 12px;
+            background: linear-gradient(130deg, #a52142 0%, var(--brand) 52%, #4a0615 100%);
             color: #fff;
-            font-weight: 700;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
             padding: 0 16px;
             cursor: pointer;
+            box-shadow: 0 14px 24px rgba(84, 9, 24, 0.24);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
 
-        @media (max-width: 1080px) {
-            .layout { grid-template-columns: 1fr; }
-            .sidebar { position: static; max-height: none; }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 28px rgba(84, 9, 24, 0.3);
+        }
+
+        @media (max-width: 1120px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                max-height: none;
+            }
         }
 
         @media (max-width: 700px) {
-            .grid { grid-template-columns: 1fr; }
+            .layout {
+                width: calc(100vw - 16px);
+                margin: 8px auto;
+                gap: 10px;
+            }
+
+            .main-card,
+            .sidebar {
+                border-radius: 16px;
+            }
+
+            .main-card {
+                padding: 14px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -253,12 +341,27 @@
         $logo = $setting->systemlogo;
         $logoUrl = null;
         if ($logo) {
-            if (\Illuminate\Support\Str::startsWith($logo, ['http://', 'https://', '/'])) {
-                $logoUrl = $logo;
-            } elseif (\Illuminate\Support\Str::startsWith($logo, 'storage/')) {
-                $logoUrl = asset($logo);
+            $normalizedLogoPath = str_replace('\\', '/', trim((string) $logo));
+
+            if (\Illuminate\Support\Str::startsWith($normalizedLogoPath, ['http://', 'https://', '/'])) {
+                $logoUrl = $normalizedLogoPath;
             } else {
-                $logoUrl = asset('storage/' . ltrim($logo, '/'));
+                if (\Illuminate\Support\Str::startsWith($normalizedLogoPath, 'public/')) {
+                    $normalizedLogoPath = \Illuminate\Support\Str::after($normalizedLogoPath, 'public/');
+                }
+                if (\Illuminate\Support\Str::startsWith($normalizedLogoPath, 'storage/')) {
+                    $normalizedLogoPath = \Illuminate\Support\Str::after($normalizedLogoPath, 'storage/');
+                }
+
+                $normalizedLogoPath = ltrim($normalizedLogoPath, '/');
+
+                if ($normalizedLogoPath !== '' &&
+                    ! \Illuminate\Support\Str::contains($normalizedLogoPath, '..') &&
+                    \Illuminate\Support\Facades\Storage::disk('public')->exists($normalizedLogoPath)) {
+                    $logoUrl = route('media.deceased-photo', ['path' => $normalizedLogoPath]);
+                } else {
+                    $logoUrl = asset(ltrim((string) $logo, '/'));
+                }
             }
         }
     @endphp
@@ -314,7 +417,7 @@
                 <a href="{{ route('dashboard.activity-log') }}" class="sidebar-menu-item">Activity Log</a>
                 @endif
                 @if ($canAccessSidebarMenu('restore-data'))
-                <a href="#" class="sidebar-menu-item">Restore Data</a>
+                <a href="{{ route('dashboard.restore-data') }}" class="sidebar-menu-item">Restore Data</a>
                 @endif
                 @if ($canAccessSidebarMenu('hak-akses'))
                 <a href="{{ route('dashboard.hak-akses') }}" class="sidebar-menu-item">Hak Akses</a>
@@ -379,7 +482,7 @@
                     @if ($logoUrl)
                         <img src="{{ $logoUrl }}" alt="Logo website" onerror="this.style.display='none'">
                     @else
-                        <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='100%25' height='100%25' fill='%23e7efec'/%3E%3Ctext x='50%25' y='53%25' dominant-baseline='middle' text-anchor='middle' fill='%23678288' font-size='14' font-family='Arial'%3ELOGO%3C/text%3E%3C/svg%3E" alt="Logo kosong">
+                        <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='100%25' height='100%25' fill='%23f5e8eb'/%3E%3Ctext x='50%25' y='53%25' dominant-baseline='middle' text-anchor='middle' fill='%237a1129' font-size='14' font-family='Arial'%3ELOGO%3C/text%3E%3C/svg%3E" alt="Logo kosong">
                     @endif
                     <span>Logo saat ini</span>
                 </div>

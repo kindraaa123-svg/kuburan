@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hak Akses</title>
+    <title>Restore Data</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@600;700&display=swap');
 
@@ -19,10 +19,10 @@
             --sidebar-line: rgba(255, 231, 235, 0.14);
             --sidebar-text: #fff2ee;
             --sidebar-muted: #dfbec3;
-            --accent: #7a1129;
-            --accent-strong: #540918;
-            --accent-soft: rgba(122, 17, 41, 0.14);
-            --ok: #7a1129;
+            --brand: #7a1129;
+            --brand-strong: #540918;
+            --ok-bg: rgba(122, 17, 41, 0.1);
+            --ok-text: #7a1129;
         }
 
         * {
@@ -66,7 +66,7 @@
             background:
                 linear-gradient(180deg, rgba(255, 241, 243, 0.08), rgba(255, 241, 243, 0) 22%),
                 var(--sidebar-bg);
-            box-shadow: 0 26px 54px rgba(4, 13, 18, 0.4);
+            box-shadow: 0 26px 54px rgba(22, 4, 9, 0.4);
             backdrop-filter: blur(8px);
         }
 
@@ -156,15 +156,6 @@
             box-shadow: 0 28px 58px rgba(22, 4, 9, 0.34);
         }
 
-        .head {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 14px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid rgba(115, 38, 54, 0.18);
-        }
-
         .head h1 {
             margin: 0;
             font-family: "Space Grotesk", sans-serif;
@@ -177,35 +168,56 @@
             color: var(--muted);
             font-size: 0.87rem;
             line-height: 1.55;
-            max-width: 640px;
+            max-width: 680px;
         }
 
-        .badge {
-            border: 1px solid rgba(122, 17, 41, 0.22);
-            background: var(--accent-soft);
-            color: var(--accent-strong);
-            border-radius: 999px;
-            font-size: 0.76rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            padding: 8px 12px;
-            white-space: nowrap;
-        }
-
-        .status {
+        .flash {
             margin-top: 12px;
-            border-radius: 12px;
             border: 1px solid rgba(122, 17, 41, 0.22);
-            background: rgba(122, 17, 41, 0.09);
+            background: var(--ok-bg);
+            color: var(--ok-text);
+            border-radius: 12px;
             padding: 10px 12px;
-            color: var(--ok);
-            font-size: 0.84rem;
+            font-size: 0.85rem;
             font-weight: 700;
         }
 
+        .toolbar {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #5d3640;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .filter-select {
+            min-width: 220px;
+            min-height: 40px;
+            border: 1px solid rgba(110, 52, 63, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 253, 252, 0.95);
+            color: var(--text);
+            padding: 8px 10px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: rgba(122, 17, 41, 0.46);
+            box-shadow: 0 0 0 4px rgba(122, 17, 41, 0.1);
+        }
+
         .table-wrap {
-            margin-top: 14px;
+            margin-top: 12px;
             border: 1px solid rgba(115, 38, 54, 0.18);
             border-radius: 14px;
             overflow: auto;
@@ -216,104 +228,104 @@
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            min-width: 980px;
+            min-width: 1100px;
         }
 
         th,
         td {
             border-bottom: 1px solid #ecdde1;
-            padding: 10px 12px;
+            padding: 10px 11px;
             text-align: left;
-            font-size: 0.82rem;
-            vertical-align: middle;
-        }
-
-        thead th {
-            position: sticky;
-            top: 0;
-            z-index: 2;
-            background: #f5e8eb;
-            color: #5a2532;
-            font-weight: 800;
+            font-size: 0.81rem;
+            vertical-align: top;
             white-space: nowrap;
         }
 
-        thead th:first-child,
-        tbody td:first-child {
+        th {
             position: sticky;
-            left: 0;
-            z-index: 1;
-            background: #ffffff;
-        }
-
-        thead th:first-child {
-            z-index: 3;
+            top: 0;
             background: #f5e8eb;
-        }
-
-        tbody tr:hover td {
-            background: #fdf6f7;
-        }
-
-        .center {
-            text-align: center;
-        }
-
-        .level-name {
-            min-width: 190px;
-            font-weight: 700;
-            color: #5a2532;
-        }
-
-        input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--accent);
-            cursor: pointer;
-        }
-
-        .form-foot {
-            margin-top: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .menu-note {
-            margin: 0;
-            color: var(--muted);
-            font-size: 0.79rem;
-            line-height: 1.6;
-            max-width: 760px;
-        }
-
-        .btn-save {
-            border: 1px solid #6d0f24;
-            border-radius: 12px;
-            background: linear-gradient(130deg, #a52142 0%, var(--accent) 52%, #4a0615 100%);
-            color: #fff;
             font-weight: 800;
-            font-size: 0.85rem;
-            min-height: 42px;
-            padding: 0 16px;
-            cursor: pointer;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-            box-shadow: 0 14px 24px rgba(84, 9, 24, 0.24);
+            color: #5a2532;
+            z-index: 2;
         }
 
-        .btn-save:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 18px 28px rgba(84, 9, 24, 0.3);
+        td.actions {
+            min-width: 240px;
+        }
+
+        .action-inline {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn {
+            border: 1px solid #b88895;
+            border-radius: 10px;
+            padding: 7px 10px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .btn-restore {
+            background: rgba(122, 17, 41, 0.09);
+            color: #7a1129;
+            border-color: rgba(122, 17, 41, 0.28);
+        }
+
+        .btn-danger {
+            background: rgba(146, 34, 59, 0.12);
+            color: #92223b;
+            border-color: rgba(146, 34, 59, 0.28);
+        }
+
+        tr:hover td {
+            background: #fdf6f7;
         }
 
         .empty {
             text-align: center;
             color: var(--muted);
             padding: 18px;
+        }
+
+        .pagination-wrap {
+            margin-top: 10px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .ajax-pagination-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-btn {
+            display: inline-block;
+            border: 1px solid rgba(122, 17, 41, 0.22);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #7a1129;
+            background: rgba(122, 17, 41, 0.08);
+            text-decoration: none;
+        }
+
+        .page-btn.disabled {
+            color: #9e7d85;
+            background: #f6eff1;
+            border-color: #e2cfd4;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 0.78rem;
+            color: #6b4750;
+            font-weight: 700;
         }
 
         @media (max-width: 1120px) {
@@ -327,7 +339,7 @@
             }
         }
 
-        @media (max-width: 680px) {
+        @media (max-width: 700px) {
             .layout {
                 width: calc(100vw - 16px);
                 margin: 8px auto;
@@ -341,19 +353,6 @@
 
             .main-card {
                 padding: 14px;
-            }
-
-            .head {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .form-foot {
-                align-items: stretch;
-            }
-
-            .btn-save {
-                width: 100%;
             }
         }
     </style>
@@ -410,10 +409,10 @@
                 <a href="{{ route('dashboard.activity-log') }}" class="sidebar-menu-item">Activity Log</a>
                 @endif
                 @if ($canAccessSidebarMenu('restore-data'))
-                <a href="{{ route('dashboard.restore-data') }}" class="sidebar-menu-item">Restore Data</a>
+                <a href="{{ route('dashboard.restore-data') }}" class="sidebar-menu-item active">Restore Data</a>
                 @endif
                 @if ($canAccessSidebarMenu('hak-akses'))
-                <a href="{{ route('dashboard.hak-akses') }}" class="sidebar-menu-item active">Hak Akses</a>
+                <a href="{{ route('dashboard.hak-akses') }}" class="sidebar-menu-item">Hak Akses</a>
                 @endif
                 @if ($canAccessSidebarMenu('settings'))
                 <a href="{{ route('dashboard.settings') }}" class="sidebar-menu-item">Pengaturan</a>
@@ -430,71 +429,104 @@
 
         <section class="main-card">
             <div class="head">
-                <div>
-                    <h1>Hak Akses Sidebar</h1>
-                    <p>Pilih menu sidebar yang boleh diakses tiap level user untuk menjaga dashboard tetap bersih dan sesuai peran.</p>
-                </div>
-                <span class="badge">Role Matrix</span>
+                <h1>Restore Data</h1>
+                <p>Data yang dihapus akan masuk ke sini dan bisa dikembalikan atau dihapus permanen.</p>
             </div>
 
             @if (session('status'))
-                <div class="status">{{ session('status') }}</div>
+                <div class="flash">{{ session('status') }}</div>
             @endif
 
-            <form method="POST" action="{{ route('dashboard.hak-akses.update') }}">
-                @csrf
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Hak Akses</th>
-                                @foreach ($levels as $level)
-                                    <th class="center">{{ $level->levelname ?? ('Level #' . $level->levelid) }}</th>
-                                @endforeach
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($menuOptions as $menuKey => $menuName)
-                                <tr>
-                                    <td class="level-name">{{ $menuName }}</td>
-                                    @forelse ($levels as $level)
-                                        @php
-                                            $isChecked = (bool) ($matrix[$level->levelid][$menuKey] ?? false);
-                                        @endphp
-                                        <td class="center">
-                                            <input
-                                                type="checkbox"
-                                                name="access[{{ $level->levelid }}][]"
-                                                value="{{ $menuKey }}"
-                                                {{ $isChecked ? 'checked' : '' }}
-                                            >
-                                        </td>
-                                    @empty
-                                        <td class="empty">-</td>
-                                    @endforelse
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="{{ 1 + count($levels) }}" class="empty">Data menu hak akses belum tersedia.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+            <div class="toolbar">
+                <label for="entityTypeFilter" class="filter-label">Filter Jenis Data</label>
+                <select id="entityTypeFilter" class="filter-select">
+                    <option value="" {{ ($entityTypeFilter ?? '') === '' ? 'selected' : '' }}>Semua Jenis</option>
+                    <option value="block" {{ ($entityTypeFilter ?? '') === 'block' ? 'selected' : '' }}>Blok</option>
+                    <option value="plot" {{ ($entityTypeFilter ?? '') === 'plot' ? 'selected' : '' }}>Plot</option>
+                    <option value="deceased" {{ ($entityTypeFilter ?? '') === 'deceased' ? 'selected' : '' }}>Almarhum</option>
+                    <option value="family" {{ ($entityTypeFilter ?? '') === 'family' ? 'selected' : '' }}>Kontak Keluarga</option>
+                </select>
+            </div>
 
-                <div class="form-foot">
-                    <p class="menu-note">
-                        Menu <strong>Dashboard</strong>, <strong>Akun</strong>, dan <strong>Logout</strong> selalu wajib tersedia saat login, jadi tidak dimasukkan ke tabel hak akses.
-                    </p>
-                    <button type="submit" class="btn-save">Simpan Hak Akses</button>
-                </div>
-            </form>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Jam</th>
+                            <th>Username</th>
+                            <th>IP Address</th>
+                            <th>Longitude</th>
+                            <th>Latitude</th>
+                            <th>Jenis Data</th>
+                            <th>Data</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="restoreDataBody">@include('partials.restore-data-rows', ['items' => $items])</tbody>
+                </table>
+            </div>
+            <div class="pagination-wrap" id="restoreDataPagination">@include('partials.ajax-pagination', ['paginator' => $items])</div>
         </section>
     </main>
+    <script>
+        (function () {
+            const tbody = document.getElementById('restoreDataBody');
+            const pagination = document.getElementById('restoreDataPagination');
+            const filter = document.getElementById('entityTypeFilter');
+            if (!tbody || !pagination || !filter) {
+                return;
+            }
+
+            async function loadData(url) {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                });
+                if (!response.ok) {
+                    return;
+                }
+                const payload = await response.json();
+                if (typeof payload.tbody === 'string') {
+                    tbody.innerHTML = payload.tbody;
+                }
+                if (typeof payload.pagination === 'string') {
+                    pagination.innerHTML = payload.pagination;
+                }
+                window.history.replaceState({}, '', url);
+            }
+
+            function currentBaseUrl() {
+                return '{{ route('dashboard.restore-data') }}';
+            }
+
+            function buildUrl(page = 1) {
+                const url = new URL(currentBaseUrl(), window.location.origin);
+                const entityType = filter.value.trim();
+                if (entityType !== '') {
+                    url.searchParams.set('entity_type', entityType);
+                }
+                if (page > 1) {
+                    url.searchParams.set('page', String(page));
+                }
+                return url.toString();
+            }
+
+            pagination.addEventListener('click', (event) => {
+                const link = event.target.closest('a.page-btn');
+                if (!link) {
+                    return;
+                }
+                event.preventDefault();
+                loadData(link.href);
+            });
+
+            filter.addEventListener('change', () => {
+                loadData(buildUrl(1));
+            });
+        })();
+    </script>
 </body>
 </html>
-
-
-
-
-

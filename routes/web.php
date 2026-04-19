@@ -19,6 +19,9 @@ Route::put('/dashboard/data-almarhum/{deceased}', [HomeController::class, 'updat
 Route::delete('/dashboard/data-almarhum/{deceased}', [HomeController::class, 'destroyDataAlmarhum'])->name('dashboard.data-almarhum.destroy');
 Route::get('/dashboard/data-user', [HomeController::class, 'dataUser'])->name('dashboard.data-user');
 Route::get('/dashboard/activity-log', [HomeController::class, 'activityLog'])->name('dashboard.activity-log');
+Route::get('/dashboard/restore-data', [HomeController::class, 'restoreData'])->name('dashboard.restore-data');
+Route::post('/dashboard/restore-data/{restoreid}/restore', [HomeController::class, 'restoreDataItem'])->name('dashboard.restore-data.restore');
+Route::delete('/dashboard/restore-data/{restoreid}/force-delete', [HomeController::class, 'forceDeleteRestoreDataItem'])->name('dashboard.restore-data.force-delete');
 Route::get('/dashboard/hak-akses', [HomeController::class, 'hakAkses'])->name('dashboard.hak-akses');
 Route::post('/dashboard/hak-akses', [HomeController::class, 'updateHakAkses'])->name('dashboard.hak-akses.update');
 Route::post('/dashboard/data-user', [HomeController::class, 'storeUser'])->name('dashboard.data-user.store');

@@ -5,69 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Activity Log</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@600;700&display=swap');
 
         :root {
-            --bg: #edf3f1;
-            --card: #ffffff;
-            --line: #d2dfda;
-            --text: #163036;
-            --muted: #657c81;
+            --bg-top: #2c0915;
+            --bg-bottom: #080306;
+            --shell-line: rgba(255, 225, 230, 0.14);
+            --card-bg: rgba(247, 239, 236, 0.98);
+            --card-line: rgba(115, 38, 54, 0.2);
+            --text: #2b1017;
+            --muted: #77525b;
+            --sidebar-bg: rgba(28, 7, 14, 0.88);
+            --sidebar-line: rgba(255, 231, 235, 0.14);
+            --sidebar-text: #fff2ee;
+            --sidebar-muted: #dfbec3;
+            --brand: #7a1129;
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         body {
             margin: 0;
-            font-family: "DM Sans", sans-serif;
+            font-family: "Manrope", sans-serif;
             color: var(--text);
             background:
-                radial-gradient(800px 420px at 0% -10%, #d8e8e2 0%, transparent 60%),
-                radial-gradient(800px 420px at 100% 110%, #dce9e4 0%, transparent 60%),
-                var(--bg);
+                radial-gradient(920px 520px at -8% -10%, rgba(170, 44, 73, 0.4) 0%, transparent 58%),
+                radial-gradient(760px 440px at 106% 110%, rgba(124, 18, 43, 0.4) 0%, transparent 64%),
+                linear-gradient(180deg, var(--bg-top) 0%, #14070d 45%, var(--bg-bottom) 100%);
         }
 
         .layout {
             display: grid;
-            grid-template-columns: 290px 1fr;
+            grid-template-columns: 300px minmax(0, 1fr);
             min-height: 100vh;
-            gap: 12px;
-            width: min(1320px, 96vw);
-            margin: 12px auto;
+            gap: 14px;
+            width: min(1360px, calc(100vw - 28px));
+            margin: 14px auto;
         }
 
-        .sidebar, .main-card {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 16px;
-            box-shadow: 0 12px 24px rgba(14, 40, 44, .08);
+        .sidebar,
+        .main-card {
+            border-radius: 22px;
+            border: 1px solid var(--shell-line);
+            overflow: hidden;
         }
 
         .sidebar {
-            padding: 14px;
+            padding: 16px;
             display: grid;
             grid-template-rows: auto auto 1fr auto;
-            gap: 12px;
-            max-height: calc(100vh - 24px);
+            gap: 14px;
+            max-height: calc(100vh - 28px);
             position: sticky;
-            top: 12px;
+            top: 14px;
+            background:
+                linear-gradient(180deg, rgba(255, 241, 243, 0.08), rgba(255, 241, 243, 0) 22%),
+                var(--sidebar-bg);
+            box-shadow: 0 26px 54px rgba(22, 4, 9, 0.4);
+            backdrop-filter: blur(8px);
         }
 
         .logo {
             margin: 0;
             font-family: "Space Grotesk", sans-serif;
-            font-size: 1.05rem;
+            font-size: 1.02rem;
+            letter-spacing: 0.03em;
+            color: var(--sidebar-text);
         }
 
         .user-box {
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 10px;
-            background: #f8fcfa;
-            font-size: .82rem;
+            border: 1px solid var(--sidebar-line);
+            border-radius: 14px;
+            padding: 11px 12px;
+            background: rgba(255, 241, 243, 0.08);
+            color: var(--sidebar-muted);
+            font-size: 0.8rem;
         }
 
-        .user-box strong { display: block; font-size: .92rem; margin-top: 3px; }
+        .user-box strong {
+            display: block;
+            margin-top: 3px;
+            font-size: 0.92rem;
+            color: var(--sidebar-text);
+        }
 
         .sidebar-menu {
             display: grid;
@@ -82,87 +104,113 @@
 
         .sidebar-menu-item {
             display: block;
-            border: 1px solid #d8e4df;
-            border-radius: 10px;
-            padding: 10px;
-            background: #fbfdfc;
-            color: var(--text);
+            border: 1px solid var(--sidebar-line);
+            border-radius: 12px;
+            padding: 10px 12px;
+            background: rgba(255, 241, 243, 0.05);
+            color: var(--sidebar-text);
             text-decoration: none;
             font-weight: 700;
-            font-size: .88rem;
+            font-size: 0.86rem;
+            transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+        }
+
+        .sidebar-menu-item:hover {
+            transform: translateX(2px);
+            background: rgba(255, 241, 243, 0.12);
+            border-color: rgba(255, 241, 243, 0.28);
         }
 
         .sidebar-menu-item.active {
-            border-color: #9cc3b8;
-            background: #eaf4f0;
-            color: #175347;
+            border-color: rgba(255, 188, 199, 0.7);
+            background: rgba(122, 17, 41, 0.38);
+            color: #fff7f4;
         }
 
         .logout-btn {
             width: 100%;
             min-height: 42px;
-            border: 1px solid #bbcfca;
-            border-radius: 10px;
-            background: #eef6f3;
-            color: #184e43;
+            border: 1px solid rgba(255, 241, 243, 0.24);
+            border-radius: 12px;
+            background: rgba(255, 241, 243, 0.08);
+            color: var(--sidebar-text);
             font-weight: 700;
             cursor: pointer;
+            transition: background-color 0.16s ease, border-color 0.16s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 241, 243, 0.14);
+            border-color: rgba(255, 241, 243, 0.38);
         }
 
         .main-card {
-            padding: 14px;
+            padding: 20px;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0) 24%),
+                var(--card-bg);
+            border-color: var(--card-line);
+            box-shadow: 0 28px 58px rgba(22, 4, 9, 0.34);
         }
 
         .head h1 {
             margin: 0;
             font-family: "Space Grotesk", sans-serif;
-            font-size: 1.35rem;
+            font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+            letter-spacing: -0.01em;
         }
 
         .head p {
-            margin: 6px 0 0;
+            margin: 8px 0 0;
             color: var(--muted);
-            font-size: .84rem;
+            font-size: 0.87rem;
+            line-height: 1.55;
+            max-width: 680px;
         }
 
         .table-wrap {
             margin-top: 12px;
-            border: 1px solid var(--line);
-            border-radius: 12px;
+            border: 1px solid rgba(115, 38, 54, 0.18);
+            border-radius: 14px;
             overflow: auto;
             background: #fff;
         }
 
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             min-width: 1100px;
         }
 
-        th, td {
-            border-bottom: 1px solid #e3ece8;
-            padding: 10px;
+        th,
+        td {
+            border-bottom: 1px solid #ecdde1;
+            padding: 10px 11px;
             text-align: left;
-            font-size: .82rem;
+            font-size: 0.81rem;
             vertical-align: top;
         }
 
         th {
-            background: #f6fbf9;
-            font-weight: 700;
-            color: #27464d;
+            position: sticky;
+            top: 0;
+            background: #f5e8eb;
+            font-weight: 800;
+            color: #5a2532;
             white-space: nowrap;
+            z-index: 2;
         }
 
         td.detail {
             max-width: 360px;
             white-space: normal;
             word-break: break-word;
-            color: #425d63;
+            color: #6a4851;
         }
 
         tr:hover td {
-            background: #fbfefd;
+            background: #fdf6f7;
         }
 
         .empty {
@@ -171,9 +219,69 @@
             padding: 18px;
         }
 
-        @media (max-width: 1080px) {
-            .layout { grid-template-columns: 1fr; }
-            .sidebar { position: static; max-height: none; }
+        .pagination-wrap {
+            margin-top: 10px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .ajax-pagination-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-btn {
+            display: inline-block;
+            border: 1px solid rgba(122, 17, 41, 0.22);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #7a1129;
+            background: rgba(122, 17, 41, 0.08);
+            text-decoration: none;
+        }
+
+        .page-btn.disabled {
+            color: #9e7d85;
+            background: #f6eff1;
+            border-color: #e2cfd4;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 0.78rem;
+            color: #6b4750;
+            font-weight: 700;
+        }
+
+        @media (max-width: 1120px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .layout {
+                width: calc(100vw - 16px);
+                margin: 8px auto;
+                gap: 10px;
+            }
+
+            .main-card,
+            .sidebar {
+                border-radius: 16px;
+            }
+
+            .main-card {
+                padding: 14px;
+            }
         }
     </style>
 </head>
@@ -182,7 +290,7 @@
         <aside class="sidebar">
             <h2 class="logo">Dashboard Kuburan</h2>
             <div class="user-box">
-                Login sebagai
+                Login sebagai 
                 <strong>{{ $authUser['username'] ?? 'user' }}</strong>
             </div>
             @php
@@ -229,7 +337,7 @@
                 <a href="{{ route('dashboard.activity-log') }}" class="sidebar-menu-item active">Activity Log</a>
                 @endif
                 @if ($canAccessSidebarMenu('restore-data'))
-                <a href="#" class="sidebar-menu-item">Restore Data</a>
+                <a href="{{ route('dashboard.restore-data') }}" class="sidebar-menu-item">Restore Data</a>
                 @endif
                 @if ($canAccessSidebarMenu('hak-akses'))
                 <a href="{{ route('dashboard.hak-akses') }}" class="sidebar-menu-item">Hak Akses</a>
@@ -268,33 +376,52 @@
                             <th>Detail</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @forelse ($logs as $log)
-                            <tr>
-                                <td>{{ $log['tanggal'] }}</td>
-                                <td>{{ $log['jam'] }}</td>
-                                <td>{{ $log['nama'] }}</td>
-                                <td>{{ $log['username'] }}</td>
-                                <td>{{ $log['ip_address'] }}</td>
-                                <td>{{ $log['longitude'] }}</td>
-                                <td>{{ $log['latitude'] }}</td>
-                                <td>{{ $log['aksi'] }}</td>
-                                <td class="detail">{{ $log['detail'] }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="9" class="empty">Belum ada data activity log.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
+                    <tbody id="activityLogBody">@include('partials.activity-log-rows', ['logs' => $logs])</tbody>
                 </table>
             </div>
+            <div class="pagination-wrap" id="activityLogPagination">@include('partials.ajax-pagination', ['paginator' => $logs])</div>
         </section>
     </main>
+    <script>
+        (function () {
+            const tbody = document.getElementById('activityLogBody');
+            const pagination = document.getElementById('activityLogPagination');
+            if (!tbody || !pagination) {
+                return;
+            }
+
+            async function loadPage(url) {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                });
+                if (!response.ok) {
+                    return;
+                }
+                const payload = await response.json();
+                if (typeof payload.tbody === 'string') {
+                    tbody.innerHTML = payload.tbody;
+                }
+                if (typeof payload.pagination === 'string') {
+                    pagination.innerHTML = payload.pagination;
+                }
+                window.history.replaceState({}, '', url);
+            }
+
+            pagination.addEventListener('click', (event) => {
+                const link = event.target.closest('a.page-btn');
+                if (!link) {
+                    return;
+                }
+                event.preventDefault();
+                loadPage(link.href);
+            });
+        })();
+    </script>
 </body>
 </html>
-
-
 
 
 

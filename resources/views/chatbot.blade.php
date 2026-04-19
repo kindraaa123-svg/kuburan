@@ -6,16 +6,17 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Chatbot - {{ $setting->systemname ?: 'Denah Kuburan' }}</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap');
 
         :root {
-            --bg: #eef3f1;
-            --card: #ffffff;
-            --line: #d6e2de;
-            --text: #132a2f;
-            --muted: #5e7277;
-            --brand: #1f7a67;
-            --brand-soft: #e5f4ef;
+            --bg-top: #2c0915;
+            --bg-bottom: #080306;
+            --card: rgba(247, 239, 236, 0.98);
+            --line: rgba(115, 38, 54, 0.2);
+            --text: #2b1017;
+            --muted: #77525b;
+            --brand: #7a1129;
+            --brand-soft: rgba(122, 17, 41, 0.1);
         }
 
         * {
@@ -24,16 +25,16 @@
 
         body {
             margin: 0;
-            font-family: "DM Sans", sans-serif;
+            font-family: "Manrope", sans-serif;
             background:
-                radial-gradient(900px 500px at 5% -10%, #d2e8e0 0%, transparent 60%),
-                radial-gradient(800px 500px at 105% 0%, #e0ede8 0%, transparent 60%),
-                var(--bg);
+                radial-gradient(920px 520px at -8% -10%, rgba(170, 44, 73, 0.4) 0%, transparent 58%),
+                radial-gradient(760px 440px at 106% 110%, rgba(124, 18, 43, 0.4) 0%, transparent 64%),
+                linear-gradient(180deg, var(--bg-top) 0%, #14070d 45%, var(--bg-bottom) 100%);
             color: var(--text);
         }
 
         .shell {
-            width: min(960px, 94vw);
+            width: min(960px, calc(100vw - 28px));
             margin: 24px auto;
         }
 
@@ -49,6 +50,7 @@
             margin: 0;
             font-family: "Space Grotesk", sans-serif;
             font-size: clamp(1.3rem, 2.8vw, 1.9rem);
+            color: #fff2ee;
         }
 
         .back-link {
@@ -58,9 +60,9 @@
             min-height: 36px;
             padding: 0 12px;
             border-radius: 10px;
-            border: 1px solid #bcd1c9;
-            background: #fff;
-            color: #17353c;
+            border: 1px solid rgba(255, 231, 235, 0.24);
+            background: rgba(255, 241, 243, 0.08);
+            color: #fff2ee;
             text-decoration: none;
             font-weight: 700;
             font-size: .88rem;
@@ -70,14 +72,14 @@
             border: 1px solid var(--line);
             border-radius: 16px;
             background: var(--card);
-            box-shadow: 0 10px 24px rgba(16, 41, 48, 0.08);
+            box-shadow: 0 24px 48px rgba(22, 4, 9, 0.24);
             overflow: hidden;
         }
 
         .chat-head {
             padding: 12px 14px;
             border-bottom: 1px solid var(--line);
-            background: #f8fcfa;
+            background: rgba(255, 255, 255, 0.7);
         }
 
         .chat-head p {
@@ -93,7 +95,7 @@
             display: grid;
             gap: 10px;
             align-content: start;
-            background: linear-gradient(180deg, #f9fcfb 0%, #ffffff 100%);
+            background: linear-gradient(180deg, #fdf6f7 0%, #ffffff 100%);
         }
 
         .bubble {
@@ -107,14 +109,15 @@
 
         .bubble.bot {
             background: var(--brand-soft);
-            border-color: #c8e2da;
+            border-color: rgba(122, 17, 41, 0.26);
             justify-self: start;
         }
 
         .bubble.user {
-            background: #f3f6ff;
-            border-color: #d4def3;
+            background: rgba(122, 17, 41, 0.08);
+            border-color: rgba(122, 17, 41, 0.22);
             justify-self: end;
+            color: #5a2532;
         }
 
         .chat-form {
@@ -129,18 +132,25 @@
             flex: 1;
             min-height: 42px;
             border-radius: 10px;
-            border: 1px solid #c7d8d2;
+            border: 1px solid rgba(110, 52, 63, 0.2);
             padding: 0 12px;
             font-family: inherit;
             font-size: .9rem;
+            color: var(--text);
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: rgba(122, 17, 41, 0.46);
+            box-shadow: 0 0 0 4px rgba(122, 17, 41, 0.1);
         }
 
         .chat-send {
             min-height: 42px;
             padding: 0 14px;
             border-radius: 10px;
-            border: 1px solid #0f5d4e;
-            background: var(--brand);
+            border: 1px solid #6d0f24;
+            background: linear-gradient(130deg, #a52142 0%, var(--brand) 52%, #4a0615 100%);
             color: #fff;
             font-weight: 700;
             cursor: pointer;

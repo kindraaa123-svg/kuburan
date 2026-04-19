@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Block;
 use App\Models\Deceased;
+use App\Models\Facility;
 use App\Models\GravePlot;
 use App\Models\LegacyUser;
 use App\Models\SystemSetting;
@@ -23,11 +24,13 @@ class HomeController extends Controller
 {
     public function index(Request $request): View
     {
-        $data = $this->buildDashboardData(true);
+        $data = $this->buildDashboardData();
+        $facilityData = $this->buildFacilityData();
         $setting = $this->resolveSystemSetting();
 
         return view('home', [
             ...$data,
+            ...$facilityData,
             'setting' => $setting,
             'authUser' => $request->session()->get('auth_user'),
         ]);
@@ -66,9 +69,11 @@ class HomeController extends Controller
 
         $data = $this->buildDashboardData();
         $setting = $this->resolveSystemSetting();
+        $facilityData = $this->buildFacilityData();
 
         return view('dashboard', [
             ...$data,
+            ...$facilityData,
             'setting' => $setting,
             'authUser' => $request->session()->get('auth_user'),
         ]);
@@ -717,9 +722,20 @@ class HomeController extends Controller
             ->select(['deceasedid', 'plotid', 'full_name'])
             ->find((int) ($family->deceased_id ?? 0));
 
-        DB::table('families')
-            ->where('familyid', $familyid)
-            ->delete();
+        DB::transaction(function () use ($request, $family, $familyid): void {
+            $familyPayload = (array) $family;
+            $this->archiveDeletedData(
+                $request,
+                'family',
+                (int) $familyid,
+                'Kontak keluarga "' . ((string) ($family->family_name ?? '-')) . '"',
+                $familyPayload
+            );
+
+            DB::table('families')
+                ->where('familyid', $familyid)
+                ->delete();
+        });
 
         $detail = 'Menghapus kontak keluarga #' . (int) $familyid . ' "' . ((string) ($family->family_name ?? '-')) . '"';
         if ($deceased) {
@@ -1011,11 +1027,17 @@ class HomeController extends Controller
         $deceasedId = (int) $deceased->deceasedid;
         $deceasedName = (string) $deceased->full_name;
         $photoPath = $deceased->photo_url;
-        $deceased->delete();
+        DB::transaction(function () use ($request, $deceased, $deceasedId, $deceasedName, $plotId): void {
+            $this->archiveDeletedData(
+                $request,
+                'deceased',
+                $deceasedId,
+                'Almarhum "' . $deceasedName . '" (plot #' . $plotId . ')',
+                $deceased->getAttributes()
+            );
 
-        if ($photoPath && ! Str::startsWith($photoPath, ['http://', 'https://', '/'])) {
-            Storage::disk('public')->delete($photoPath);
-        }
+            $deceased->delete();
+        });
 
         $stillOccupied = Deceased::query()->where('plotid', $plotId)->exists();
         if (! $stillOccupied) {
@@ -1137,7 +1159,7 @@ class HomeController extends Controller
         ]);
     }
 
-    public function activityLog(Request $request): View|RedirectResponse
+    public function activityLog(Request $request): View|RedirectResponse|JsonResponse
     {
         if (! $request->session()->has('auth_user')) {
             return redirect('/login')
@@ -1152,21 +1174,26 @@ class HomeController extends Controller
 
         if (Schema::hasTable('activity_logs')) {
             $timezone = config('app.timezone', 'Asia/Jakarta');
-            $logs = DB::table('activity_logs')
+            $logsQuery = DB::table('activity_logs')
                 ->select([
-                    'name',
-                    'username',
-                    'ip_address',
-                    'longitude',
-                    'latitude',
-                    'action',
-                    'detail',
-                    'created_at',
-                ])
-                ->orderByDesc('created_at')
-                ->limit(300)
-                ->get()
-                ->map(function ($row) use ($timezone) {
+                    'activity_logs.name',
+                    'activity_logs.username',
+                    'activity_logs.ip_address',
+                    'activity_logs.longitude',
+                    'activity_logs.latitude',
+                    'activity_logs.action',
+                    'activity_logs.detail',
+                    'activity_logs.created_at',
+                ]);
+
+            $this->applyActivityLogVisibilityFilter($request, $logsQuery);
+
+            $logs = $logsQuery
+                ->orderByDesc('activity_logs.created_at')
+                ->paginate(20)
+                ->withQueryString();
+
+            $logs->getCollection()->transform(function ($row) use ($timezone) {
                     $timestamp = $row->created_at
                         ? Carbon::parse((string) $row->created_at)->setTimezone($timezone)
                         : null;
@@ -1185,10 +1212,309 @@ class HomeController extends Controller
                 });
         }
 
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'tbody' => view('partials.activity-log-rows', ['logs' => $logs])->render(),
+                'pagination' => view('partials.ajax-pagination', ['paginator' => $logs])->render(),
+            ]);
+        }
+
         return view('activity-log', [
             'authUser' => $request->session()->get('auth_user'),
             'logs' => $logs,
         ]);
+    }
+
+    public function restoreData(Request $request): View|RedirectResponse|JsonResponse
+    {
+        if (! $request->session()->has('auth_user')) {
+            return redirect('/login')
+                ->with('status', 'Silakan login terlebih dahulu.');
+        }
+        if (! $this->canAccessMenu($request, 'restore-data')) {
+            return redirect()->route('dashboard')
+                ->with('status', 'Hak akses ke menu Restore Data tidak tersedia.');
+        }
+
+        $rows = collect();
+        $entityTypeFilter = trim((string) $request->query('entity_type', ''));
+        $allowedEntityTypes = ['block', 'plot', 'deceased', 'family'];
+        if (! in_array($entityTypeFilter, $allowedEntityTypes, true)) {
+            $entityTypeFilter = '';
+        }
+
+        if ($this->hasUsableTable('restore_data')) {
+            try {
+                $timezone = config('app.timezone', 'Asia/Jakarta');
+                $query = DB::table('restore_data')
+                    ->select([
+                        'restoreid',
+                        'entity_type',
+                        'entity_id',
+                        'entity_label',
+                        'deleted_by_username',
+                        'ip_address',
+                        'longitude',
+                        'latitude',
+                        'deleted_at',
+                    ]);
+
+                if ($entityTypeFilter !== '') {
+                    $query->where('entity_type', $entityTypeFilter);
+                }
+
+                $rows = $query
+                    ->orderByDesc('deleted_at')
+                    ->orderByDesc('restoreid')
+                    ->paginate(20)
+                    ->withQueryString();
+
+                $rows->getCollection()->transform(function ($row) use ($timezone) {
+                        $timestamp = $row->deleted_at
+                            ? Carbon::parse((string) $row->deleted_at)->setTimezone($timezone)
+                            : null;
+
+                        return [
+                            'id' => (int) ($row->restoreid ?? 0),
+                            'tanggal' => $timestamp?->format('d-m-Y') ?? '-',
+                            'jam' => $timestamp?->format('H:i:s') ?? '-',
+                            'username' => $row->deleted_by_username ?: '-',
+                            'ip_address' => $row->ip_address ?: '-',
+                            'longitude' => $row->longitude ?: '-',
+                            'latitude' => $row->latitude ?: '-',
+                            'jenis' => $this->restoreEntityTypeLabel((string) ($row->entity_type ?? '')),
+                            'data' => $row->entity_label ?: ('ID ' . ((string) ($row->entity_id ?? '-'))),
+                        ];
+                    });
+            } catch (\Throwable $e) {
+                if (! $this->isUnavailableTableException($e, 'restore_data')) {
+                    throw $e;
+                }
+
+                report($e);
+            }
+        }
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'tbody' => view('partials.restore-data-rows', ['items' => $rows])->render(),
+                'pagination' => view('partials.ajax-pagination', ['paginator' => $rows])->render(),
+            ]);
+        }
+
+        return view('restore-data', [
+            'authUser' => $request->session()->get('auth_user'),
+            'items' => $rows,
+            'entityTypeFilter' => $entityTypeFilter,
+        ]);
+    }
+
+    public function restoreDataItem(Request $request, int $restoreid): JsonResponse|RedirectResponse
+    {
+        if (! $request->session()->has('auth_user')) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Silakan login terlebih dahulu.'], 401);
+            }
+
+            return redirect('/login')
+                ->with('status', 'Silakan login terlebih dahulu.');
+        }
+        if (! $this->canAccessMenu($request, 'restore-data')) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Hak akses ke menu Restore Data tidak tersedia.'], 403);
+            }
+
+            return redirect()->route('dashboard')
+                ->with('status', 'Hak akses ke menu Restore Data tidak tersedia.');
+        }
+        if (! $this->hasUsableTable('restore_data')) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Tabel restore data belum tersedia.'], 422);
+            }
+
+            return redirect()->route('dashboard.restore-data')
+                ->with('status', 'Tabel restore data belum tersedia.');
+        }
+
+        try {
+            $item = DB::table('restore_data')
+                ->where('restoreid', $restoreid)
+                ->first();
+        } catch (\Throwable $e) {
+            if (! $this->isUnavailableTableException($e, 'restore_data')) {
+                throw $e;
+            }
+
+            report($e);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Tabel restore data belum tersedia.'], 422);
+            }
+
+            return redirect()->route('dashboard.restore-data')
+                ->with('status', 'Tabel restore data belum tersedia.');
+        }
+
+        if (! $item) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Data restore tidak ditemukan.'], 404);
+            }
+
+            return redirect()->route('dashboard.restore-data')
+                ->with('status', 'Data restore tidak ditemukan.');
+        }
+
+        $payload = json_decode((string) ($item->payload ?? '{}'), true);
+        if (! is_array($payload)) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Payload restore tidak valid.'], 422);
+            }
+
+            return redirect()->route('dashboard.restore-data')
+                ->with('status', 'Payload restore tidak valid.');
+        }
+
+        [$ok, $message] = $this->performRestoreEntity((string) ($item->entity_type ?? ''), $payload);
+        if (! $ok) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => $message], 422);
+            }
+
+            return redirect()->route('dashboard.restore-data')
+                ->with('status', $message);
+        }
+
+        try {
+            DB::table('restore_data')
+                ->where('restoreid', (int) $item->restoreid)
+                ->delete();
+        } catch (\Throwable $e) {
+            if (! $this->isUnavailableTableException($e, 'restore_data')) {
+                throw $e;
+            }
+
+            report($e);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Tabel restore data belum tersedia.'], 422);
+            }
+
+            return redirect()->route('dashboard.restore-data')
+                ->with('status', 'Tabel restore data belum tersedia.');
+        }
+
+        $this->writeActivityLog(
+            $request,
+            'Restore Data',
+            'Mengembalikan data ' . $this->restoreEntityTypeLabel((string) ($item->entity_type ?? '')) . ' (' . ($item->entity_label ?: ('ID ' . ($item->entity_id ?? '-'))) . ').'
+        );
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Data berhasil dikembalikan.']);
+        }
+
+        return redirect()->route('dashboard.restore-data')
+            ->with('status', 'Data berhasil dikembalikan.');
+    }
+
+    public function forceDeleteRestoreDataItem(Request $request, int $restoreid): JsonResponse|RedirectResponse
+    {
+        if (! $request->session()->has('auth_user')) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Silakan login terlebih dahulu.'], 401);
+            }
+
+            return redirect('/login')
+                ->with('status', 'Silakan login terlebih dahulu.');
+        }
+        if (! $this->canAccessMenu($request, 'restore-data')) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Hak akses ke menu Restore Data tidak tersedia.'], 403);
+            }
+
+            return redirect()->route('dashboard')
+                ->with('status', 'Hak akses ke menu Restore Data tidak tersedia.');
+        }
+        if (! $this->hasUsableTable('restore_data')) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Tabel restore data belum tersedia.'], 422);
+            }
+
+            return redirect()->route('dashboard.restore-data')
+                ->with('status', 'Tabel restore data belum tersedia.');
+        }
+
+        try {
+            $item = DB::table('restore_data')
+                ->where('restoreid', $restoreid)
+                ->first();
+        } catch (\Throwable $e) {
+            if (! $this->isUnavailableTableException($e, 'restore_data')) {
+                throw $e;
+            }
+
+            report($e);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Tabel restore data belum tersedia.'], 422);
+            }
+
+            return redirect()->route('dashboard.restore-data')
+                ->with('status', 'Tabel restore data belum tersedia.');
+        }
+
+        if (! $item) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Data restore tidak ditemukan.'], 404);
+            }
+
+            return redirect()->route('dashboard.restore-data')
+                ->with('status', 'Data restore tidak ditemukan.');
+        }
+
+        $payload = json_decode((string) ($item->payload ?? '{}'), true);
+        if (
+            is_array($payload)
+            && (string) ($item->entity_type ?? '') === 'deceased'
+            && isset($payload['photo_url'])
+            && is_string($payload['photo_url'])
+            && $payload['photo_url'] !== ''
+            && ! Str::startsWith($payload['photo_url'], ['http://', 'https://', '/'])
+        ) {
+            Storage::disk('public')->delete($payload['photo_url']);
+        }
+
+        try {
+            DB::table('restore_data')
+                ->where('restoreid', (int) $item->restoreid)
+                ->delete();
+        } catch (\Throwable $e) {
+            if (! $this->isUnavailableTableException($e, 'restore_data')) {
+                throw $e;
+            }
+
+            report($e);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Tabel restore data belum tersedia.'], 422);
+            }
+
+            return redirect()->route('dashboard.restore-data')
+                ->with('status', 'Tabel restore data belum tersedia.');
+        }
+
+        $this->writeActivityLog(
+            $request,
+            'Hapus Permanen Restore Data',
+            'Menghapus permanen arsip ' . $this->restoreEntityTypeLabel((string) ($item->entity_type ?? '')) . ' (' . ($item->entity_label ?: ('ID ' . ($item->entity_id ?? '-'))) . ').'
+        );
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Data arsip berhasil dihapus permanen.']);
+        }
+
+        return redirect()->route('dashboard.restore-data')
+            ->with('status', 'Data arsip berhasil dihapus permanen.');
     }
 
     public function hakAkses(Request $request): View|RedirectResponse
@@ -1814,7 +2140,17 @@ class HomeController extends Controller
                 ->with('status', $message);
         }
 
-        $plot->delete();
+        DB::transaction(function () use ($request, $plot, $plotId, $blockId, $plotNumber): void {
+            $this->archiveDeletedData(
+                $request,
+                'plot',
+                $plotId,
+                'Plot #' . $plotId . ' (blok #' . $blockId . ', nomor "' . $plotNumber . '")',
+                $plot->getAttributes()
+            );
+
+            $plot->delete();
+        });
 
         $totalPlots = GravePlot::query()
             ->where('block_id', $blockId)
@@ -2047,12 +2383,32 @@ class HomeController extends Controller
                 ->with('status', 'Kolom posisi denah belum tersedia.');
         }
 
-        $validated = $request->validate([
+        $rules = [
             'blocks' => ['required', 'array', 'min:1'],
             'blocks.*.id' => ['required', 'integer', 'exists:blocks,blockid'],
             'blocks.*.x' => ['required', 'integer'],
             'blocks.*.y' => ['required', 'integer'],
-        ]);
+        ];
+
+        $facilityMapStorage = $this->resolveFacilityMapStorage();
+        if (Schema::hasTable('facility') && $facilityMapStorage !== 'none') {
+            $rules['facility_items'] = ['nullable', 'array'];
+            $rules['facility_items.*.id'] = $facilityMapStorage === 'place'
+                ? ['nullable', 'integer', 'exists:place,placeid']
+                : ['nullable', 'integer', 'exists:facility_map_items,facility_map_itemid'];
+            $rules['facility_items.*.facility_id'] = ['nullable', 'integer', 'min:0'];
+            $rules['facility_items.*.item_type'] = ['nullable', 'string', Rule::in(['icon', 'scene'])];
+            $rules['facility_items.*.scene_object_key'] = ['nullable', 'string', 'max:120'];
+            $rules['facility_items.*.x'] = ['required', 'integer'];
+            $rules['facility_items.*.y'] = ['required', 'integer'];
+            $rules['facility_items.*.width'] = ['nullable', 'integer', 'min:1', 'max:3000'];
+            $rules['facility_items.*.height'] = ['nullable', 'integer', 'min:1', 'max:3000'];
+            $rules['facility_items.*.rotation'] = ['nullable', 'numeric', 'min:-360', 'max:360'];
+            $rules['facility_items.*.is_removed'] = ['nullable', 'boolean'];
+            $rules['facility_items.*.is_fixed'] = ['nullable', 'boolean'];
+        }
+
+        $validated = $request->validate($rules);
 
         $incomingPositions = collect($validated['blocks'])
             ->map(fn (array $item) => [
@@ -2076,7 +2432,54 @@ class HomeController extends Controller
             ],
         ]);
 
-        DB::transaction(function () use ($incomingPositions, $targetBlocks): void {
+        $facilityItemsPayload = collect($validated['facility_items'] ?? [])
+            ->map(fn (array $item) => [
+                'id' => isset($item['id']) ? (int) $item['id'] : null,
+                'facility_id' => (int) ($item['facility_id'] ?? 0),
+                'item_type' => in_array((string) ($item['item_type'] ?? 'icon'), ['icon', 'scene'], true)
+                    ? (string) ($item['item_type'] ?? 'icon')
+                    : 'icon',
+                'scene_object_key' => isset($item['scene_object_key']) ? trim((string) $item['scene_object_key']) : null,
+                'x' => (int) ($item['x'] ?? 0),
+                'y' => (int) ($item['y'] ?? 0),
+                'width' => isset($item['width']) && (int) $item['width'] > 0 ? (int) $item['width'] : null,
+                'height' => isset($item['height']) && (int) $item['height'] > 0 ? (int) $item['height'] : null,
+                'rotation' => isset($item['rotation']) ? (float) $item['rotation'] : null,
+                'is_removed' => (bool) ($item['is_removed'] ?? false),
+                'is_fixed' => (bool) ($item['is_fixed'] ?? false),
+            ])
+            ->filter(function (array $item): bool {
+                if (! $item['is_fixed']) {
+                    return false;
+                }
+
+                if (($item['item_type'] ?? 'icon') === 'scene') {
+                    return ($item['scene_object_key'] ?? null) !== null;
+                }
+
+                return $item['facility_id'] > 0;
+            })
+            ->values();
+
+        $facilityChanges = [];
+        $savedFacilityItemStates = [];
+        $savedSceneItemStates = [];
+        $hasPlaceWidth = $facilityMapStorage === 'place' && Schema::hasColumn('place', 'map_width');
+        $hasPlaceHeight = $facilityMapStorage === 'place' && Schema::hasColumn('place', 'map_height');
+        $hasPlaceRotation = $facilityMapStorage === 'place' && Schema::hasColumn('place', 'map_rotation');
+        $hasPlaceItemType = $facilityMapStorage === 'place' && Schema::hasColumn('place', 'item_type');
+        $hasPlaceSceneKey = $facilityMapStorage === 'place' && Schema::hasColumn('place', 'scene_object_key');
+        $hasPlaceIsRemoved = $facilityMapStorage === 'place' && Schema::hasColumn('place', 'is_removed');
+        $facilityMapItemGeometry = $this->facilityMapItemGeometryColumns();
+        $facilityMapItemSceneColumns = $this->facilityMapItemSceneColumns();
+        $hasFacilityMapItemWidth = $facilityMapStorage === 'facility_map_items' && $facilityMapItemGeometry['width'];
+        $hasFacilityMapItemHeight = $facilityMapStorage === 'facility_map_items' && $facilityMapItemGeometry['height'];
+        $hasFacilityMapItemRotation = $facilityMapStorage === 'facility_map_items' && $facilityMapItemGeometry['rotation'];
+        $hasFacilityMapItemType = $facilityMapStorage === 'facility_map_items' && $facilityMapItemSceneColumns['item_type'];
+        $hasFacilityMapItemSceneKey = $facilityMapStorage === 'facility_map_items' && $facilityMapItemSceneColumns['scene_object_key'];
+        $hasFacilityMapItemIsRemoved = $facilityMapStorage === 'facility_map_items' && $facilityMapItemSceneColumns['is_removed'];
+
+        DB::transaction(function () use ($incomingPositions, $targetBlocks, $facilityItemsPayload, $facilityMapStorage, $hasPlaceWidth, $hasPlaceHeight, $hasPlaceRotation, $hasPlaceItemType, $hasPlaceSceneKey, $hasPlaceIsRemoved, $hasFacilityMapItemWidth, $hasFacilityMapItemHeight, $hasFacilityMapItemRotation, $hasFacilityMapItemType, $hasFacilityMapItemSceneKey, $hasFacilityMapItemIsRemoved, &$facilityChanges, &$savedFacilityItemStates, &$savedSceneItemStates): void {
             foreach ($incomingPositions as $position) {
                 /** @var Block|null $targetBlock */
                 $targetBlock = $targetBlocks->get((int) $position['id']);
@@ -2087,6 +2490,438 @@ class HomeController extends Controller
                 $targetBlock->map_x = (int) $position['x'];
                 $targetBlock->map_y = (int) $position['y'];
                 $targetBlock->save();
+            }
+
+            if (! Schema::hasTable('facility') || $facilityMapStorage === 'none') {
+                return;
+            }
+
+            if ($facilityMapStorage === 'facility_map_items') {
+                $fixedFacilityItems = $facilityItemsPayload
+                    ->filter(fn (array $item): bool => ($item['item_type'] ?? 'icon') === 'icon')
+                    ->values();
+                $sceneItems = $facilityItemsPayload
+                    ->filter(fn (array $item): bool => ($item['item_type'] ?? 'icon') === 'scene')
+                    ->values();
+
+                $incomingIds = $fixedFacilityItems
+                    ->pluck('id')
+                    ->filter(fn ($id): bool => is_int($id) && $id > 0)
+                    ->values()
+                    ->all();
+
+                $fixedItemsQuery = DB::table('facility_map_items')
+                    ->where('is_fixed', true);
+                if ($hasFacilityMapItemType) {
+                    $fixedItemsQuery->where(function ($query): void {
+                        $query->whereNull('item_type')
+                            ->orWhere('item_type', '')
+                            ->orWhere('item_type', 'icon');
+                    });
+                }
+
+                if (! empty($incomingIds)) {
+                    $fixedItemsQuery
+                        ->whereNotIn('facility_map_itemid', $incomingIds)
+                        ->delete();
+                } else {
+                    $fixedItemsQuery->delete();
+                }
+
+                if ($hasFacilityMapItemType && $hasFacilityMapItemSceneKey) {
+                    $incomingSceneKeys = $sceneItems
+                        ->pluck('scene_object_key')
+                        ->filter(fn ($value): bool => is_string($value) && $value !== '')
+                        ->values()
+                        ->all();
+
+                    $sceneCleanupQuery = DB::table('facility_map_items')
+                        ->where('is_fixed', true)
+                        ->where('item_type', 'scene');
+
+                    if (! empty($incomingSceneKeys)) {
+                        $sceneCleanupQuery
+                            ->whereNotIn('scene_object_key', $incomingSceneKeys)
+                            ->delete();
+                    } else {
+                        $sceneCleanupQuery->delete();
+                    }
+                }
+
+                $timestamp = now();
+
+                foreach ($fixedFacilityItems as $item) {
+                    $target = null;
+                    $oldX = null;
+                    $oldY = null;
+                    $oldFacilityId = null;
+
+                    if (! empty($item['id'])) {
+                        $targetQuery = DB::table('facility_map_items')
+                            ->where('facility_map_itemid', (int) $item['id'])
+                            ->where('is_fixed', true);
+                        if ($hasFacilityMapItemType) {
+                            $targetQuery->where(function ($query): void {
+                                $query->whereNull('item_type')
+                                    ->orWhere('item_type', '')
+                                    ->orWhere('item_type', 'icon');
+                            });
+                        }
+                        $target = $targetQuery->first();
+                    }
+
+                    if (! $target) {
+                        $insertPayload = [
+                            'facility_id' => (int) $item['facility_id'],
+                            'map_x' => (int) $item['x'],
+                            'map_y' => (int) $item['y'],
+                            'is_fixed' => true,
+                            'created_at' => $timestamp,
+                            'updated_at' => $timestamp,
+                        ];
+                        if ($hasFacilityMapItemWidth && $item['width'] !== null) {
+                            $insertPayload['map_width'] = (int) $item['width'];
+                        }
+                        if ($hasFacilityMapItemHeight && $item['height'] !== null) {
+                            $insertPayload['map_height'] = (int) $item['height'];
+                        }
+                        if ($hasFacilityMapItemRotation && $item['rotation'] !== null) {
+                            $insertPayload['map_rotation'] = (float) $item['rotation'];
+                        }
+                        if ($hasFacilityMapItemType) {
+                            $insertPayload['item_type'] = 'icon';
+                        }
+                        if ($hasFacilityMapItemSceneKey) {
+                            $insertPayload['scene_object_key'] = null;
+                        }
+                        if ($hasFacilityMapItemIsRemoved) {
+                            $insertPayload['is_removed'] = false;
+                        }
+
+                        DB::table('facility_map_items')->insert($insertPayload);
+
+                        $newId = (int) DB::getPdo()->lastInsertId();
+                        $savedFacilityItemStates[] = $this->makePersistedFacilityItemState($item, $newId);
+                        $facilityChanges[] = '#' . $newId
+                            . ' f' . (int) $item['facility_id']
+                            . ' (X:' . (int) $item['x']
+                            . ', Y:' . (int) $item['y'] . ')';
+                        continue;
+                    }
+
+                    $oldX = isset($target->map_x) ? (int) $target->map_x : null;
+                    $oldY = isset($target->map_y) ? (int) $target->map_y : null;
+                    $oldFacilityId = isset($target->facility_id) ? (int) $target->facility_id : null;
+
+                    $updatePayload = [
+                        'facility_id' => (int) $item['facility_id'],
+                        'map_x' => (int) $item['x'],
+                        'map_y' => (int) $item['y'],
+                        'is_fixed' => true,
+                        'updated_at' => $timestamp,
+                    ];
+                    if ($hasFacilityMapItemWidth) {
+                        $updatePayload['map_width'] = $item['width'] !== null ? (int) $item['width'] : null;
+                    }
+                    if ($hasFacilityMapItemHeight) {
+                        $updatePayload['map_height'] = $item['height'] !== null ? (int) $item['height'] : null;
+                    }
+                    if ($hasFacilityMapItemRotation) {
+                        $updatePayload['map_rotation'] = $item['rotation'] !== null ? (float) $item['rotation'] : null;
+                    }
+                    if ($hasFacilityMapItemType) {
+                        $updatePayload['item_type'] = 'icon';
+                    }
+                    if ($hasFacilityMapItemSceneKey) {
+                        $updatePayload['scene_object_key'] = null;
+                    }
+                    if ($hasFacilityMapItemIsRemoved) {
+                        $updatePayload['is_removed'] = false;
+                    }
+
+                    DB::table('facility_map_items')
+                        ->where('facility_map_itemid', (int) $item['id'])
+                        ->update($updatePayload);
+
+                    $savedFacilityItemStates[] = $this->makePersistedFacilityItemState($item, (int) $item['id']);
+                    if ($oldX !== (int) $item['x'] || $oldY !== (int) $item['y'] || $oldFacilityId !== (int) $item['facility_id']) {
+                        $facilityChanges[] = '#' . (int) $item['id']
+                            . ' f' . (int) $item['facility_id']
+                            . ' (X:' . $this->logValue($oldX) . '->' . (int) $item['x']
+                            . ', Y:' . $this->logValue($oldY) . '->' . (int) $item['y'] . ')';
+                    }
+                }
+
+                if (! $hasFacilityMapItemType || ! $hasFacilityMapItemSceneKey) {
+                    return;
+                }
+
+                foreach ($sceneItems as $item) {
+                    $sceneObjectKey = (string) ($item['scene_object_key'] ?? '');
+                    if ($sceneObjectKey === '') {
+                        continue;
+                    }
+
+                    $target = DB::table('facility_map_items')
+                        ->where('is_fixed', true)
+                        ->where('item_type', 'scene')
+                        ->where('scene_object_key', $sceneObjectKey)
+                        ->first();
+
+                    $oldX = isset($target->map_x) ? (int) $target->map_x : null;
+                    $oldY = isset($target->map_y) ? (int) $target->map_y : null;
+                    $oldFacilityId = isset($target->facility_id) ? (int) $target->facility_id : null;
+                    $oldRemoved = isset($target->is_removed) ? (bool) $target->is_removed : null;
+
+                    if (! $target) {
+                        $insertPayload = [
+                            'facility_id' => max(0, (int) ($item['facility_id'] ?? 0)),
+                            'item_type' => 'scene',
+                            'scene_object_key' => $sceneObjectKey,
+                            'map_x' => (int) $item['x'],
+                            'map_y' => (int) $item['y'],
+                            'is_fixed' => true,
+                            'created_at' => $timestamp,
+                            'updated_at' => $timestamp,
+                        ];
+                        if ($hasFacilityMapItemWidth && $item['width'] !== null) {
+                            $insertPayload['map_width'] = (int) $item['width'];
+                        }
+                        if ($hasFacilityMapItemHeight && $item['height'] !== null) {
+                            $insertPayload['map_height'] = (int) $item['height'];
+                        }
+                        if ($hasFacilityMapItemRotation && $item['rotation'] !== null) {
+                            $insertPayload['map_rotation'] = (float) $item['rotation'];
+                        }
+                        if ($hasFacilityMapItemIsRemoved) {
+                            $insertPayload['is_removed'] = (bool) ($item['is_removed'] ?? false);
+                        }
+
+                        DB::table('facility_map_items')->insert($insertPayload);
+
+                        $newId = (int) DB::getPdo()->lastInsertId();
+                        $savedSceneItemStates[] = $this->makePersistedSceneItemState($item, $newId);
+                        $facilityChanges[] = 'scene:' . $sceneObjectKey
+                            . ' (X:' . (int) $item['x']
+                            . ', Y:' . (int) $item['y'] . ')';
+                        continue;
+                    }
+
+                    $updatePayload = [
+                        'facility_id' => max(0, (int) ($item['facility_id'] ?? 0)),
+                        'item_type' => 'scene',
+                        'scene_object_key' => $sceneObjectKey,
+                        'map_x' => (int) $item['x'],
+                        'map_y' => (int) $item['y'],
+                        'is_fixed' => true,
+                        'updated_at' => $timestamp,
+                    ];
+                    if ($hasFacilityMapItemWidth) {
+                        $updatePayload['map_width'] = $item['width'] !== null ? (int) $item['width'] : null;
+                    }
+                    if ($hasFacilityMapItemHeight) {
+                        $updatePayload['map_height'] = $item['height'] !== null ? (int) $item['height'] : null;
+                    }
+                    if ($hasFacilityMapItemRotation) {
+                        $updatePayload['map_rotation'] = $item['rotation'] !== null ? (float) $item['rotation'] : null;
+                    }
+                    if ($hasFacilityMapItemIsRemoved) {
+                        $updatePayload['is_removed'] = (bool) ($item['is_removed'] ?? false);
+                    }
+
+                    DB::table('facility_map_items')
+                        ->where('facility_map_itemid', (int) $target->facility_map_itemid)
+                        ->update($updatePayload);
+
+                    $savedSceneItemStates[] = $this->makePersistedSceneItemState($item, (int) $target->facility_map_itemid);
+                    $isRemoved = (bool) ($item['is_removed'] ?? false);
+                    if (
+                        $oldX !== (int) $item['x']
+                        || $oldY !== (int) $item['y']
+                        || $oldFacilityId !== max(0, (int) ($item['facility_id'] ?? 0))
+                        || ($hasFacilityMapItemIsRemoved && $oldRemoved !== $isRemoved)
+                    ) {
+                        $facilityChanges[] = 'scene:' . $sceneObjectKey
+                            . ' (X:' . $this->logValue($oldX) . '->' . (int) $item['x']
+                            . ', Y:' . $this->logValue($oldY) . '->' . (int) $item['y'] . ')';
+                    }
+                }
+
+                return;
+            }
+
+            $iconItems = $facilityItemsPayload
+                ->filter(fn (array $item): bool => ($item['item_type'] ?? 'icon') === 'icon')
+                ->values();
+            $sceneItems = $facilityItemsPayload
+                ->filter(fn (array $item): bool => ($item['item_type'] ?? 'icon') === 'scene')
+                ->values();
+
+            $incomingIds = $iconItems
+                ->pluck('id')
+                ->filter(fn ($id): bool => is_int($id) && $id > 0)
+                ->values()
+                ->all();
+
+            $placeIconsQuery = DB::table('place');
+            if ($hasPlaceItemType) {
+                $placeIconsQuery->where(function ($query): void {
+                    $query->whereNull('item_type')
+                        ->orWhere('item_type', '')
+                        ->orWhere('item_type', 'icon');
+                });
+            }
+
+            if (! empty($incomingIds)) {
+                $placeIconsQuery
+                    ->whereNotIn('placeid', $incomingIds)
+                    ->delete();
+            } else {
+                $placeIconsQuery->delete();
+            }
+
+            if ($hasPlaceItemType && $hasPlaceSceneKey) {
+                $incomingSceneKeys = $sceneItems
+                    ->pluck('scene_object_key')
+                    ->filter(fn ($value): bool => is_string($value) && $value !== '')
+                    ->values()
+                    ->all();
+
+                $placeSceneQuery = DB::table('place')
+                    ->where('item_type', 'scene');
+
+                if (! empty($incomingSceneKeys)) {
+                    $placeSceneQuery
+                        ->whereNotIn('scene_object_key', $incomingSceneKeys)
+                        ->delete();
+                } else {
+                    $placeSceneQuery->delete();
+                }
+            }
+
+            foreach ($facilityItemsPayload as $item) {
+                $target = null;
+                $oldX = null;
+                $oldY = null;
+                $oldFacilityId = null;
+
+                if (! empty($item['id'])) {
+                    $target = DB::table('place')
+                        ->where('placeid', (int) $item['id'])
+                        ->first();
+                } elseif (
+                    ($item['item_type'] ?? 'icon') === 'scene'
+                    && $hasPlaceItemType
+                    && $hasPlaceSceneKey
+                    && ($item['scene_object_key'] ?? null) !== null
+                ) {
+                    $target = DB::table('place')
+                        ->where('item_type', 'scene')
+                        ->where('scene_object_key', (string) $item['scene_object_key'])
+                        ->first();
+                }
+
+                if (! $target) {
+                    $insertPayload = [
+                        'facilityid' => (int) $item['facility_id'],
+                        'x' => (int) $item['x'],
+                        'y' => (int) $item['y'],
+                    ];
+                    if ($hasPlaceItemType) {
+                        $insertPayload['item_type'] = (string) ($item['item_type'] ?? 'icon');
+                    }
+                    if ($hasPlaceSceneKey) {
+                        $insertPayload['scene_object_key'] = ($item['scene_object_key'] ?? '') !== ''
+                            ? (string) $item['scene_object_key']
+                            : null;
+                    }
+                    if ($hasPlaceIsRemoved) {
+                        $insertPayload['is_removed'] = (bool) ($item['is_removed'] ?? false);
+                    }
+                    if ($hasPlaceWidth && $item['width'] !== null) {
+                        $insertPayload['map_width'] = (int) $item['width'];
+                    }
+                    if ($hasPlaceHeight && $item['height'] !== null) {
+                        $insertPayload['map_height'] = (int) $item['height'];
+                    }
+                    if ($hasPlaceRotation && $item['rotation'] !== null) {
+                        $insertPayload['map_rotation'] = (float) $item['rotation'];
+                    }
+
+                    DB::table('place')->insert($insertPayload);
+
+                    $newId = (int) DB::getPdo()->lastInsertId();
+                    if (($item['item_type'] ?? 'icon') === 'icon') {
+                        $savedFacilityItemStates[] = $this->makePersistedFacilityItemState($item, $newId);
+                        $facilityChanges[] = '#' . $newId
+                            . ' f' . (int) $item['facility_id']
+                            . ' (X:' . (int) $item['x']
+                            . ', Y:' . (int) $item['y'] . ')';
+                    } else {
+                        $savedSceneItemStates[] = $this->makePersistedSceneItemState($item, $newId);
+                        $facilityChanges[] = 'scene:' . (string) ($item['scene_object_key'] ?? '-')
+                            . ' (X:' . (int) $item['x']
+                            . ', Y:' . (int) $item['y'] . ')';
+                    }
+                } else {
+                    $oldX = isset($target->x) ? (int) $target->x : null;
+                    $oldY = isset($target->y) ? (int) $target->y : null;
+                    $oldFacilityId = isset($target->facilityid) ? (int) $target->facilityid : null;
+                    $oldRemoved = isset($target->is_removed) ? (bool) $target->is_removed : null;
+
+                    $updatePayload = [
+                        'facilityid' => (int) $item['facility_id'],
+                        'x' => (int) $item['x'],
+                        'y' => (int) $item['y'],
+                    ];
+                    if ($hasPlaceItemType) {
+                        $updatePayload['item_type'] = (string) ($item['item_type'] ?? 'icon');
+                    }
+                    if ($hasPlaceSceneKey) {
+                        $updatePayload['scene_object_key'] = ($item['scene_object_key'] ?? '') !== ''
+                            ? (string) $item['scene_object_key']
+                            : null;
+                    }
+                    if ($hasPlaceIsRemoved) {
+                        $updatePayload['is_removed'] = (bool) ($item['is_removed'] ?? false);
+                    }
+                    if ($hasPlaceWidth && $item['width'] !== null) {
+                        $updatePayload['map_width'] = (int) $item['width'];
+                    }
+                    if ($hasPlaceHeight && $item['height'] !== null) {
+                        $updatePayload['map_height'] = (int) $item['height'];
+                    }
+                    if ($hasPlaceRotation && $item['rotation'] !== null) {
+                        $updatePayload['map_rotation'] = (float) $item['rotation'];
+                    }
+
+                    DB::table('place')
+                        ->where('placeid', (int) $target->placeid)
+                        ->update($updatePayload);
+
+                    if (($item['item_type'] ?? 'icon') === 'icon') {
+                        $savedFacilityItemStates[] = $this->makePersistedFacilityItemState($item, (int) $target->placeid);
+                        if ($oldX !== (int) $item['x'] || $oldY !== (int) $item['y'] || $oldFacilityId !== (int) $item['facility_id']) {
+                            $facilityChanges[] = '#' . (int) $target->placeid
+                                . ' f' . (int) $item['facility_id']
+                                . ' (X:' . $this->logValue($oldX) . '->' . (int) $item['x']
+                                . ', Y:' . $this->logValue($oldY) . '->' . (int) $item['y'] . ')';
+                        }
+                    } else {
+                        $savedSceneItemStates[] = $this->makePersistedSceneItemState($item, (int) $target->placeid);
+                        $isRemoved = (bool) ($item['is_removed'] ?? false);
+                        if (
+                            $oldX !== (int) $item['x']
+                            || $oldY !== (int) $item['y']
+                            || $oldFacilityId !== (int) $item['facility_id']
+                            || ($hasPlaceIsRemoved && $oldRemoved !== $isRemoved)
+                        ) {
+                            $facilityChanges[] = 'scene:' . (string) ($item['scene_object_key'] ?? '-')
+                                . ' (X:' . $this->logValue($oldX) . '->' . (int) $item['x']
+                                . ', Y:' . $this->logValue($oldY) . '->' . (int) $item['y'] . ')';
+                        }
+                    }
+                }
             }
         });
 
@@ -2112,12 +2947,27 @@ class HomeController extends Controller
         }
 
         $detail = 'Mengatur posisi denah blok dari dashboard. ';
-        $detail .= empty($changes) ? 'Tidak ada perubahan nilai.' : implode('; ', $changes) . '.';
+        if (empty($changes) && empty($facilityChanges)) {
+            $detail .= 'Tidak ada perubahan nilai.';
+        } else {
+            $parts = [];
+            if (! empty($changes)) {
+                $parts[] = 'Perubahan blok (' . count($changes) . '): ' . $this->summarizeLogItems($changes, 6, 'blok');
+            }
+            if (! empty($facilityChanges)) {
+                $parts[] = 'Perubahan fasilitas (' . count($facilityChanges) . '): ' . $this->summarizeLogItems($facilityChanges, 8, 'item');
+            }
+            $detail .= implode(' | ', $parts) . '.';
+        }
         $this->writeActivityLog($request, 'Edit Posisi Blok', $detail);
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
                 'message' => 'Posisi denah blok berhasil disimpan.',
+                'facility_map_storage' => $facilityMapStorage,
+                'facility_map_shape_persisted' => $this->facilityMapShapePersisted($facilityMapStorage),
+                'facility_item_states' => $savedFacilityItemStates,
+                'scene_item_states' => $savedSceneItemStates,
             ]);
         }
 
@@ -2161,7 +3011,17 @@ class HomeController extends Controller
             ], 422);
         }
 
-        $block->delete();
+        DB::transaction(function () use ($request, $block, $blockId, $blockName): void {
+            $this->archiveDeletedData(
+                $request,
+                'block',
+                $blockId,
+                'Blok #' . $blockId . ' "' . $blockName . '"',
+                $block->getAttributes()
+            );
+
+            $block->delete();
+        });
 
         $this->writeActivityLog(
             $request,
@@ -2265,9 +3125,69 @@ class HomeController extends Controller
                 ->with('status', 'Sesi tidak valid. Silakan login kembali.');
         }
 
+        $userColumns = Schema::hasTable('user') ? Schema::getColumnListing('user') : [];
+        $resolveColumn = static function (array $columns, array $candidates): ?string {
+            foreach ($candidates as $candidate) {
+                if (in_array($candidate, $columns, true)) {
+                    return $candidate;
+                }
+            }
+
+            return null;
+        };
+        $firstFilledValue = static function ($record, array $columns): ?string {
+            if (! $record) {
+                return null;
+            }
+
+            foreach ($columns as $column) {
+                if (isset($record->{$column}) && trim((string) $record->{$column}) !== '') {
+                    return trim((string) $record->{$column});
+                }
+            }
+
+            return null;
+        };
+
+        $fullName = $firstFilledValue($user, [
+            $resolveColumn($userColumns, ['full_name', 'name', 'fullname', 'employee_name']) ?? 'full_name',
+            'username',
+        ]) ?? (string) $user->username;
+        $email = $firstFilledValue($user, [
+            $resolveColumn($userColumns, ['email', 'email_address', 'mail']) ?? 'email',
+        ]);
+        $phoneNumber = $firstFilledValue($user, [
+            $resolveColumn($userColumns, ['phone_number', 'phonenumber', 'phone', 'phone_no', 'no_hp']) ?? 'phone_number',
+        ]);
+
+        if (Schema::hasTable('employer') && Schema::hasColumn('employer', 'userid')) {
+            $employer = DB::table('employer')
+                ->where('userid', $user->userid)
+                ->first();
+
+            if ($employer) {
+                $employerColumns = Schema::getColumnListing('employer');
+
+                $fullName = $firstFilledValue($employer, [
+                    $resolveColumn($employerColumns, ['full_name', 'name', 'fullname', 'employee_name']) ?? 'name',
+                ]) ?? $fullName;
+                $email = $firstFilledValue($employer, [
+                    $resolveColumn($employerColumns, ['email', 'email_address', 'mail']) ?? 'email',
+                ]) ?? $email;
+                $phoneNumber = $firstFilledValue($employer, [
+                    $resolveColumn($employerColumns, ['phone_number', 'phonenumber', 'phone', 'phone_no', 'no_hp']) ?? 'phonenumber',
+                ]) ?? $phoneNumber;
+            }
+        }
+
         return view('account-settings', [
             'authUser' => $authUser,
             'userAccount' => $user,
+            'accountProfile' => [
+                'full_name' => $fullName,
+                'email' => $email,
+                'phone_number' => $phoneNumber,
+            ],
         ]);
     }
 
@@ -2433,6 +3353,95 @@ class HomeController extends Controller
             ->exists();
     }
 
+    private function applyActivityLogVisibilityFilter(Request $request, \Illuminate\Database\Query\Builder $query): void
+    {
+        if ($this->resolveAuthRoleSlug($request) === 'superadmin') {
+            return;
+        }
+
+        if (! Schema::hasTable('user') || ! Schema::hasColumn('user', 'userid') || ! Schema::hasColumn('user', 'levelid')) {
+            return;
+        }
+
+        $superadminLevelIds = $this->resolveLevelIdsByRoleSlug('superadmin');
+        if ($superadminLevelIds === []) {
+            $superadminLevelIds = [1];
+        }
+
+        $query
+            ->leftJoin('user as activity_actor', 'activity_actor.userid', '=', 'activity_logs.user_id')
+            ->where(function ($filter) use ($superadminLevelIds) {
+                $filter->whereNull('activity_actor.levelid')
+                    ->orWhereNotIn('activity_actor.levelid', $superadminLevelIds);
+            });
+    }
+
+    private function resolveAuthRoleSlug(Request $request): ?string
+    {
+        $authUser = $request->session()->get('auth_user', []);
+        $levelId = (int) ($authUser['levelid'] ?? 0);
+        if ($levelId <= 0) {
+            return null;
+        }
+
+        $levelName = $this->resolveLevelName($levelId);
+        if ($levelName !== null && $levelName !== '') {
+            return $this->normalizeRoleSlug($levelName);
+        }
+
+        return match ($levelId) {
+            1 => 'superadmin',
+            2 => 'admin',
+            default => null,
+        };
+    }
+
+    private function resolveLevelIdsByRoleSlug(string $roleSlug): array
+    {
+        if (! Schema::hasTable('level') || ! Schema::hasColumn('level', 'levelid')) {
+            return $roleSlug === 'superadmin' ? [1] : [];
+        }
+
+        if (! Schema::hasColumn('level', 'levelname')) {
+            return $roleSlug === 'superadmin' ? [1] : [];
+        }
+
+        return DB::table('level')
+            ->select(['levelid', 'levelname'])
+            ->get()
+            ->filter(fn ($level) => $this->normalizeRoleSlug((string) ($level->levelname ?? '')) === $roleSlug)
+            ->pluck('levelid')
+            ->map(fn ($levelId) => (int) $levelId)
+            ->filter(fn (int $levelId) => $levelId > 0)
+            ->values()
+            ->all();
+    }
+
+    private function resolveLevelName(int $levelId): ?string
+    {
+        if ($levelId <= 0 || ! Schema::hasTable('level') || ! Schema::hasColumn('level', 'levelid')) {
+            return null;
+        }
+
+        if (! Schema::hasColumn('level', 'levelname')) {
+            return null;
+        }
+
+        $row = DB::table('level')
+            ->select('levelname')
+            ->where('levelid', $levelId)
+            ->first();
+
+        return $row?->levelname !== null ? (string) $row->levelname : null;
+    }
+
+    private function normalizeRoleSlug(?string $value): string
+    {
+        return (string) Str::of((string) $value)
+            ->lower()
+            ->replaceMatches('/[^a-z0-9]+/', '');
+    }
+
     private function resolveAuthActor(Request $request): array
     {
         $authUser = $request->session()->get('auth_user', []);
@@ -2516,6 +3525,187 @@ class HomeController extends Controller
         $changes[] = $field . ' dari "' . $old . '" ke "' . $new . '"';
     }
 
+    private function summarizeLogItems(array $items, int $limit = 8, string $label = 'item'): string
+    {
+        if (empty($items)) {
+            return '-';
+        }
+
+        $safeLimit = max(1, $limit);
+        $preview = array_slice($items, 0, $safeLimit);
+        $text = implode('; ', $preview);
+        $remaining = count($items) - count($preview);
+        if ($remaining > 0) {
+            $text .= '; +' . $remaining . ' ' . $label . ' lain';
+        }
+
+        return $text;
+    }
+
+    private function archiveDeletedData(Request $request, string $entityType, mixed $entityId, string $entityLabel, array $payload): void
+    {
+        if (! $this->hasUsableTable('restore_data')) {
+            return;
+        }
+
+        $actor = $this->resolveAuthActor($request);
+
+        try {
+            DB::table('restore_data')->insert([
+                'entity_type' => Str::limit($entityType, 40),
+                'entity_id' => $entityId !== null ? Str::limit((string) $entityId, 60) : null,
+                'entity_label' => Str::limit($entityLabel, 190),
+                'payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+                'deleted_at' => now(),
+                'deleted_by_user_id' => $actor['id'] ?? null,
+                'deleted_by_name' => Str::limit((string) ($actor['name'] ?? '-'), 255),
+                'deleted_by_username' => Str::limit((string) ($actor['username'] ?? '-'), 255),
+                'ip_address' => Str::limit((string) ($actor['ip_address'] ?? '-'), 45),
+                'longitude' => isset($actor['longitude']) && $actor['longitude'] !== '' ? (string) $actor['longitude'] : null,
+                'latitude' => isset($actor['latitude']) && $actor['latitude'] !== '' ? (string) $actor['latitude'] : null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            if (! $this->isUnavailableTableException($e, 'restore_data')) {
+                throw $e;
+            }
+
+            report($e);
+        }
+    }
+
+    private function restoreEntityTypeLabel(string $entityType): string
+    {
+        return match ($entityType) {
+            'block' => 'Blok',
+            'plot' => 'Plot',
+            'deceased' => 'Almarhum',
+            'family' => 'Kontak Keluarga',
+            default => 'Data',
+        };
+    }
+
+    private function performRestoreEntity(string $entityType, array $payload): array
+    {
+        return match ($entityType) {
+            'block' => $this->restoreBlockEntity($payload),
+            'plot' => $this->restorePlotEntity($payload),
+            'deceased' => $this->restoreDeceasedEntity($payload),
+            'family' => $this->restoreFamilyEntity($payload),
+            default => [false, 'Tipe data restore tidak dikenali.'],
+        };
+    }
+
+    private function restoreBlockEntity(array $payload): array
+    {
+        if (! Schema::hasTable('blocks')) {
+            return [false, 'Tabel blok tidak tersedia.'];
+        }
+        if (! isset($payload['blockid'])) {
+            return [false, 'Payload blok tidak valid.'];
+        }
+
+        return $this->restoreTableRow('blocks', 'blockid', $payload);
+    }
+
+    private function restorePlotEntity(array $payload): array
+    {
+        if (! Schema::hasTable('grave_plots')) {
+            return [false, 'Tabel plot tidak tersedia.'];
+        }
+        if (! isset($payload['plotid'])) {
+            return [false, 'Payload plot tidak valid.'];
+        }
+        $blockId = (int) ($payload['block_id'] ?? 0);
+        if ($blockId <= 0 || ! Block::query()->where('blockid', $blockId)->exists()) {
+            return [false, 'Blok tujuan untuk plot belum tersedia. Restore blok terlebih dahulu.'];
+        }
+
+        return $this->restoreTableRow('grave_plots', 'plotid', $payload);
+    }
+
+    private function restoreDeceasedEntity(array $payload): array
+    {
+        if (! Schema::hasTable('deceased')) {
+            return [false, 'Tabel almarhum tidak tersedia.'];
+        }
+        if (! isset($payload['deceasedid'])) {
+            return [false, 'Payload almarhum tidak valid.'];
+        }
+        $plotId = (int) ($payload['plotid'] ?? 0);
+        if ($plotId <= 0 || ! GravePlot::query()->where('plotid', $plotId)->exists()) {
+            return [false, 'Plot tujuan untuk almarhum belum tersedia. Restore plot terlebih dahulu.'];
+        }
+
+        [$ok, $message] = $this->restoreTableRow('deceased', 'deceasedid', $payload);
+        if (! $ok) {
+            return [$ok, $message];
+        }
+
+        GravePlot::query()
+            ->where('plotid', $plotId)
+            ->update(['status' => 'occupied']);
+
+        return [true, 'Data almarhum berhasil dikembalikan.'];
+    }
+
+    private function restoreFamilyEntity(array $payload): array
+    {
+        if (! Schema::hasTable('families')) {
+            return [false, 'Tabel kontak keluarga tidak tersedia.'];
+        }
+        if (! isset($payload['familyid'])) {
+            return [false, 'Payload kontak keluarga tidak valid.'];
+        }
+        $deceasedId = (int) ($payload['deceased_id'] ?? 0);
+        if ($deceasedId <= 0 || ! Deceased::query()->where('deceasedid', $deceasedId)->exists()) {
+            return [false, 'Almarhum tujuan untuk kontak keluarga belum tersedia. Restore data almarhum terlebih dahulu.'];
+        }
+
+        return $this->restoreTableRow('families', 'familyid', $payload);
+    }
+
+    private function restoreTableRow(string $table, string $primaryKey, array $payload): array
+    {
+        if (! Schema::hasTable($table)) {
+            return [false, 'Tabel tujuan tidak tersedia.'];
+        }
+        if (! isset($payload[$primaryKey])) {
+            return [false, 'Payload tidak memiliki primary key.'];
+        }
+
+        $primaryValue = $payload[$primaryKey];
+        $exists = DB::table($table)
+            ->where($primaryKey, $primaryValue)
+            ->exists();
+        if ($exists) {
+            return [false, 'Data dengan ID yang sama sudah ada di tabel tujuan.'];
+        }
+
+        $allowedColumns = Schema::getColumnListing($table);
+        $insertPayload = [];
+        foreach ($allowedColumns as $column) {
+            if (array_key_exists($column, $payload)) {
+                $insertPayload[$column] = $payload[$column];
+            }
+        }
+
+        if (! array_key_exists($primaryKey, $insertPayload)) {
+            $insertPayload[$primaryKey] = $primaryValue;
+        }
+        if (in_array('created_at', $allowedColumns, true) && ! array_key_exists('created_at', $insertPayload)) {
+            $insertPayload['created_at'] = now();
+        }
+        if (in_array('updated_at', $allowedColumns, true) && ! array_key_exists('updated_at', $insertPayload)) {
+            $insertPayload['updated_at'] = now();
+        }
+
+        DB::table($table)->insert($insertPayload);
+
+        return [true, 'Data berhasil dikembalikan.'];
+    }
+
     private function resolveSystemSetting(): SystemSetting
     {
         $setting = SystemSetting::query()->first();
@@ -2533,14 +3723,432 @@ class HomeController extends Controller
         ]);
     }
 
+    private function buildFacilityData(): array
+    {
+        if (! Schema::hasTable('facility')) {
+            return [
+                'facilities' => collect(),
+                'facilityMapItems' => collect(),
+                'sceneMapItems' => collect(),
+                'facilityMapStorage' => 'none',
+                'facilityMapShapePersisted' => false,
+            ];
+        }
+
+        $facilities = Facility::query()
+            ->selectRaw('facilityid')
+            ->selectRaw('COALESCE(NULLIF(facility_name, \'\'), NULLIF(name, \'\'), \'Facility\') as facility_name')
+            ->selectRaw('COALESCE(NULLIF(facility_key, \'\'), CONCAT(\'facility_\', facilityid)) as facility_key')
+            ->selectRaw('COALESCE(NULLIF(icon_emoji, \'\'), \'F\') as icon_emoji')
+            ->orderBy('facilityid')
+            ->get();
+
+        $facilityMapStorage = $this->resolveFacilityMapStorage();
+
+        if ($facilityMapStorage === 'facility_map_items') {
+            return [
+                'facilities' => $facilities,
+                'facilityMapItems' => $this->loadFixedFacilityMapItems(),
+                'sceneMapItems' => $this->loadFixedSceneMapItems(),
+                'facilityMapStorage' => $facilityMapStorage,
+                'facilityMapShapePersisted' => $this->facilityMapShapePersisted($facilityMapStorage),
+            ];
+        }
+
+        if ($facilityMapStorage !== 'place') {
+            return [
+                'facilities' => $facilities,
+                'facilityMapItems' => collect(),
+                'sceneMapItems' => collect(),
+                'facilityMapStorage' => $facilityMapStorage,
+                'facilityMapShapePersisted' => false,
+            ];
+        }
+
+        try {
+            $facilityMapItemsQuery = DB::table('place')
+                ->selectRaw('placeid as facility_map_itemid')
+                ->selectRaw('facilityid as facility_id')
+                ->selectRaw('x as map_x')
+                ->selectRaw('y as map_y')
+                ->when(Schema::hasColumn('place', 'map_width'), fn ($query) => $query->selectRaw('map_width as map_width'))
+                ->when(Schema::hasColumn('place', 'map_height'), fn ($query) => $query->selectRaw('map_height as map_height'))
+                ->when(Schema::hasColumn('place', 'map_rotation'), fn ($query) => $query->selectRaw('map_rotation as map_rotation'))
+                ->orderBy('placeid');
+
+            if (Schema::hasColumn('place', 'item_type')) {
+                $facilityMapItemsQuery->where(function ($query): void {
+                    $query->whereNull('item_type')
+                        ->orWhere('item_type', '')
+                        ->orWhere('item_type', 'icon');
+                });
+            }
+
+            $facilityMapItems = $facilityMapItemsQuery
+                ->get()
+                ->map(function ($item) {
+                    $item->is_fixed = 1;
+                    if (! isset($item->map_width)) {
+                        $item->map_width = null;
+                    }
+                    if (! isset($item->map_height)) {
+                        $item->map_height = null;
+                    }
+                    if (! isset($item->map_rotation)) {
+                        $item->map_rotation = null;
+                    }
+                    return $item;
+                });
+
+            $sceneMapItemsQuery = DB::table('place')
+                ->selectRaw('placeid as facility_map_itemid')
+                ->selectRaw('facilityid as facility_id')
+                ->selectRaw('scene_object_key as scene_object_key')
+                ->selectRaw('x as map_x')
+                ->selectRaw('y as map_y')
+                ->when(Schema::hasColumn('place', 'is_removed'), fn ($query) => $query->selectRaw('is_removed as is_removed'))
+                ->when(Schema::hasColumn('place', 'map_width'), fn ($query) => $query->selectRaw('map_width as map_width'))
+                ->when(Schema::hasColumn('place', 'map_height'), fn ($query) => $query->selectRaw('map_height as map_height'))
+                ->when(Schema::hasColumn('place', 'map_rotation'), fn ($query) => $query->selectRaw('map_rotation as map_rotation'))
+                ->orderBy('placeid');
+
+            if (Schema::hasColumn('place', 'item_type')) {
+                $sceneMapItemsQuery->where('item_type', 'scene');
+            } else {
+                $sceneMapItemsQuery->whereRaw('1 = 0');
+            }
+
+            $sceneMapItems = $sceneMapItemsQuery
+                ->get()
+                ->map(function ($item) {
+                    if (! isset($item->is_removed)) {
+                        $item->is_removed = false;
+                    }
+                    if (! isset($item->map_width)) {
+                        $item->map_width = null;
+                    }
+                    if (! isset($item->map_height)) {
+                        $item->map_height = null;
+                    }
+                    if (! isset($item->map_rotation)) {
+                        $item->map_rotation = null;
+                    }
+                    return $item;
+                });
+        } catch (\Throwable $e) {
+            if (! $this->isUnavailableTableException($e, 'place')) {
+                throw $e;
+            }
+
+            report($e);
+
+            return [
+                'facilities' => $facilities,
+                'facilityMapItems' => $this->loadFixedFacilityMapItems(),
+                'sceneMapItems' => $this->loadFixedSceneMapItems(),
+                'facilityMapStorage' => 'facility_map_items',
+                'facilityMapShapePersisted' => $this->facilityMapShapePersisted('facility_map_items'),
+            ];
+        }
+
+        return [
+            'facilities' => $facilities,
+            'facilityMapItems' => $facilityMapItems,
+            'sceneMapItems' => $sceneMapItems,
+            'facilityMapStorage' => $facilityMapStorage,
+            'facilityMapShapePersisted' => $this->facilityMapShapePersisted($facilityMapStorage),
+        ];
+    }
+
+    private function resolveFacilityMapStorage(): string
+    {
+        static $storage = null;
+
+        if ($storage !== null) {
+            return $storage;
+        }
+
+        if ($this->hasUsableLegacyPlaceTable()) {
+            return $storage = 'place';
+        }
+
+        if ($this->hasUsableTable('facility_map_items')) {
+            return $storage = 'facility_map_items';
+        }
+
+        return $storage = 'none';
+    }
+
+    private function hasUsableLegacyPlaceTable(): bool
+    {
+        return $this->hasUsableTable('place');
+    }
+
+    private function facilityMapItemGeometryColumns(): array
+    {
+        static $geometryColumns = null;
+
+        if ($geometryColumns !== null) {
+            return $geometryColumns;
+        }
+
+        if (! $this->hasUsableTable('facility_map_items')) {
+            return $geometryColumns = [
+                'width' => false,
+                'height' => false,
+                'rotation' => false,
+            ];
+        }
+
+        return $geometryColumns = [
+            'width' => Schema::hasColumn('facility_map_items', 'map_width'),
+            'height' => Schema::hasColumn('facility_map_items', 'map_height'),
+            'rotation' => Schema::hasColumn('facility_map_items', 'map_rotation'),
+        ];
+    }
+
+    private function facilityMapItemSceneColumns(): array
+    {
+        static $sceneColumns = null;
+
+        if ($sceneColumns !== null) {
+            return $sceneColumns;
+        }
+
+        if (! $this->hasUsableTable('facility_map_items')) {
+            return $sceneColumns = [
+                'item_type' => false,
+                'scene_object_key' => false,
+                'is_removed' => false,
+            ];
+        }
+
+        return $sceneColumns = [
+            'item_type' => Schema::hasColumn('facility_map_items', 'item_type'),
+            'scene_object_key' => Schema::hasColumn('facility_map_items', 'scene_object_key'),
+            'is_removed' => Schema::hasColumn('facility_map_items', 'is_removed'),
+        ];
+    }
+
+    private function facilityMapShapePersisted(string $storage): bool
+    {
+        if ($storage === 'place') {
+            return true;
+        }
+
+        if ($storage !== 'facility_map_items') {
+            return false;
+        }
+
+        $geometryColumns = $this->facilityMapItemGeometryColumns();
+
+        return $geometryColumns['width']
+            && $geometryColumns['height']
+            && $geometryColumns['rotation'];
+    }
+
+    private function makePersistedFacilityItemState(array $item, int $savedId): array
+    {
+        return [
+            'facility_map_itemid' => $savedId,
+            'facility_id' => (int) ($item['facility_id'] ?? 0),
+            'map_x' => (int) ($item['x'] ?? 0),
+            'map_y' => (int) ($item['y'] ?? 0),
+            'map_width' => $item['width'] !== null ? (int) $item['width'] : null,
+            'map_height' => $item['height'] !== null ? (int) $item['height'] : null,
+            'map_rotation' => $item['rotation'] !== null ? (float) $item['rotation'] : null,
+            'is_fixed' => (bool) ($item['is_fixed'] ?? true),
+        ];
+    }
+
+    private function makePersistedSceneItemState(array $item, int $savedId): array
+    {
+        $sceneObjectKey = trim((string) ($item['scene_object_key'] ?? ''));
+
+        return [
+            'facility_map_itemid' => $savedId,
+            'scene_object_key' => $sceneObjectKey !== '' ? $sceneObjectKey : null,
+            'facility_id' => max(0, (int) ($item['facility_id'] ?? 0)),
+            'map_x' => (int) ($item['x'] ?? 0),
+            'map_y' => (int) ($item['y'] ?? 0),
+            'map_width' => $item['width'] !== null ? (int) $item['width'] : null,
+            'map_height' => $item['height'] !== null ? (int) $item['height'] : null,
+            'map_rotation' => $item['rotation'] !== null ? (float) $item['rotation'] : null,
+            'is_removed' => (bool) ($item['is_removed'] ?? false),
+        ];
+    }
+
+    private function hasUsableTable(string $table): bool
+    {
+        static $usableTables = [];
+
+        if (array_key_exists($table, $usableTables)) {
+            return $usableTables[$table];
+        }
+
+        if (! Schema::hasTable($table)) {
+            return $usableTables[$table] = false;
+        }
+
+        try {
+            DB::table($table)
+                ->selectRaw('1')
+                ->limit(1)
+                ->get();
+
+            return $usableTables[$table] = true;
+        } catch (\Throwable $e) {
+            if (! $this->isUnavailableTableException($e, $table)) {
+                throw $e;
+            }
+
+            report($e);
+
+            return $usableTables[$table] = false;
+        }
+    }
+
+    private function loadFixedFacilityMapItems()
+    {
+        if (! $this->hasUsableTable('facility_map_items')) {
+            return collect();
+        }
+
+        $geometryColumns = $this->facilityMapItemGeometryColumns();
+        $sceneColumns = $this->facilityMapItemSceneColumns();
+
+        try {
+            $query = DB::table('facility_map_items')
+                ->selectRaw('facility_map_itemid as facility_map_itemid')
+                ->selectRaw('facility_id as facility_id')
+                ->selectRaw('map_x as map_x')
+                ->selectRaw('map_y as map_y')
+                ->when($geometryColumns['width'], fn ($query) => $query->selectRaw('map_width as map_width'))
+                ->when($geometryColumns['height'], fn ($query) => $query->selectRaw('map_height as map_height'))
+                ->when($geometryColumns['rotation'], fn ($query) => $query->selectRaw('map_rotation as map_rotation'))
+                ->where('is_fixed', true)
+                ->orderBy('facility_map_itemid');
+
+            if ($sceneColumns['item_type']) {
+                $query->where(function ($builder): void {
+                    $builder->whereNull('item_type')
+                        ->orWhere('item_type', '')
+                        ->orWhere('item_type', 'icon');
+                });
+            }
+
+            return $query
+                ->get()
+                ->map(function ($item) {
+                    $item->is_fixed = 1;
+                    if (! isset($item->map_width)) {
+                        $item->map_width = null;
+                    }
+                    if (! isset($item->map_height)) {
+                        $item->map_height = null;
+                    }
+                    if (! isset($item->map_rotation)) {
+                        $item->map_rotation = null;
+                    }
+                    return $item;
+                });
+        } catch (\Throwable $e) {
+            if (! $this->isUnavailableTableException($e, 'facility_map_items')) {
+                throw $e;
+            }
+
+            report($e);
+
+            return collect();
+        }
+    }
+
+    private function loadFixedSceneMapItems()
+    {
+        if (! $this->hasUsableTable('facility_map_items')) {
+            return collect();
+        }
+
+        $geometryColumns = $this->facilityMapItemGeometryColumns();
+        $sceneColumns = $this->facilityMapItemSceneColumns();
+
+        if (! $sceneColumns['item_type'] || ! $sceneColumns['scene_object_key']) {
+            return collect();
+        }
+
+        try {
+            return DB::table('facility_map_items')
+                ->selectRaw('facility_map_itemid as facility_map_itemid')
+                ->selectRaw('facility_id as facility_id')
+                ->selectRaw('scene_object_key as scene_object_key')
+                ->selectRaw('map_x as map_x')
+                ->selectRaw('map_y as map_y')
+                ->when($sceneColumns['is_removed'], fn ($query) => $query->selectRaw('is_removed as is_removed'))
+                ->when($geometryColumns['width'], fn ($query) => $query->selectRaw('map_width as map_width'))
+                ->when($geometryColumns['height'], fn ($query) => $query->selectRaw('map_height as map_height'))
+                ->when($geometryColumns['rotation'], fn ($query) => $query->selectRaw('map_rotation as map_rotation'))
+                ->where('is_fixed', true)
+                ->where('item_type', 'scene')
+                ->whereNotNull('scene_object_key')
+                ->where('scene_object_key', '!=', '')
+                ->orderBy('facility_map_itemid')
+                ->get()
+                ->map(function ($item) {
+                    if (! isset($item->is_removed)) {
+                        $item->is_removed = false;
+                    }
+                    if (! isset($item->map_width)) {
+                        $item->map_width = null;
+                    }
+                    if (! isset($item->map_height)) {
+                        $item->map_height = null;
+                    }
+                    if (! isset($item->map_rotation)) {
+                        $item->map_rotation = null;
+                    }
+                    return $item;
+                });
+        } catch (\Throwable $e) {
+            if (! $this->isUnavailableTableException($e, 'facility_map_items')) {
+                throw $e;
+            }
+
+            report($e);
+
+            return collect();
+        }
+    }
+
+    private function isUnavailableTableException(\Throwable $e, string $table): bool
+    {
+        $message = Str::lower($e->getMessage());
+        $table = Str::lower($table);
+
+        $tableMentioned = Str::contains($message, [
+            "'{$table}'",
+            "`{$table}`",
+            ".{$table}'",
+            ".{$table}`",
+        ]);
+
+        if (! $tableMentioned) {
+            return false;
+        }
+
+        return Str::contains($message, [
+            'base table or view not found',
+            'doesn\'t exist in engine',
+            'doesn\'t exist',
+            'no such table',
+        ]);
+    }
+
     private function buildDashboardData(bool $hideBlocksWithoutPlots = false): array
     {
         $summary = GravePlot::query()
             ->selectRaw('COUNT(*) as total')
             ->selectRaw("SUM(CASE WHEN status = 'occupied' THEN 1 ELSE 0 END) as occupied")
             ->selectRaw("SUM(CASE WHEN status = 'empty' THEN 1 ELSE 0 END) as empty")
-            ->selectRaw("SUM(CASE WHEN status = 'reserved' THEN 1 ELSE 0 END) as reserved")
-            ->selectRaw("SUM(CASE WHEN status = 'maintenance' THEN 1 ELSE 0 END) as maintenance")
             ->first();
 
         $dashboardBlockColumns = ['blockid', 'block_name', 'map_color'];
@@ -2601,7 +4209,7 @@ class HomeController extends Controller
 
         foreach ($blocks as $block) {
             $plots = $block->gravePlots;
-            $color = $block->map_color ?: '#D8E4DF';
+            $color = $this->normalizeMapColor($block->map_color, '#D8E4DF');
 
             $minX = 0.0;
             $minY = 0.0;
@@ -2918,16 +4526,34 @@ class HomeController extends Controller
             'blockid' => (int) $block->blockid,
             'block_name' => $block->block_name,
             'description' => $block->description,
-            'map_color' => $block->map_color ?: '#D8E4DF',
+            'map_color' => $this->normalizeMapColor($block->map_color, '#D8E4DF'),
             'max_plots' => max(1, (int) ($block->max_plots ?? 15)),
             'map_x' => isset($block->map_x) ? (int) $block->map_x : null,
             'map_y' => isset($block->map_y) ? (int) $block->map_y : null,
             'total_plots' => (int) ($block->total_plots ?? 0),
             'occupied_plots' => (int) ($block->occupied_plots ?? 0),
             'empty_plots' => (int) ($block->empty_plots ?? 0),
-            'reserved_plots' => (int) ($block->reserved_plots ?? 0),
-            'maintenance_plots' => (int) ($block->maintenance_plots ?? 0),
+            'reserved_plots' => 0,
+            'maintenance_plots' => 0,
         ];
+    }
+
+    private function normalizeMapColor(mixed $color, string $fallback = '#D8E4DF'): string
+    {
+        $raw = trim((string) ($color ?? ''));
+        if ($raw === '') {
+            return $fallback;
+        }
+
+        if (preg_match('/^#[0-9a-fA-F]{6}$/', $raw) === 1) {
+            return strtoupper($raw);
+        }
+
+        if (preg_match('/^[0-9a-fA-F]{6}$/', $raw) === 1) {
+            return '#' . strtoupper($raw);
+        }
+
+        return $fallback;
     }
 
     public function deceasedDetail(Request $request, int $id): View
