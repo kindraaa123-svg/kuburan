@@ -10,6 +10,7 @@ use App\Models\LegacyUser;
 use App\Models\SystemSetting;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -67,13 +68,30 @@ class HomeController extends Controller
                 ->with('status', 'Silakan login terlebih dahulu.');
         }
 
-        $data = $this->buildDashboardData();
+        $data = $this->buildDashboardData(true);
         $setting = $this->resolveSystemSetting();
         $facilityData = $this->buildFacilityData();
+        $emptyBlockColumns = ['blockid', 'block_name'];
+        if (Schema::hasColumn('blocks', 'map_x')) {
+            $emptyBlockColumns[] = 'map_x';
+        }
+        if (Schema::hasColumn('blocks', 'map_y')) {
+            $emptyBlockColumns[] = 'map_y';
+        }
+        if (Schema::hasColumn('blocks', 'map_color')) {
+            $emptyBlockColumns[] = 'map_color';
+        }
+
+        $blocksWithoutPlots = Block::query()
+            ->select($emptyBlockColumns)
+            ->doesntHave('gravePlots')
+            ->orderBy('blockid')
+            ->get();
 
         return view('dashboard', [
             ...$data,
             ...$facilityData,
+            'blocksWithoutPlots' => $blocksWithoutPlots,
             'setting' => $setting,
             'authUser' => $request->session()->get('auth_user'),
         ]);
@@ -172,6 +190,50 @@ class HomeController extends Controller
             ->orderBy('blockid')
             ->get();
 
+        $plotIds = $blocks
+            ->flatMap(fn ($block) => $block->gravePlots->pluck('plotid'))
+            ->values()
+            ->all();
+
+        $deceasedByPlot = empty($plotIds)
+            ? collect()
+            : Deceased::query()
+                ->select([
+                    'deceasedid',
+                    'plotid',
+                    'full_name',
+                ])
+                ->whereIn('plotid', $plotIds)
+                ->orderByDesc('deceasedid')
+                ->get()
+                ->unique('plotid')
+                ->keyBy('plotid');
+
+        $deceasedIds = $deceasedByPlot
+            ->pluck('deceasedid')
+            ->map(fn ($value) => (int) $value)
+            ->filter(fn (int $value) => $value > 0)
+            ->values()
+            ->all();
+
+        $familyByDeceased = empty($deceasedIds)
+            ? collect()
+            : DB::table('families')
+                ->select([
+                    'familyid',
+                    'deceased_id',
+                    'family_name',
+                    'relationship_status',
+                    'phone_number',
+                    'email',
+                    'address',
+                    'notes',
+                ])
+                ->whereIn('deceased_id', $deceasedIds)
+                ->orderBy('familyid')
+                ->get()
+                ->groupBy('deceased_id');
+
         $plotCards = [];
 
         foreach ($blocks as $block) {
@@ -213,6 +275,19 @@ class HomeController extends Controller
             $cardPlots = [];
             foreach ($plots as $plot) {
                 $normalizedStatus = ($plot->status ?? 'empty') === 'occupied' ? 'occupied' : 'empty';
+                $deceased = $deceasedByPlot->get($plot->plotid);
+                $familyContacts = collect($familyByDeceased->get((int) ($deceased?->deceasedid ?? 0), collect()))
+                    ->map(fn ($family) => [
+                        'familyid' => (int) $family->familyid,
+                        'family_name' => $family->family_name,
+                        'relationship_status' => $family->relationship_status,
+                        'phone_number' => $family->phone_number,
+                        'email' => $family->email,
+                        'address' => $family->address,
+                        'notes' => $family->notes,
+                    ])
+                    ->values()
+                    ->all();
 
                 $cardPlots[] = [
                     'plotid' => (int) $plot->plotid,
@@ -223,6 +298,9 @@ class HomeController extends Controller
                     'y' => ((float) $plot->position_y - $minY) + 24,
                     'width' => (float) ($plot->width ?? 60),
                     'height' => (float) ($plot->height ?? 40),
+                    'deceased_id' => $deceased?->deceasedid ? (int) $deceased->deceasedid : null,
+                    'deceased_name' => $deceased?->full_name,
+                    'family_contacts' => $familyContacts,
                 ];
             }
 
@@ -619,6 +697,25 @@ class HomeController extends Controller
                 ->withErrors(['deceased_id' => 'Data almarhum tidak ditemukan.'], 'familyContactForm');
         }
 
+        $familyCount = (int) DB::table('families')
+            ->where('deceased_id', (int) $validated['deceased_id'])
+            ->count();
+        if ($familyCount >= 3) {
+            $message = 'Maksimal 3 kontak keluarga untuk 1 almarhum.';
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'message' => $message,
+                    'errors' => [
+                        'deceased_id' => [$message],
+                    ],
+                ], 422);
+            }
+
+            return redirect()
+                ->route('dashboard.data-kontak-keluarga')
+                ->withErrors(['deceased_id' => $message], 'familyContactForm');
+        }
+
         $payload = [
             'deceased_id' => (int) $validated['deceased_id'],
             'family_name' => $validated['family_name'],
@@ -677,6 +774,141 @@ class HomeController extends Controller
         return redirect()
             ->route('dashboard.data-kontak-keluarga')
             ->with('status', 'Kontak keluarga berhasil ditambahkan.');
+    }
+
+    public function updateDataKontakKeluarga(Request $request, int $familyid): JsonResponse|RedirectResponse
+    {
+        if (! $request->session()->has('auth_user')) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'message' => 'Silakan login terlebih dahulu.',
+                ], 401);
+            }
+
+            return redirect('/login')
+                ->with('status', 'Silakan login terlebih dahulu.');
+        }
+        if (! $this->canAccessMenu($request, 'data-kontak-keluarga')) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'message' => 'Hak akses ke menu Data Kontak Keluarga tidak tersedia.',
+                ], 403);
+            }
+
+            return redirect()->route('dashboard')
+                ->with('status', 'Hak akses ke menu Data Kontak Keluarga tidak tersedia.');
+        }
+
+        $validated = $request->validateWithBag('familyContactForm', [
+            'deceased_id' => ['required', 'integer', Rule::exists('deceased', 'deceasedid')],
+            'family_name' => ['required', 'string', 'max:150'],
+            'relationship_status' => ['nullable', 'string', 'max:100'],
+            'phone_number' => ['nullable', 'string', 'max:30'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $existingFamily = DB::table('families')
+            ->where('familyid', $familyid)
+            ->first();
+
+        if (! $existingFamily) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'message' => 'Data kontak keluarga tidak ditemukan.',
+                ], 404);
+            }
+
+            return redirect()
+                ->route('dashboard.data-kontak-keluarga')
+                ->with('status', 'Data kontak keluarga tidak ditemukan.');
+        }
+
+        if ((int) ($existingFamily->deceased_id ?? 0) !== (int) $validated['deceased_id']) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'message' => 'Kontak keluarga tidak sesuai dengan almarhum yang dipilih.',
+                ], 422);
+            }
+
+            return redirect()
+                ->route('dashboard.data-kontak-keluarga')
+                ->withErrors(['deceased_id' => 'Kontak keluarga tidak sesuai dengan almarhum yang dipilih.'], 'familyContactForm');
+        }
+
+        $deceased = Deceased::query()
+            ->select(['deceasedid', 'plotid', 'full_name'])
+            ->find((int) $validated['deceased_id']);
+
+        if (! $deceased) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'message' => 'Data almarhum tidak ditemukan.',
+                ], 404);
+            }
+
+            return redirect()
+                ->route('dashboard.data-kontak-keluarga')
+                ->withErrors(['deceased_id' => 'Data almarhum tidak ditemukan.'], 'familyContactForm');
+        }
+
+        $payload = [
+            'family_name' => $validated['family_name'],
+            'relationship_status' => $validated['relationship_status'] ?: null,
+            'phone_number' => $validated['phone_number'] ?: null,
+            'email' => $validated['email'] ?: null,
+            'address' => $validated['address'] ?: null,
+            'notes' => $validated['notes'] ?: null,
+        ];
+
+        if (Schema::hasColumn('families', 'updated_at')) {
+            $payload['updated_at'] = now();
+        }
+
+        DB::table('families')
+            ->where('familyid', $familyid)
+            ->update($payload);
+
+        $updatedFamily = DB::table('families')
+            ->select([
+                'familyid',
+                'deceased_id',
+                'family_name',
+                'relationship_status',
+                'phone_number',
+                'email',
+                'address',
+                'notes',
+            ])
+            ->where('familyid', $familyid)
+            ->first();
+
+        $this->writeActivityLog(
+            $request,
+            'Ubah Kontak Keluarga',
+            'Memperbarui kontak keluarga #' . (int) $familyid . ' menjadi "' . $payload['family_name'] . '" untuk almarhum #' . (int) $deceased->deceasedid . ' "' . $deceased->full_name . '" pada plot #' . (int) $deceased->plotid . '.'
+        );
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => 'Kontak keluarga berhasil diperbarui.',
+                'data' => [
+                    'familyid' => (int) ($updatedFamily->familyid ?? $familyid),
+                    'deceased_id' => (int) ($updatedFamily->deceased_id ?? (int) $validated['deceased_id']),
+                    'family_name' => (string) ($updatedFamily->family_name ?? $payload['family_name']),
+                    'relationship_status' => $updatedFamily->relationship_status ?? $payload['relationship_status'],
+                    'phone_number' => $updatedFamily->phone_number ?? $payload['phone_number'],
+                    'email' => $updatedFamily->email ?? $payload['email'],
+                    'address' => $updatedFamily->address ?? $payload['address'],
+                    'notes' => $updatedFamily->notes ?? $payload['notes'],
+                ],
+            ]);
+        }
+
+        return redirect()
+            ->route('dashboard.data-kontak-keluarga')
+            ->with('status', 'Kontak keluarga berhasil diperbarui.');
     }
 
     public function destroyDataKontakKeluarga(Request $request, int $familyid): JsonResponse|RedirectResponse
@@ -1036,6 +1268,24 @@ class HomeController extends Controller
                 $deceased->getAttributes()
             );
 
+            $families = DB::table('families')
+                ->where('deceased_id', $deceasedId)
+                ->get();
+
+            foreach ($families as $family) {
+                $this->archiveDeletedData(
+                    $request,
+                    'family',
+                    (int) ($family->familyid ?? 0),
+                    'Kontak keluarga "' . ((string) ($family->family_name ?? '-')) . '"',
+                    (array) $family
+                );
+            }
+
+            DB::table('families')
+                ->where('deceased_id', $deceasedId)
+                ->delete();
+
             $deceased->delete();
         });
 
@@ -1223,6 +1473,151 @@ class HomeController extends Controller
             'authUser' => $request->session()->get('auth_user'),
             'logs' => $logs,
         ]);
+    }
+
+    public function backupDatabase(Request $request): View|RedirectResponse
+    {
+        if (! $request->session()->has('auth_user')) {
+            return redirect('/login')
+                ->with('status', 'Silakan login terlebih dahulu.');
+        }
+        if (! $this->canAccessMenu($request, 'backup-database')) {
+            return redirect()->route('dashboard')
+                ->with('status', 'Hak akses ke menu Backup Database tidak tersedia.');
+        }
+
+        return view('backup-database', [
+            'authUser' => $request->session()->get('auth_user'),
+        ]);
+    }
+
+    public function downloadBackupDatabase(Request $request): Response|RedirectResponse
+    {
+        if (! $request->session()->has('auth_user')) {
+            return redirect('/login')
+                ->with('status', 'Silakan login terlebih dahulu.');
+        }
+        if (! $this->canAccessMenu($request, 'backup-database')) {
+            return redirect()->route('dashboard')
+                ->with('status', 'Hak akses ke menu Backup Database tidak tersedia.');
+        }
+
+        $tables = DB::select('SHOW TABLES');
+        $tableKey = 'Tables_in_' . DB::getDatabaseName();
+        $output = [];
+        $output[] = '-- Backup Database';
+        $output[] = '-- Generated at: ' . now()->toDateTimeString();
+        $output[] = '-- Database: ' . DB::getDatabaseName();
+        $output[] = '';
+        $output[] = 'SET FOREIGN_KEY_CHECKS=0;';
+        $output[] = '';
+
+        foreach ($tables as $row) {
+            $table = (string) ($row->{$tableKey} ?? '');
+            if ($table === '') {
+                continue;
+            }
+
+            $createTable = DB::select('SHOW CREATE TABLE `' . str_replace('`', '``', $table) . '`');
+            $createSql = (string) ($createTable[0]->{'Create Table'} ?? '');
+            if ($createSql === '') {
+                continue;
+            }
+
+            $output[] = '--';
+            $output[] = '-- Table structure for `' . $table . '`';
+            $output[] = '--';
+            $output[] = 'DROP TABLE IF EXISTS `' . $table . '`;';
+            $output[] = $createSql . ';';
+            $output[] = '';
+            $output[] = '--';
+            $output[] = '-- Dumping data for `' . $table . '`';
+            $output[] = '--';
+
+            $rows = DB::table($table)->get();
+            foreach ($rows as $dataRow) {
+                $data = (array) $dataRow;
+                $columns = array_map(fn ($column) => '`' . str_replace('`', '``', (string) $column) . '`', array_keys($data));
+                $values = array_map(function ($value): string {
+                    if ($value === null) {
+                        return 'NULL';
+                    }
+
+                    return "'" . str_replace("'", "''", (string) $value) . "'";
+                }, array_values($data));
+
+                $output[] = 'INSERT INTO `' . $table . '` (' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ');';
+            }
+
+            $output[] = '';
+        }
+
+        $output[] = 'SET FOREIGN_KEY_CHECKS=1;';
+        $output[] = '';
+
+        $filename = 'backup-' . DB::getDatabaseName() . '-' . now()->format('Ymd-His') . '.sql';
+
+        $this->writeActivityLog(
+            $request,
+            'Backup Database',
+            'Mengunduh backup database "' . DB::getDatabaseName() . '" (' . $filename . ').'
+        );
+
+        return response(implode("\n", $output), 200, [
+            'Content-Type' => 'application/sql; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function importBackupDatabase(Request $request): RedirectResponse
+    {
+        if (! $request->session()->has('auth_user')) {
+            return redirect('/login')
+                ->with('status', 'Silakan login terlebih dahulu.');
+        }
+        if (! $this->canAccessMenu($request, 'backup-database')) {
+            return redirect()->route('dashboard')
+                ->with('status', 'Hak akses ke menu Backup Database tidak tersedia.');
+        }
+
+        $validated = $request->validate([
+            'backup_file' => ['required', 'file', 'mimes:sql,mysql,txt', 'max:51200'],
+        ]);
+
+        $file = $validated['backup_file'];
+        $sql = file_get_contents($file->getRealPath());
+        if ($sql === false || trim($sql) === '') {
+            return redirect()
+                ->route('dashboard.backup-database')
+                ->with('status', 'File backup kosong atau tidak bisa dibaca.');
+        }
+
+        $statements = preg_split('/;\s*(\r\n|\r|\n)/', (string) $sql) ?: [];
+        $executed = 0;
+
+        foreach ($statements as $statement) {
+            $query = trim((string) $statement);
+            if ($query === '') {
+                continue;
+            }
+
+            if (str_starts_with($query, '--') || str_starts_with($query, '/*') || str_starts_with($query, '/*!')) {
+                continue;
+            }
+
+            DB::unprepared($query . ';');
+            $executed++;
+        }
+
+        $this->writeActivityLog(
+            $request,
+            'Import Database',
+            'Mengimpor backup database dari file "' . $file->getClientOriginalName() . '" dengan ' . $executed . ' query dieksekusi.'
+        );
+
+        return redirect()
+            ->route('dashboard.backup-database')
+            ->with('status', 'Import database berhasil. Total query dieksekusi: ' . $executed . '.');
     }
 
     public function restoreData(Request $request): View|RedirectResponse|JsonResponse
@@ -1777,6 +2172,237 @@ class HomeController extends Controller
             ->with('status', 'User ' . $username . ' berhasil dihapus.');
     }
 
+    public function exportDataUser(Request $request): Response|RedirectResponse
+    {
+        if (! $request->session()->has('auth_user')) {
+            return redirect('/login')
+                ->with('status', 'Silakan login terlebih dahulu.');
+        }
+        if (! $this->canAccessMenu($request, 'data-user')) {
+            return redirect()->route('dashboard')
+                ->with('status', 'Hak akses ke menu Data User tidak tersedia.');
+        }
+
+        $userColumns = Schema::hasTable('user') ? Schema::getColumnListing('user') : [];
+        $resolveColumn = static function (array $columns, array $candidates): ?string {
+            foreach ($candidates as $candidate) {
+                if (in_array($candidate, $columns, true)) {
+                    return $candidate;
+                }
+            }
+
+            return null;
+        };
+
+        $userFullNameColumn = $resolveColumn($userColumns, ['full_name', 'name', 'fullname', 'employee_name']);
+        $userEmailColumn = $resolveColumn($userColumns, ['email', 'email_address', 'mail']);
+        $userPhoneColumn = $resolveColumn($userColumns, ['phone_number', 'phonenumber', 'phone', 'phone_no', 'no_hp']);
+
+        $fullNameExpr = $userFullNameColumn ? ('user.' . $userFullNameColumn) : 'NULL';
+        $emailExpr = $userEmailColumn ? ('user.' . $userEmailColumn) : 'NULL';
+        $phoneExpr = $userPhoneColumn ? ('user.' . $userPhoneColumn) : 'NULL';
+
+        $usersQuery = LegacyUser::query()
+            ->select([
+                'user.userid',
+                'user.username',
+                'user.levelid',
+            ]);
+
+        if (Schema::hasTable('employer') && Schema::hasColumn('employer', 'userid')) {
+            $employerColumns = Schema::getColumnListing('employer');
+            $usersQuery->leftJoin('employer', 'employer.userid', '=', 'user.userid');
+
+            $employerFullNameColumn = $resolveColumn($employerColumns, ['full_name', 'name', 'fullname', 'employee_name']);
+            $employerEmailColumn = $resolveColumn($employerColumns, ['email', 'email_address', 'mail']);
+            $employerPhoneColumn = $resolveColumn($employerColumns, ['phone_number', 'phonenumber', 'phone', 'phone_no', 'no_hp']);
+
+            if ($employerFullNameColumn) {
+                $fullNameExpr = 'COALESCE(employer.' . $employerFullNameColumn . ', ' . $fullNameExpr . ')';
+            }
+            if ($employerEmailColumn) {
+                $emailExpr = 'COALESCE(employer.' . $employerEmailColumn . ', ' . $emailExpr . ')';
+            }
+            if ($employerPhoneColumn) {
+                $phoneExpr = 'COALESCE(employer.' . $employerPhoneColumn . ', ' . $phoneExpr . ')';
+            }
+        }
+
+        $usersQuery->addSelect([
+            DB::raw($fullNameExpr . ' as full_name'),
+            DB::raw($emailExpr . ' as email'),
+            DB::raw($phoneExpr . ' as phone_number'),
+        ]);
+
+        $users = $usersQuery
+            ->orderBy('userid')
+            ->get();
+
+        $rows = [];
+        foreach ($users as $user) {
+            $rows[] = [
+                (string) $user->username,
+                (string) ($user->full_name ?? ''),
+                (string) ($user->email ?? ''),
+                (string) ($user->phone_number ?? ''),
+                (string) $user->levelid,
+            ];
+        }
+
+        $headers = ['username', 'full_name', 'email', 'phone_number', 'levelid'];
+        $xlsxBinary = $this->buildSimpleXlsx($headers, $rows);
+        $filename = 'data-user-' . now()->format('Ymd-His') . '.xlsx';
+
+        $this->writeActivityLog(
+            $request,
+            'Export Data User',
+            'Mengexport data user ke file Excel.'
+        );
+
+        return response($xlsxBinary, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function importDataUser(Request $request): RedirectResponse
+    {
+        if (! $request->session()->has('auth_user')) {
+            return redirect('/login')
+                ->with('status', 'Silakan login terlebih dahulu.');
+        }
+        if (! $this->canAccessMenu($request, 'data-user')) {
+            return redirect()->route('dashboard')
+                ->with('status', 'Hak akses ke menu Data User tidak tersedia.');
+        }
+
+        $validated = $request->validateWithBag('importUser', [
+            'user_file' => [
+                'required',
+                'file',
+                'mimes:xlsx',
+                'max:5120',
+            ],
+        ]);
+
+        try {
+            $rows = $this->parseSimpleXlsxRows($validated['user_file']->getRealPath());
+        } catch (\Throwable $e) {
+            return redirect()
+                ->route('dashboard.data-user')
+                ->withErrors(['user_file' => 'File .xlsx tidak valid atau tidak bisa diproses.'], 'importUser');
+        }
+        if (count($rows) < 2) {
+            return redirect()
+                ->route('dashboard.data-user')
+                ->withErrors(['user_file' => 'File .xlsx tidak berisi data user.'], 'importUser');
+        }
+
+        $header = array_map(fn ($v) => Str::lower(trim((string) $v)), $rows[0]);
+        $required = ['username', 'full_name', 'email', 'phone_number', 'levelid'];
+        foreach ($required as $column) {
+            if (! in_array($column, $header, true)) {
+                return redirect()
+                    ->route('dashboard.data-user')
+                    ->withErrors(['user_file' => 'Header wajib tidak lengkap. Pastikan ada: username, full_name, email, phone_number, levelid.'], 'importUser');
+            }
+        }
+
+        $usernameIndex = array_search('username', $header, true);
+        $fullNameIndex = array_search('full_name', $header, true);
+        $emailIndex = array_search('email', $header, true);
+        $phoneIndex = array_search('phone_number', $header, true);
+        $levelIndex = array_search('levelid', $header, true);
+
+        $imported = 0;
+        $skipped = 0;
+        $defaultPassword = '12345';
+
+        DB::transaction(function () use ($rows, $usernameIndex, $fullNameIndex, $emailIndex, $phoneIndex, $levelIndex, $defaultPassword, &$imported, &$skipped): void {
+            for ($i = 1; $i < count($rows); $i++) {
+                $row = $rows[$i];
+                $username = trim((string) ($row[$usernameIndex] ?? ''));
+                $fullName = trim((string) ($row[$fullNameIndex] ?? ''));
+                $email = trim((string) ($row[$emailIndex] ?? ''));
+                $phone = trim((string) ($row[$phoneIndex] ?? ''));
+                $levelRaw = trim((string) ($row[$levelIndex] ?? ''));
+
+                if ($username === '' || $levelRaw === '') {
+                    $skipped++;
+                    continue;
+                }
+
+                $levelId = (int) $levelRaw;
+                if ($levelId < 1) {
+                    $skipped++;
+                    continue;
+                }
+
+                if (LegacyUser::query()->where('username', $username)->exists()) {
+                    $skipped++;
+                    continue;
+                }
+
+                if ($email !== '' && LegacyUser::query()->where('email', $email)->exists()) {
+                    $skipped++;
+                    continue;
+                }
+
+                if (Schema::hasTable('level') && Schema::hasColumn('level', 'levelid')) {
+                    $levelExists = DB::table('level')->where('levelid', $levelId)->exists();
+                    if (! $levelExists) {
+                        $skipped++;
+                        continue;
+                    }
+                }
+
+                $user = LegacyUser::query()->create([
+                    'username' => $username,
+                    'full_name' => $fullName !== '' ? $fullName : null,
+                    'email' => $email !== '' ? $email : null,
+                    'phone_number' => $phone !== '' ? $phone : null,
+                    'password' => Hash::make($defaultPassword),
+                    'levelid' => $levelId,
+                    'reset_password_token' => null,
+                    'reset_password_token_expired' => null,
+                ]);
+
+                if (Schema::hasTable('employer') && Schema::hasColumn('employer', 'userid')) {
+                    $employerColumns = Schema::getColumnListing('employer');
+                    $employerPayload = [
+                        'userid' => (int) $user->userid,
+                    ];
+
+                    if (in_array('name', $employerColumns, true)) {
+                        $employerPayload['name'] = $fullName !== '' ? $fullName : $username;
+                    }
+
+                    if (in_array('email', $employerColumns, true)) {
+                        $employerPayload['email'] = $email;
+                    }
+
+                    if (in_array('phonenumber', $employerColumns, true)) {
+                        $employerPayload['phonenumber'] = $phone;
+                    }
+
+                    DB::table('employer')->insert($employerPayload);
+                }
+
+                $imported++;
+            }
+        });
+
+        $this->writeActivityLog(
+            $request,
+            'Import Data User',
+            'Import user dari file Excel. Berhasil: ' . $imported . ', dilewati: ' . $skipped . '.'
+        );
+
+        return redirect()
+            ->route('dashboard.data-user')
+            ->with('status', 'Import selesai. Berhasil: ' . $imported . ' user, dilewati: ' . $skipped . ' baris.');
+    }
+
     public function storeDataPlot(Request $request): JsonResponse|RedirectResponse
     {
         if (! $request->session()->has('auth_user')) {
@@ -1857,7 +2483,7 @@ class HomeController extends Controller
         $plot = GravePlot::query()->create([
             'block_id' => $blockId,
             'plot_number' => $validated['plot_number'],
-            'row_number' => $validated['row_number'] ?: null,
+            'row_number' => ($validated['row_number'] ?? null) ?: null,
             'position_x' => (float) $validated['position_x'],
             'position_y' => (float) $validated['position_y'],
             'width' => (float) $validated['width'],
@@ -2035,7 +2661,7 @@ class HomeController extends Controller
 
         $plot->fill([
             'plot_number' => $validated['plot_number'],
-            'row_number' => $validated['row_number'] ?: null,
+            'row_number' => ($validated['row_number'] ?? null) ?: null,
             'position_x' => (float) $validated['position_x'],
             'position_y' => (float) $validated['position_y'],
             'width' => (float) $validated['width'],
@@ -2121,26 +2747,46 @@ class HomeController extends Controller
         $plotId = (int) $plot->plotid;
         $blockId = (int) $plot->block_id;
         $plotNumber = (string) ($plot->plot_number ?? '-');
-        $status = (string) ($plot->status ?? 'empty');
+        DB::transaction(function () use ($request, $plot, $plotId, $blockId, $plotNumber): void {
+            $deceasedRows = Deceased::query()
+                ->where('plotid', $plotId)
+                ->get();
 
-        $hasDeceased = Deceased::query()
-            ->where('plotid', $plotId)
-            ->exists();
+            foreach ($deceasedRows as $deceased) {
+                $deceasedId = (int) ($deceased->deceasedid ?? 0);
+                $deceasedName = (string) ($deceased->full_name ?? '-');
 
-        if ($hasDeceased || $status === 'occupied') {
-            $message = 'Plot tidak bisa dihapus karena masih terhubung dengan data almarhum.';
-            if ($request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'message' => $message,
-                ], 422);
+                $this->archiveDeletedData(
+                    $request,
+                    'deceased',
+                    $deceasedId,
+                    'Almarhum "' . $deceasedName . '" (plot #' . $plotId . ')',
+                    $deceased->getAttributes()
+                );
+
+                $families = DB::table('families')
+                    ->where('deceased_id', $deceasedId)
+                    ->get();
+
+                foreach ($families as $family) {
+                    $this->archiveDeletedData(
+                        $request,
+                        'family',
+                        (int) ($family->familyid ?? 0),
+                        'Kontak keluarga "' . ((string) ($family->family_name ?? '-')) . '"',
+                        (array) $family
+                    );
+                }
+
+                DB::table('families')
+                    ->where('deceased_id', $deceasedId)
+                    ->delete();
             }
 
-            return redirect()
-                ->route('dashboard.data-plot')
-                ->with('status', $message);
-        }
+            Deceased::query()
+                ->where('plotid', $plotId)
+                ->delete();
 
-        DB::transaction(function () use ($request, $plot, $plotId, $blockId, $plotNumber): void {
             $this->archiveDeletedData(
                 $request,
                 'plot',
@@ -2204,15 +2850,17 @@ class HomeController extends Controller
             return redirect('/login')
                 ->with('status', 'Silakan login terlebih dahulu.');
         }
-        if (! $this->canAccessMenu($request, 'data-blok')) {
+        $canManageBlock = $this->canAccessMenu($request, 'data-blok')
+            || $this->canAccessMenu($request, 'data-plot');
+        if (! $canManageBlock) {
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
-                    'message' => 'Hak akses ke menu Data Blok tidak tersedia.',
+                    'message' => 'Hak akses untuk menambah blok tidak tersedia.',
                 ], 403);
             }
 
             return redirect()->route('dashboard')
-                ->with('status', 'Hak akses ke menu Data Blok tidak tersedia.');
+                ->with('status', 'Hak akses untuk menambah blok tidak tersedia.');
         }
 
         $validated = $this->validateDataBlokPayload($request);
@@ -2407,6 +3055,8 @@ class HomeController extends Controller
             $rules['facility_items.*.is_removed'] = ['nullable', 'boolean'];
             $rules['facility_items.*.is_fixed'] = ['nullable', 'boolean'];
         }
+        $rules['hidden_empty_block_ids'] = ['nullable', 'array'];
+        $rules['hidden_empty_block_ids.*'] = ['integer', 'exists:blocks,blockid'];
 
         $validated = $request->validate($rules);
 
@@ -2418,6 +3068,25 @@ class HomeController extends Controller
             ])
             ->unique('id')
             ->values();
+        $hiddenEmptyBlockIds = collect($validated['hidden_empty_block_ids'] ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($hiddenEmptyBlockIds->isNotEmpty()) {
+            $occupiedHiddenIds = GravePlot::query()
+                ->whereIn('block_id', $hiddenEmptyBlockIds->all())
+                ->pluck('block_id')
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values();
+            if ($occupiedHiddenIds->isNotEmpty()) {
+                return response()->json([
+                    'message' => 'Blok yang memiliki plot tidak boleh disembunyikan.',
+                ], 422);
+            }
+        }
 
         $targetBlockIds = $incomingPositions->pluck('id')->values()->all();
         $targetBlocks = Block::query()
@@ -2479,7 +3148,7 @@ class HomeController extends Controller
         $hasFacilityMapItemSceneKey = $facilityMapStorage === 'facility_map_items' && $facilityMapItemSceneColumns['scene_object_key'];
         $hasFacilityMapItemIsRemoved = $facilityMapStorage === 'facility_map_items' && $facilityMapItemSceneColumns['is_removed'];
 
-        DB::transaction(function () use ($incomingPositions, $targetBlocks, $facilityItemsPayload, $facilityMapStorage, $hasPlaceWidth, $hasPlaceHeight, $hasPlaceRotation, $hasPlaceItemType, $hasPlaceSceneKey, $hasPlaceIsRemoved, $hasFacilityMapItemWidth, $hasFacilityMapItemHeight, $hasFacilityMapItemRotation, $hasFacilityMapItemType, $hasFacilityMapItemSceneKey, $hasFacilityMapItemIsRemoved, &$facilityChanges, &$savedFacilityItemStates, &$savedSceneItemStates): void {
+        DB::transaction(function () use ($incomingPositions, $targetBlocks, $hiddenEmptyBlockIds, $facilityItemsPayload, $facilityMapStorage, $hasPlaceWidth, $hasPlaceHeight, $hasPlaceRotation, $hasPlaceItemType, $hasPlaceSceneKey, $hasPlaceIsRemoved, $hasFacilityMapItemWidth, $hasFacilityMapItemHeight, $hasFacilityMapItemRotation, $hasFacilityMapItemType, $hasFacilityMapItemSceneKey, $hasFacilityMapItemIsRemoved, &$facilityChanges, &$savedFacilityItemStates, &$savedSceneItemStates): void {
             foreach ($incomingPositions as $position) {
                 /** @var Block|null $targetBlock */
                 $targetBlock = $targetBlocks->get((int) $position['id']);
@@ -2490,6 +3159,16 @@ class HomeController extends Controller
                 $targetBlock->map_x = (int) $position['x'];
                 $targetBlock->map_y = (int) $position['y'];
                 $targetBlock->save();
+            }
+
+            if ($hiddenEmptyBlockIds->isNotEmpty()) {
+                Block::query()
+                    ->whereIn('blockid', $hiddenEmptyBlockIds->all())
+                    ->whereDoesntHave('gravePlots')
+                    ->update([
+                        'map_x' => null,
+                        'map_y' => null,
+                    ]);
             }
 
             if (! Schema::hasTable('facility') || $facilityMapStorage === 'none') {
@@ -3001,17 +3680,66 @@ class HomeController extends Controller
 
         $blockId = (int) $block->blockid;
         $blockName = (string) $block->block_name;
-        $totalPlots = GravePlot::query()
-            ->where('block_id', $block->blockid)
-            ->count();
-
-        if ($totalPlots > 0) {
-            return response()->json([
-                'message' => 'Blok tidak bisa dihapus karena masih memiliki data petak.',
-            ], 422);
-        }
 
         DB::transaction(function () use ($request, $block, $blockId, $blockName): void {
+            $plots = GravePlot::query()
+                ->where('block_id', $blockId)
+                ->get();
+
+            foreach ($plots as $plot) {
+                $plotId = (int) ($plot->plotid ?? 0);
+                $plotNumber = (string) ($plot->plot_number ?? '-');
+
+                $deceasedRows = Deceased::query()
+                    ->where('plotid', $plotId)
+                    ->get();
+
+                foreach ($deceasedRows as $deceased) {
+                    $deceasedId = (int) ($deceased->deceasedid ?? 0);
+                    $deceasedName = (string) ($deceased->full_name ?? '-');
+
+                    $this->archiveDeletedData(
+                        $request,
+                        'deceased',
+                        $deceasedId,
+                        'Almarhum "' . $deceasedName . '" (plot #' . $plotId . ')',
+                        $deceased->getAttributes()
+                    );
+
+                    $families = DB::table('families')
+                        ->where('deceased_id', $deceasedId)
+                        ->get();
+
+                    foreach ($families as $family) {
+                        $this->archiveDeletedData(
+                            $request,
+                            'family',
+                            (int) ($family->familyid ?? 0),
+                            'Kontak keluarga "' . ((string) ($family->family_name ?? '-')) . '"',
+                            (array) $family
+                        );
+                    }
+
+                    DB::table('families')
+                        ->where('deceased_id', $deceasedId)
+                        ->delete();
+                }
+
+                Deceased::query()
+                    ->where('plotid', $plotId)
+                    ->delete();
+
+                $this->archiveDeletedData(
+                    $request,
+                    'plot',
+                    $plotId,
+                    'Plot #' . $plotId . ' (blok #' . $blockId . ', nomor "' . $plotNumber . '")',
+                    $plot->getAttributes()
+                );
+
+                $plot->delete();
+            }
+
             $this->archiveDeletedData(
                 $request,
                 'block',
@@ -3214,27 +3942,95 @@ class HomeController extends Controller
             'email' => ['nullable', 'email', 'max:255'],
         ]);
 
+        $userColumns = Schema::hasTable('user') ? Schema::getColumnListing('user') : [];
+        $fullNameColumn = in_array('full_name', $userColumns, true)
+            ? 'full_name'
+            : (in_array('name', $userColumns, true) ? 'name' : null);
+        $phoneColumn = in_array('phone_number', $userColumns, true) ? 'phone_number' : null;
+        $emailColumn = in_array('email', $userColumns, true) ? 'email' : null;
+
+        $currentFullName = $fullNameColumn ? (string) ($user->{$fullNameColumn} ?? '') : '';
+        $currentPhone = $phoneColumn ? (string) ($user->{$phoneColumn} ?? '') : '';
+        $currentEmail = $emailColumn ? (string) ($user->{$emailColumn} ?? '') : '';
+
         $oldProfile = [
-            'full_name' => $user->full_name,
-            'phone_number' => $user->phone_number,
-            'email' => $user->email,
+            'full_name' => $currentFullName,
+            'phone_number' => $currentPhone !== '' ? $currentPhone : null,
+            'email' => $currentEmail !== '' ? $currentEmail : null,
         ];
 
-        $user->full_name = $validated['full_name'];
-        $user->phone_number = $validated['phone_number'] ?: null;
-        $user->email = $validated['email'] ?: null;
-        $user->save();
+        $updatePayload = [];
+        if ($fullNameColumn) {
+            $updatePayload[$fullNameColumn] = $validated['full_name'];
+        }
+        if ($phoneColumn) {
+            $updatePayload[$phoneColumn] = $validated['phone_number'] ?: null;
+        }
+        if ($emailColumn) {
+            $updatePayload[$emailColumn] = $validated['email'] ?: null;
+        }
+
+        if (! empty($updatePayload)) {
+            DB::table('user')
+                ->where('userid', (int) $user->userid)
+                ->update($updatePayload);
+        }
+
+        $savedFullName = $fullNameColumn ? (string) ($updatePayload[$fullNameColumn] ?? $currentFullName) : $user->username;
+        $savedPhone = $phoneColumn ? ($updatePayload[$phoneColumn] ?? ($oldProfile['phone_number'] ?? null)) : ($oldProfile['phone_number'] ?? null);
+        $savedEmail = $emailColumn ? ($updatePayload[$emailColumn] ?? ($oldProfile['email'] ?? null)) : ($oldProfile['email'] ?? null);
+
+        if (Schema::hasTable('employer') && Schema::hasColumn('employer', 'userid')) {
+            $employerColumns = Schema::getColumnListing('employer');
+            $employerPayload = [];
+
+            if (in_array('full_name', $employerColumns, true)) {
+                $employerPayload['full_name'] = $validated['full_name'];
+            } elseif (in_array('name', $employerColumns, true)) {
+                $employerPayload['name'] = $validated['full_name'];
+            } elseif (in_array('fullname', $employerColumns, true)) {
+                $employerPayload['fullname'] = $validated['full_name'];
+            } elseif (in_array('employee_name', $employerColumns, true)) {
+                $employerPayload['employee_name'] = $validated['full_name'];
+            }
+
+            if (in_array('phone_number', $employerColumns, true)) {
+                $employerPayload['phone_number'] = $validated['phone_number'] ?: null;
+            } elseif (in_array('phonenumber', $employerColumns, true)) {
+                $employerPayload['phonenumber'] = $validated['phone_number'] ?: '';
+            } elseif (in_array('phone', $employerColumns, true)) {
+                $employerPayload['phone'] = $validated['phone_number'] ?: null;
+            } elseif (in_array('phone_no', $employerColumns, true)) {
+                $employerPayload['phone_no'] = $validated['phone_number'] ?: null;
+            } elseif (in_array('no_hp', $employerColumns, true)) {
+                $employerPayload['no_hp'] = $validated['phone_number'] ?: null;
+            }
+
+            if (in_array('email', $employerColumns, true)) {
+                $employerPayload['email'] = $validated['email'] ?: null;
+            } elseif (in_array('email_address', $employerColumns, true)) {
+                $employerPayload['email_address'] = $validated['email'] ?: null;
+            } elseif (in_array('mail', $employerColumns, true)) {
+                $employerPayload['mail'] = $validated['email'] ?: null;
+            }
+
+            if (! empty($employerPayload)) {
+                DB::table('employer')
+                    ->where('userid', (int) $user->userid)
+                    ->update($employerPayload);
+            }
+        }
 
         $profileChanges = [];
-        $this->appendChangeDetail($profileChanges, 'nama', $oldProfile['full_name'], $user->full_name);
-        $this->appendChangeDetail($profileChanges, 'telepon', $oldProfile['phone_number'], $user->phone_number);
-        $this->appendChangeDetail($profileChanges, 'email', $oldProfile['email'], $user->email);
+        $this->appendChangeDetail($profileChanges, 'nama', $oldProfile['full_name'], $savedFullName);
+        $this->appendChangeDetail($profileChanges, 'telepon', $oldProfile['phone_number'], $savedPhone);
+        $this->appendChangeDetail($profileChanges, 'email', $oldProfile['email'], $savedEmail);
 
         $request->session()->put('auth_user', [
             'id' => (int) $user->userid,
             'username' => $user->username,
             'levelid' => (int) $user->levelid,
-            'name' => $user->full_name ?: $user->username,
+            'name' => $savedFullName !== '' ? $savedFullName : $user->username,
             'latitude' => $authUser['latitude'] ?? null,
             'longitude' => $authUser['longitude'] ?? null,
         ]);
@@ -3325,6 +4121,7 @@ class HomeController extends Controller
             'data-kontak-keluarga' => 'Data Kontak Keluarga',
             'data-user' => 'Data User',
             'activity-log' => 'Activity Log',
+            'backup-database' => 'Backup Database',
             'restore-data' => 'Restore Data',
             'hak-akses' => 'Hak Akses',
             'settings' => 'Pengaturan',
@@ -4186,7 +4983,14 @@ class HomeController extends Controller
             ->get();
 
         if ($hideBlocksWithoutPlots) {
-            $blocks = $blocks->filter(fn ($block) => $block->gravePlots->isNotEmpty())->values();
+            $blocks = $blocks->filter(function ($block): bool {
+                if ($block->gravePlots->isNotEmpty()) {
+                    return true;
+                }
+
+                $hasSavedMapPosition = isset($block->map_x) || isset($block->map_y);
+                return $hasSavedMapPosition;
+            })->values();
         }
 
         $plotIds = $blocks
@@ -4238,8 +5042,13 @@ class HomeController extends Controller
                 }
             }
 
-            $blockWidth = max(240, (int) ceil(($maxX - $minX) + 70));
-            $blockHeight = max(180, (int) ceil(($maxY - $minY) + 78));
+            // Ukuran blok dikunci berdasarkan kapasitas maksimal plot (max_plots),
+            // supaya saat tambah plot ukuran blok tidak tiba-tiba membesar.
+            $maxPlotsPerBlock = max(1, (int) ($block->max_plots ?? 15));
+            $targetColumns = max(5, (int) ceil(sqrt($maxPlotsPerBlock)));
+            $targetRows = max(3, (int) ceil($maxPlotsPerBlock / $targetColumns));
+            $blockWidth = max(480, ($targetColumns * 84) + 60);
+            $blockHeight = max(300, ($targetRows * 62) + 60);
             $blockX = isset($block->map_x) ? (int) $block->map_x : $cursorX;
             $blockY = isset($block->map_y) ? (int) $block->map_y : 40;
 
@@ -4554,6 +5363,229 @@ class HomeController extends Controller
         }
 
         return $fallback;
+    }
+
+    private function buildSimpleXlsx(array $headers, array $rows): string
+    {
+        $contentTypesXml = <<<XML
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+    <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+    <Default Extension="xml" ContentType="application/xml"/>
+    <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+    <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+    <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+    <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
+    <Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>
+</Types>
+XML;
+
+        $relsXml = <<<XML
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+    <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+    <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
+    <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
+</Relationships>
+XML;
+
+        $workbookXml = <<<XML
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+    <sheets>
+        <sheet name="Users" sheetId="1" r:id="rId1"/>
+    </sheets>
+</workbook>
+XML;
+
+        $workbookRelsXml = <<<XML
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+    <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+    <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>
+XML;
+
+        $stylesXml = <<<XML
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+    <fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts>
+    <fills count="1"><fill><patternFill patternType="none"/></fill></fills>
+    <borders count="1"><border/></borders>
+    <cellStyleXfs count="1"><xf/></cellStyleXfs>
+    <cellXfs count="1"><xf xfId="0"/></cellXfs>
+</styleSheet>
+XML;
+
+        $coreXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" '
+            . 'xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" '
+            . 'xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
+            . '<dc:title>Data User</dc:title>'
+            . '<dc:creator>Kuburan Dashboard</dc:creator>'
+            . '<cp:lastModifiedBy>Kuburan Dashboard</cp:lastModifiedBy>'
+            . '<dcterms:created xsi:type="dcterms:W3CDTF">' . now()->toAtomString() . '</dcterms:created>'
+            . '<dcterms:modified xsi:type="dcterms:W3CDTF">' . now()->toAtomString() . '</dcterms:modified>'
+            . '</cp:coreProperties>';
+
+        $appXml = <<<XML
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
+    <Application>Microsoft Excel</Application>
+</Properties>
+XML;
+
+        $allRows = [$headers, ...$rows];
+        $sheetRowsXml = '';
+        foreach ($allRows as $rowIndex => $row) {
+            $rowNumber = $rowIndex + 1;
+            $sheetRowsXml .= '<row r="' . $rowNumber . '">';
+            foreach ($row as $columnIndex => $value) {
+                $cellRef = $this->xlsxColumnName($columnIndex + 1) . $rowNumber;
+                $escaped = htmlspecialchars((string) $value, ENT_XML1);
+                $sheetRowsXml .= '<c r="' . $cellRef . '" t="inlineStr"><is><t>' . $escaped . '</t></is></c>';
+            }
+            $sheetRowsXml .= '</row>';
+        }
+
+        $sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            . '<sheetData>' . $sheetRowsXml . '</sheetData>'
+            . '</worksheet>';
+
+        $tempPath = tempnam(sys_get_temp_dir(), 'xlsx_');
+        if ($tempPath === false) {
+            throw new \RuntimeException('Gagal membuat file sementara export.');
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($tempPath, \ZipArchive::OVERWRITE) !== true) {
+            throw new \RuntimeException('Gagal membuka file zip untuk export.');
+        }
+
+        $zip->addFromString('[Content_Types].xml', $contentTypesXml);
+        $zip->addFromString('_rels/.rels', $relsXml);
+        $zip->addFromString('xl/workbook.xml', $workbookXml);
+        $zip->addFromString('xl/_rels/workbook.xml.rels', $workbookRelsXml);
+        $zip->addFromString('xl/styles.xml', $stylesXml);
+        $zip->addFromString('xl/worksheets/sheet1.xml', $sheetXml);
+        $zip->addFromString('docProps/core.xml', $coreXml);
+        $zip->addFromString('docProps/app.xml', $appXml);
+        $zip->close();
+
+        $binary = file_get_contents($tempPath);
+        @unlink($tempPath);
+        if ($binary === false) {
+            throw new \RuntimeException('Gagal membaca file export.');
+        }
+
+        return $binary;
+    }
+
+    private function parseSimpleXlsxRows(string $filePath): array
+    {
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== true) {
+            throw new \RuntimeException('File .xlsx tidak dapat dibuka.');
+        }
+
+        $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $sharedXml = $zip->getFromName('xl/sharedStrings.xml');
+        $zip->close();
+
+        if (! is_string($sheetXml) || $sheetXml === '') {
+            throw new \RuntimeException('Sheet utama tidak ditemukan pada file .xlsx.');
+        }
+
+        $sharedStrings = [];
+        if (is_string($sharedXml) && $sharedXml !== '') {
+            $shared = simplexml_load_string($sharedXml);
+            if ($shared !== false) {
+                $namespaces = $shared->getNamespaces(true);
+                $mainNs = $namespaces[''] ?? null;
+                if ($mainNs) {
+                    $items = $shared->children($mainNs)->si ?? [];
+                    foreach ($items as $si) {
+                        $text = '';
+                        foreach ($si->xpath('.//*[local-name()="t"]') ?: [] as $tNode) {
+                            $text .= (string) $tNode;
+                        }
+                        $sharedStrings[] = $text;
+                    }
+                }
+            }
+        }
+
+        $sheet = simplexml_load_string($sheetXml);
+        if ($sheet === false) {
+            throw new \RuntimeException('Isi sheet .xlsx tidak valid.');
+        }
+
+        $rows = [];
+        $rowNodes = $sheet->xpath('//*[local-name()="sheetData"]/*[local-name()="row"]') ?: [];
+        foreach ($rowNodes as $rowNode) {
+            $resultRow = [];
+            $cells = $rowNode->xpath('./*[local-name()="c"]') ?: [];
+            foreach ($cells as $cell) {
+                $cellRef = (string) ($cell['r'] ?? '');
+                $columnLetters = preg_replace('/[^A-Z]/', '', strtoupper($cellRef));
+                $columnIndex = $this->xlsxColumnIndex($columnLetters);
+
+                $type = (string) ($cell['t'] ?? '');
+                $value = '';
+                if ($type === 's') {
+                    $sharedIndex = (int) ($cell->v ?? 0);
+                    $value = (string) ($sharedStrings[$sharedIndex] ?? '');
+                } elseif ($type === 'inlineStr') {
+                    $valueNode = $cell->xpath('.//*[local-name()="t"]');
+                    $value = isset($valueNode[0]) ? (string) $valueNode[0] : '';
+                } else {
+                    $value = (string) ($cell->v ?? '');
+                }
+
+                $resultRow[$columnIndex] = $value;
+            }
+
+            if (! empty($resultRow)) {
+                ksort($resultRow);
+                $maxIndex = (int) max(array_keys($resultRow));
+                $normalized = [];
+                for ($col = 0; $col <= $maxIndex; $col++) {
+                    $normalized[] = (string) ($resultRow[$col] ?? '');
+                }
+                $rows[] = $normalized;
+            }
+        }
+
+        return $rows;
+    }
+
+    private function xlsxColumnName(int $index): string
+    {
+        $name = '';
+        while ($index > 0) {
+            $remainder = ($index - 1) % 26;
+            $name = chr(65 + $remainder) . $name;
+            $index = (int) floor(($index - 1) / 26);
+        }
+
+        return $name;
+    }
+
+    private function xlsxColumnIndex(string $columnLetters): int
+    {
+        $columnLetters = strtoupper(trim($columnLetters));
+        if ($columnLetters === '') {
+            return 0;
+        }
+
+        $index = 0;
+        $length = strlen($columnLetters);
+        for ($i = 0; $i < $length; $i++) {
+            $index = ($index * 26) + (ord($columnLetters[$i]) - 64);
+        }
+
+        return max(0, $index - 1);
     }
 
     public function deceasedDetail(Request $request, int $id): View

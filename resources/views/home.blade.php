@@ -843,7 +843,6 @@
                 @endif
                 <h2 class="brand">{{ $setting->systemname ?: 'Denah Kuburan' }}</h2>
             </div>
-            <span class="badge">Data Real-Time</span>
         </div>
     </header>
 
@@ -887,22 +886,11 @@
             <div class="panel-head">
                 <div>
                     <h2>Layout Semua Blok</h2>
-                    <p>Drag untuk geser peta, scroll atau tombol untuk zoom.</p>
-                </div>
-                <div class="chips">
-                    @foreach ($blockMaps as $blockMap)
-                        <span class="chip">{{ $blockMap['name'] }}: {{ $blockMap['total_plots'] }} plot</span>
-                    @endforeach
                 </div>
             </div>
 
             <div class="map-panel">
-                <div class="map-toolbar">
-                    <button type="button" class="btn" data-map-action="zoom-out">-</button>
-                    <span class="zoom" id="zoomLabel">100%</span>
-                    <button type="button" class="btn" data-map-action="zoom-in">+</button>
-                    <button type="button" class="btn btn-reset" data-map-action="reset">Reset</button>
-                </div>
+
 
                 <div class="map-viewport" id="mapViewport">
                     @php
@@ -2006,8 +1994,17 @@
 
             viewport.addEventListener('wheel', (event) => {
                 event.preventDefault();
-                const factor = event.deltaY < 0 ? 1.1 : 0.9;
-                zoomAt(event.clientX, event.clientY, factor);
+                const isPinchGesture = event.ctrlKey || event.metaKey;
+
+                if (isPinchGesture) {
+                    const factor = Math.exp(-event.deltaY * 0.0025);
+                    zoomAt(event.clientX, event.clientY, factor);
+                    return;
+                }
+
+                translateX -= event.deltaX;
+                translateY -= event.deltaY;
+                render();
             }, { passive: false });
 
             controls.forEach((button) => {

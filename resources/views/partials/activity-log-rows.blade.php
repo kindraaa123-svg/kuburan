@@ -8,11 +8,10 @@
         <td>{{ $log['longitude'] }}</td>
         <td>{{ $log['latitude'] }}</td>
         <td>{{ $log['aksi'] }}</td>
-        <td class="detail">{{ $log['detail'] }}</td>
+        <td class="detail" title="{{ $log['detail'] }}">{{ \Illuminate\Support\Str::limit((string) $log['detail'], 140) }}</td>
     </tr>
 @empty
     <tr>
         <td colspan="9" class="empty">Belum ada data activity log.</td>
     </tr>
 @endforelse
-

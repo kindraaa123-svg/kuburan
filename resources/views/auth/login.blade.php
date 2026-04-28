@@ -526,6 +526,24 @@
             transform-origin: left top;
         }
 
+        .captcha-offline {
+            width: 100%;
+            display: grid;
+            gap: 8px;
+        }
+
+        .captcha-offline label {
+            margin: 0;
+        }
+
+        .captcha-question {
+            margin: 0;
+            color: var(--panel-muted);
+            font-size: 0.84rem;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
         .btn {
             min-height: 56px;
             border: 0;
@@ -694,6 +712,7 @@
                     @csrf
                     <input type="hidden" name="latitude" id="latitudeInput" value="{{ old('latitude') }}">
                     <input type="hidden" name="longitude" id="longitudeInput" value="{{ old('longitude') }}">
+                    <input type="hidden" name="captcha_mode" id="captchaModeInput" value="offline">
 
                     <div class="field">
                         <label for="username">Username</label>
@@ -706,24 +725,26 @@
                     </div>
 
                     <div class="captcha-widget">
-                        @if (config('services.recaptcha.site_key'))
-                            <div class="captcha-frame">
+                        @if (config('services.recaptcha.site_key') && config('services.recaptcha.secret_key'))
+                            <div class="captcha-frame" id="onlineCaptchaWrap" style="display: none;">
                                 <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
                             </div>
                         @else
-                            <div class="msg msg-err" style="margin: 0;">Google reCAPTCHA belum dikonfigurasi.</div>
+                            <div id="onlineCaptchaWrap" style="display: none;"></div>
                         @endif
+
+                        <div class="captcha-offline" id="offlineCaptchaWrap">
+                            <label for="offline_captcha_answer">Captcha Offline</label>
+                            <p class="captcha-question">Berapa hasil dari <strong>{{ session('offline_captcha_question', '1 + 1') }}</strong> ?</p>
+                            <input id="offline_captcha_answer" name="offline_captcha_answer" type="text" inputmode="numeric" placeholder="Jawaban captcha aritmatika" autocomplete="off">
+                        </div>
                     </div>
 
                     <button class="btn" type="submit">
-                        <span>Akses Dashboard</span>
+                        <span>Login</span>
                         <span class="btn-arrow" aria-hidden="true">-></span>
                     </button>
                 </form>
-
-                <div class="panel-note">Browser akan mencoba mengisi koordinat lokasi otomatis saat geolocation diizinkan. Ini tetap memakai flow login yang sama seperti sebelumnya.</div>
-
-                <p class="hint">Jika gagal login, periksa kembali username, password, dan verifikasi reCAPTCHA yang kamu masukkan.</p>
             </div>
         </section>
     </main>
@@ -735,6 +756,38 @@
         (() => {
             const latitudeInput = document.getElementById('latitudeInput');
             const longitudeInput = document.getElementById('longitudeInput');
+            const captchaModeInput = document.getElementById('captchaModeInput');
+            const onlineCaptchaWrap = document.getElementById('onlineCaptchaWrap');
+            const offlineCaptchaWrap = document.getElementById('offlineCaptchaWrap');
+            const offlineCaptchaInput = document.getElementById('offline_captcha_answer');
+            const hasGoogleCaptcha = Boolean(onlineCaptchaWrap && onlineCaptchaWrap.querySelector('.g-recaptcha'));
+
+            const syncCaptchaMode = () => {
+                const useOnlineCaptcha = hasGoogleCaptcha && navigator.onLine;
+
+                if (onlineCaptchaWrap) {
+                    onlineCaptchaWrap.style.display = useOnlineCaptcha ? '' : 'none';
+                }
+
+                if (offlineCaptchaWrap) {
+                    offlineCaptchaWrap.style.display = useOnlineCaptcha ? 'none' : '';
+                }
+
+                if (offlineCaptchaInput) {
+                    offlineCaptchaInput.required = !useOnlineCaptcha;
+                    if (useOnlineCaptcha) {
+                        offlineCaptchaInput.value = '';
+                    }
+                }
+
+                if (captchaModeInput) {
+                    captchaModeInput.value = useOnlineCaptcha ? 'online' : 'offline';
+                }
+            };
+
+            syncCaptchaMode();
+            window.addEventListener('online', syncCaptchaMode);
+            window.addEventListener('offline', syncCaptchaMode);
 
             if (!latitudeInput || !longitudeInput || !('geolocation' in navigator)) {
                 return;

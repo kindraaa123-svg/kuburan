@@ -20,6 +20,8 @@ class AuthController extends Controller
             return redirect('/dashboard');
         }
 
+        $this->storeOfflineCaptcha($request);
+
         return view('auth.login');
     }
 
@@ -28,38 +30,54 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
-            'g-recaptcha-response' => ['required', 'string'],
+            'captcha_mode' => ['nullable', 'in:online,offline'],
+            'g-recaptcha-response' => ['nullable', 'string'],
+            'offline_captcha_answer' => ['nullable', 'string'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ], [
             'g-recaptcha-response.required' => 'Silakan selesaikan verifikasi reCAPTCHA terlebih dahulu.',
+            'offline_captcha_answer.required' => 'Silakan isi captcha aritmatika terlebih dahulu.',
         ]);
 
-        $captchaSecret = (string) config('services.recaptcha.secret_key');
-        if ($captchaSecret === '') {
-            return back()
-                ->withErrors(['username' => 'Google reCAPTCHA belum dikonfigurasi di server.'])
-                ->onlyInput('username');
-        }
+        $captchaMode = (string) ($credentials['captcha_mode'] ?? 'offline');
 
-        try {
-            $captchaVerification = Http::asForm()
-                ->timeout(8)
-                ->post('https://www.google.com/recaptcha/api/siteverify', [
-                    'secret' => $captchaSecret,
-                    'response' => (string) $credentials['g-recaptcha-response'],
-                    'remoteip' => $request->ip(),
-                ]);
-        } catch (\Throwable $exception) {
-            return back()
-                ->withErrors(['username' => 'Gagal memverifikasi reCAPTCHA. Coba lagi sebentar.'])
-                ->onlyInput('username');
-        }
+        if ($captchaMode === 'online') {
+            $captchaResponse = trim((string) ($credentials['g-recaptcha-response'] ?? ''));
+            if ($captchaResponse === '') {
+                return $this->rejectLogin($request, 'Silakan selesaikan verifikasi reCAPTCHA terlebih dahulu.');
+            }
 
-        if (! $captchaVerification->ok() || ! data_get($captchaVerification->json(), 'success', false)) {
-            return back()
-                ->withErrors(['username' => 'Verifikasi reCAPTCHA tidak valid. Silakan coba lagi.'])
-                ->onlyInput('username');
+            $captchaSecret = (string) config('services.recaptcha.secret_key');
+            if ($captchaSecret === '') {
+                return $this->rejectLogin($request, 'Google reCAPTCHA belum dikonfigurasi di server.');
+            }
+
+            try {
+                $captchaVerification = Http::asForm()
+                    ->timeout(8)
+                    ->post('https://www.google.com/recaptcha/api/siteverify', [
+                        'secret' => $captchaSecret,
+                        'response' => $captchaResponse,
+                        'remoteip' => $request->ip(),
+                    ]);
+            } catch (\Throwable $exception) {
+                return $this->rejectLogin($request, 'Gagal memverifikasi reCAPTCHA. Coba lagi sebentar.');
+            }
+
+            if (! $captchaVerification->ok() || ! data_get($captchaVerification->json(), 'success', false)) {
+                return $this->rejectLogin($request, 'Verifikasi reCAPTCHA tidak valid. Silakan coba lagi.');
+            }
+        } else {
+            $offlineAnswer = trim((string) ($credentials['offline_captcha_answer'] ?? ''));
+            if ($offlineAnswer === '') {
+                return $this->rejectLogin($request, 'Silakan isi captcha aritmatika terlebih dahulu.');
+            }
+
+            $expectedAnswer = (string) $request->session()->get('offline_captcha_answer', '');
+            if ($expectedAnswer === '' || ! hash_equals($expectedAnswer, $offlineAnswer)) {
+                return $this->rejectLogin($request, 'Captcha aritmatika tidak valid. Silakan coba lagi.');
+            }
         }
 
         $user = LegacyUser::query()
@@ -67,18 +85,14 @@ class AuthController extends Controller
             ->first();
 
         if (! $user) {
-            return back()
-                ->withErrors(['username' => 'Username atau password salah.'])
-                ->onlyInput('username');
+            return $this->rejectLogin($request, 'Username atau password salah.');
         }
 
         $validPassword = Hash::check($credentials['password'], (string) $user->password)
             || hash_equals((string) $user->password, $credentials['password']);
 
         if (! $validPassword) {
-            return back()
-                ->withErrors(['username' => 'Username atau password salah.'])
-                ->onlyInput('username');
+            return $this->rejectLogin($request, 'Username atau password salah.');
         }
 
         $displayName = $this->resolveUserDisplayName($user);
@@ -178,5 +192,23 @@ class AuthController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+    }
+
+    private function storeOfflineCaptcha(Request $request): void
+    {
+        $left = random_int(1, 20);
+        $right = random_int(1, 20);
+
+        $request->session()->put('offline_captcha_question', sprintf('%d + %d', $left, $right));
+        $request->session()->put('offline_captcha_answer', (string) ($left + $right));
+    }
+
+    private function rejectLogin(Request $request, string $message): RedirectResponse
+    {
+        $this->storeOfflineCaptcha($request);
+
+        return back()
+            ->withErrors(['username' => $message])
+            ->onlyInput('username');
     }
 }
