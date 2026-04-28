@@ -311,10 +311,21 @@
             cursor: default;
             z-index: 2;
         }
+        .block-area.empty-no-plot {
+            display: none;
+            border-style: dashed;
+            opacity: 0.72;
+        }
 
         .map-scene.editing .block-area {
             cursor: grab;
             box-shadow: 0 4px 12px rgba(12, 35, 40, 0.16);
+        }
+        .map-scene.editing .block-area.empty-no-plot {
+            display: block;
+        }
+        .map-scene .block-area.empty-no-plot.pending-hidden {
+            display: none !important;
         }
 
         .map-scene.editing .block-area.is-dragging {
@@ -988,7 +999,7 @@
             <h2 class="logo">Dashboard Kuburan</h2>
             <div class="user-box">
                 Login sebagai
-                <strong>{{ $authUser['username'] ?? 'user' }}</strong>
+                <strong>{{ (\Illuminate\Support\Facades\Schema::hasTable('employer') ? (\Illuminate\Support\Facades\DB::table('employer')->where('userid', (int) ($authUser['id'] ?? 0))->value('name') ?: ($authUser['username'] ?? 'user')) : ($authUser['username'] ?? 'user')) }}</strong>
             </div>
             @php
                 $levelId = (int) ($authUser['levelid'] ?? 0);
@@ -1170,6 +1181,17 @@
                                         <span class="block-badge">{{ strtoupper($blockLayout['name']) }}</span>
                                     </div>
                                 @endforeach
+                                @foreach ($blocksWithoutPlots as $emptyBlock)
+                                    @php
+                                        $emptyBlockX = isset($emptyBlock->map_x) ? (int) $emptyBlock->map_x : 24;
+                                        $emptyBlockY = isset($emptyBlock->map_y) ? (int) $emptyBlock->map_y : 40;
+                                        $emptyBlockColor = (string) ($emptyBlock->map_color ?: '#D8E4DF');
+                                        $emptyBlockIsHidden = !empty($hiddenBlocksInFacility) && collect($hiddenBlocksInFacility)->contains(fn ($item) => (int) ($item->blockid ?? 0) === (int) ($emptyBlock->blockid ?? 0));
+                                    @endphp
+                                    <div class="block-area empty-no-plot{{ $emptyBlockIsHidden ? ' pending-hidden' : '' }}" data-block-id="{{ (int) $emptyBlock->blockid }}" data-empty-no-plot="1" data-hidden-from-facility="{{ $emptyBlockIsHidden ? '1' : '0' }}" style="--block-color: {{ $emptyBlockColor }}; left: {{ $emptyBlockX }}px; top: {{ $emptyBlockY }}px; width: 480px; height: 300px;">
+                                        <span class="block-badge">{{ strtoupper((string) $emptyBlock->block_name) }}</span>
+                                    </div>
+                                @endforeach
                                 @foreach ($displayPlots as $plot)
                                     <a href="{{ $plot['deceased_id'] ? route('deceased.detail', ['id' => $plot['deceased_id']]) : '#' }}" class="plot plot-{{ $plot['status'] }}" data-status="{{ $plot['status'] }}" data-name="{{ $plot['deceased_name'] }}" data-age="{{ $plot['deceased_age'] }}" data-death-date="{{ $plot['deceased_death_date'] }}" data-photo="{{ $plot['deceased_photo_url'] }}" data-plot-label="{{ $plot['plot_label'] }}" data-detail-url="{{ $plot['deceased_id'] ? route('deceased.detail', ['id' => $plot['deceased_id']]) : '' }}" data-block-id="{{ (int) $plot['block_id'] }}" style="--plot-color: {{ $plot['color'] }}; left: {{ $plot['left'] }}px; top: {{ $plot['top'] }}px; width: {{ $plot['width'] }}px; height: {{ $plot['height'] }}px; text-decoration: none;">{{ $plot['number'] }}</a>
                                 @endforeach
@@ -1211,6 +1233,27 @@
                             @empty
                                 <span class="facility-note">Data facility belum tersedia di tabel <code>facility</code>.</span>
                             @endforelse
+
+                            @if (!empty($hiddenBlocksInFacility) && count($hiddenBlocksInFacility) > 0)
+                                <div class="facility-note" style="margin-top: 10px; border-top: 1px dashed rgba(122,17,41,.2); padding-top: 10px;">
+                                    Blok tersimpan dari denah:
+                                </div>
+                                @foreach ($hiddenBlocksInFacility as $savedBlock)
+                                    <button
+                                        type="button"
+                                        class="facility-btn"
+                                        data-facility-id="0"
+                                        data-facility-key="blok_tersimpan"
+                                        data-restore-block-id="{{ (int) $savedBlock->blockid }}"
+                                        data-facility-name="Blok {{ $savedBlock->block_name }}"
+                                        data-facility-icon="B"
+                                        title="Klik saat mode edit untuk memunculkan lagi blok di denah"
+                                    >
+                                        <span>B</span>
+                                        <span>Blok {{ $savedBlock->block_name }}</span>
+                                    </button>
+                                @endforeach
+                            @endif
                         </div>
                         <div class="facility-note">
                             Saat mode edit aktif, arahkan kursor ke item facility di denah untuk melihat tombol centang (fix posisi) atau x (hapus).
@@ -1303,7 +1346,9 @@
             let actionCardTarget = null;
             let isSavingPositions = false;
             let temporaryFacilityCounter = 0;
+            let hiddenEmptyBlockIds = new Set();
             const initialBlockPositions = new Map();
+            const initialHiddenEmptyBlockIds = new Set();
             const plotByBlockId = new Map();
             let initialFacilitySnapshot = [];
             let initialSceneObjectSnapshot = [];
@@ -1349,6 +1394,8 @@
                 if (isEditMode) {
                     hideHoverCard();
                     initialBlockPositions.clear();
+                    initialHiddenEmptyBlockIds.clear();
+                    hiddenEmptyBlockIds = new Set();
                     initialFacilitySnapshot = serializeFacilityItems();
                     initialSceneObjectSnapshot = serializeSceneObjects();
 
@@ -1366,6 +1413,13 @@
                         const blockId = parseInt(blockElement.dataset.blockId || '0', 10);
                         if (!Number.isFinite(blockId) || blockId <= 0) {
                             return;
+                        }
+                        if (blockElement.dataset.emptyNoPlot === '1' && blockElement.dataset.hiddenFromFacility === '1') {
+                            blockElement.classList.add('pending-hidden');
+                            hiddenEmptyBlockIds.add(blockId);
+                            initialHiddenEmptyBlockIds.add(blockId);
+                        } else if (blockElement.dataset.emptyNoPlot === '1') {
+                            blockElement.classList.remove('pending-hidden');
                         }
                         initialBlockPositions.set(blockId, getBlockPosition(blockElement));
                     });
@@ -1512,6 +1566,7 @@
             }
 
             function restoreInitialPositions() {
+                hiddenEmptyBlockIds = new Set(initialHiddenEmptyBlockIds);
                 blockElements.forEach((blockElement) => {
                     const blockId = parseInt(blockElement.dataset.blockId || '0', 10);
                     if (!Number.isFinite(blockId) || blockId <= 0) {
@@ -1528,6 +1583,15 @@
                     const dy = previous.y - current.y;
                     setBlockPosition(blockElement, previous.x, previous.y);
                     applyBlockDeltaToPlots(blockId, dx, dy);
+                    if (blockElement.dataset.emptyNoPlot === '1') {
+                        if (hiddenEmptyBlockIds.has(blockId)) {
+                            blockElement.classList.add('pending-hidden');
+                            blockElement.dataset.hiddenFromFacility = '1';
+                        } else {
+                            blockElement.classList.remove('pending-hidden');
+                            blockElement.dataset.hiddenFromFacility = '0';
+                        }
+                    }
                 });
             }
 
@@ -1961,6 +2025,26 @@
                 sceneActionCard.style.left = `${left}px`;
                 sceneActionCard.style.top = `${top}px`;
                 sceneActionCard.classList.add('active');
+            }
+
+            function markEmptyBlockHidden(blockElement) {
+                const blockId = parseInt(blockElement.dataset.blockId || '0', 10);
+                if (!Number.isFinite(blockId) || blockId <= 0) {
+                    return;
+                }
+                hiddenEmptyBlockIds.add(blockId);
+                blockElement.classList.add('pending-hidden');
+                blockElement.dataset.hiddenFromFacility = '1';
+            }
+
+            function unmarkEmptyBlockHidden(blockElement) {
+                const blockId = parseInt(blockElement.dataset.blockId || '0', 10);
+                if (!Number.isFinite(blockId) || blockId <= 0) {
+                    return;
+                }
+                hiddenEmptyBlockIds.delete(blockId);
+                blockElement.classList.remove('pending-hidden');
+                blockElement.dataset.hiddenFromFacility = '0';
             }
 
             function getElementBox(element) {
@@ -3036,7 +3120,36 @@
                     })
                     .filter((item) => item !== null);
 
-                const allFacilityItems = [...facilityItems, ...sceneFacilityItems];
+                const hiddenEmptyBlockSceneItems = blockElements
+                    ? Array.from(blockElements)
+                        .filter((element) => element.dataset.emptyNoPlot === '1' && element.classList.contains('pending-hidden'))
+                        .map((element) => {
+                            const blockId = parseInt(element.dataset.blockId || '0', 10);
+                            const left = parseFloat(element.style.left || '0');
+                            const top = parseFloat(element.style.top || '0');
+                            const width = Math.round(element.offsetWidth || 0);
+                            const height = Math.round(element.offsetHeight || 0);
+                            if (!Number.isFinite(blockId) || blockId <= 0) {
+                                return null;
+                            }
+                            return {
+                                id: null,
+                                facility_id: 0,
+                                item_type: 'scene',
+                                scene_object_key: `empty_block_${blockId}`,
+                                x: Math.round(Number.isFinite(left) ? left : 0),
+                                y: Math.round(Number.isFinite(top) ? top : 0),
+                                width: width > 0 ? width : null,
+                                height: height > 0 ? height : null,
+                                rotation: 0,
+                                is_removed: false,
+                                is_fixed: true,
+                            };
+                        })
+                        .filter((item) => item !== null)
+                    : [];
+
+                const allFacilityItems = [...facilityItems, ...sceneFacilityItems, ...hiddenEmptyBlockSceneItems];
 
                 if (blocks.length === 0) {
                     toggleEditMode(false);
@@ -3060,6 +3173,7 @@
                         body: JSON.stringify({
                             blocks,
                             facility_items: allFacilityItems,
+                            hidden_empty_block_ids: Array.from(hiddenEmptyBlockIds),
                         }),
                     });
 
@@ -3169,10 +3283,14 @@
                     if (!Number.isFinite(blockId) || blockId <= 0) {
                         return;
                     }
+                    if (blockElement.dataset.emptyNoPlot === '1') {
+                        unmarkEmptyBlockHidden(blockElement);
+                    }
 
                     event.preventDefault();
                     event.stopPropagation();
                     hideHoverCard();
+                    hideSceneActionCard();
 
                     const position = getBlockPosition(blockElement);
                     blockElement.classList.add('is-dragging');
@@ -3234,7 +3352,25 @@
 
             if (facilityList) {
                 facilityList.querySelectorAll('.facility-btn').forEach((button) => {
-                    button.addEventListener('click', () => appendFacilityToScene(button));
+                    button.addEventListener('click', () => {
+                        const restoreBlockId = parseInt(button.dataset.restoreBlockId || '0', 10);
+                        if (Number.isFinite(restoreBlockId) && restoreBlockId > 0) {
+                            if (!isEditMode) {
+                                alert('Aktifkan mode edit dulu untuk memunculkan blok.');
+                                return;
+                            }
+                            const targetBlock = scene.querySelector(`.block-area.empty-no-plot[data-block-id="${restoreBlockId}"]`);
+                            if (!targetBlock) {
+                                alert('Data blok tidak ditemukan di denah.');
+                                return;
+                            }
+                            unmarkEmptyBlockHidden(targetBlock);
+                            targetBlock.dataset.hiddenFromFacility = '0';
+                            hideSceneActionCard();
+                            return;
+                        }
+                        appendFacilityToScene(button);
+                    });
                 });
             }
 
@@ -3295,6 +3431,16 @@
                     event.stopPropagation();
                     const action = actionButton.getAttribute('data-scene-action');
 
+                    if (actionCardTarget.classList.contains('block-area') && actionCardTarget.dataset.emptyNoPlot === '1') {
+                        if (action === 'confirm') {
+                            saveBlockPositions();
+                        } else if (action === 'delete') {
+                            markEmptyBlockHidden(actionCardTarget);
+                        }
+                        hideSceneActionCard();
+                        return;
+                    }
+
                     if (action === 'confirm') {
                         setElementLocked(actionCardTarget, true);
                     } else if (action === 'delete' && actionCardTarget !== sceneActionCard) {
@@ -3330,6 +3476,16 @@
                     event.stopPropagation();
                     const action = actionButton.getAttribute('data-scene-action');
 
+                    if (actionCardTarget.classList.contains('block-area') && actionCardTarget.dataset.emptyNoPlot === '1') {
+                        if (action === 'confirm') {
+                            saveBlockPositions();
+                        } else if (action === 'delete') {
+                            markEmptyBlockHidden(actionCardTarget);
+                        }
+                        hideSceneActionCard();
+                        return;
+                    }
+
                     if (action === 'confirm') {
                         setElementLocked(actionCardTarget, true);
                     } else if (action === 'delete' && actionCardTarget !== sceneActionCard) {
@@ -3353,7 +3509,7 @@
                 }
 
                 const clickedTarget = event.target instanceof Element
-                    ? event.target.closest('.facility-item, [data-edit-draggable="1"]')
+                    ? event.target.closest('.facility-item, [data-edit-draggable="1"], .block-area.empty-no-plot')
                     : null;
 
                 if (clickedTarget && clickedTarget !== sceneActionCard) {
@@ -3436,13 +3592,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-

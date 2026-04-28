@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | {{ config('app.name', 'Website Kuburan') }}</title>
+    <title>Login OTP | {{ config('app.name', 'Website Kuburan') }}</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;700;800&display=swap');
 
@@ -696,8 +696,8 @@
             <div class="panel-shell">
                 <div class="panel-head">
                     <span class="access-tag">Staff Access</span>
-                    <h2>Masuk Akun</h2>
-                    <p class="sub">Gunakan username dan password akun yang sudah terdaftar untuk membuka dashboard pengelolaan kuburan.</p>
+                    <h2>Masuk Dengan OTP</h2>
+                    <p class="sub">Masukkan email yang terdaftar, kirim OTP, lalu verifikasi 6 digit kode OTP untuk masuk ke dashboard.</p>
                 </div>
 
                 @if (session('status'))
@@ -708,49 +708,83 @@
                     <div class="msg msg-err">{{ $errors->first() }}</div>
                 @endif
 
-                <form method="POST" action="{{ route('login.submit') }}" id="loginMethodForm">
-                    @csrf
-                    <input type="hidden" name="latitude" id="latitudeInput" value="{{ old('latitude') }}">
-                    <input type="hidden" name="longitude" id="longitudeInput" value="{{ old('longitude') }}">
-                    <input type="hidden" name="captcha_mode" id="captchaModeInput" value="offline">
+                @php
+                    $otpPending = session('login_otp_pending');
+                    $otpPendingEmail = is_array($otpPending) ? (string) ($otpPending['email'] ?? '') : '';
+                    $otpPendingExpiry = is_array($otpPending) ? (int) ($otpPending['expires_at'] ?? 0) : 0;
+                @endphp
 
-                    <div class="field">
-                        <label for="username">Username</label>
-                        <input id="username" name="username" type="text" value="{{ old('username') }}" placeholder="Masukkan username" autocomplete="username" required autofocus>
-                    </div>
-
-                    <div class="field">
-                        <label for="password">Password</label>
-                        <input id="password" name="password" type="password" placeholder="Masukkan password" autocomplete="current-password" required>
-                    </div>
-
-                    <div class="captcha-widget">
-                        @if (config('services.recaptcha.site_key') && config('services.recaptcha.secret_key'))
-                            <div class="captcha-frame" id="onlineCaptchaWrap" style="display: none;">
-                                <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
-                            </div>
-                        @else
-                            <div id="onlineCaptchaWrap" style="display: none;"></div>
-                        @endif
-
-                        <div class="captcha-offline" id="offlineCaptchaWrap">
-                            <label for="offline_captcha_answer">Captcha Offline</label>
-                            <p class="captcha-question">Berapa hasil dari <strong>{{ session('offline_captcha_question', '1 + 1') }}</strong> ?</p>
-                            <input id="offline_captcha_answer" name="offline_captcha_answer" type="text" inputmode="numeric" placeholder="Jawaban captcha aritmatika" autocomplete="off">
+                @if (is_array($otpPending))
+                    <form method="POST" action="{{ route('login.otp.verify') }}">
+                        @csrf
+                        <div class="field">
+                            <label for="otp_code">Kode OTP</label>
+                            <input id="otp_code" name="otp_code" type="text" inputmode="numeric" maxlength="6" minlength="6" placeholder="Masukkan 6 digit OTP" required autofocus>
                         </div>
-                    </div>
 
-                    <div style="display:grid; gap:10px;">
-                        <button class="btn" type="submit" id="passwordLoginBtn">
-                            <span>Login</span>
+                        <p class="sub" style="margin-top:-4px;">
+                            OTP dikirim ke email:
+                            <strong>{{ $otpPendingEmail !== '' ? $otpPendingEmail : '-' }}</strong>
+                            @if ($otpPendingExpiry > 0)
+                                (berlaku sampai {{ \Carbon\Carbon::createFromTimestamp($otpPendingExpiry)->format('H:i:s') }})
+                            @endif
+                        </p>
+
+                        <p class="sub" style="margin-top:-2px; margin-bottom:12px; font-size:0.84rem;">
+                            <a href="#" id="resendOtpLink" style="color:var(--brand); text-decoration:none; border-bottom:1px solid rgba(122, 17, 41, 0.35);">
+                                Kirim ulang OTP
+                            </a>
+                        </p>
+
+                        <button class="btn" type="submit">
+                            <span>Verifikasi OTP</span>
                             <span class="btn-arrow" aria-hidden="true">-></span>
                         </button>
-                    </div>
-                </form>
+                    </form>
+
+                    <form method="POST" action="{{ route('login.otp.resend') }}" id="resendOtpForm" style="display:none;">
+                        @csrf
+                    </form>
+                @else
+                    <form method="POST" action="{{ route('login.otp.request') }}" id="loginMethodForm">
+                        @csrf
+                        <input type="hidden" name="latitude" id="latitudeInput" value="{{ old('latitude') }}">
+                        <input type="hidden" name="longitude" id="longitudeInput" value="{{ old('longitude') }}">
+                        <input type="hidden" name="captcha_mode" id="captchaModeInput" value="offline">
+
+                        <div class="field">
+                            <label for="email">Email</label>
+                            <input id="email" name="email" type="email" value="{{ old('email') }}" placeholder="Masukkan email terdaftar" autocomplete="email" required autofocus>
+                        </div>
+
+                        <div class="captcha-widget">
+                            @if (config('services.recaptcha.site_key') && config('services.recaptcha.secret_key'))
+                                <div class="captcha-frame" id="onlineCaptchaWrap" style="display: none;">
+                                    <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                                </div>
+                            @else
+                                <div id="onlineCaptchaWrap" style="display: none;"></div>
+                            @endif
+
+                            <div class="captcha-offline" id="offlineCaptchaWrap">
+                                <label for="offline_captcha_answer">Captcha Offline</label>
+                                <p class="captcha-question">Berapa hasil dari <strong>{{ session('offline_captcha_question', '1 + 1') }}</strong> ?</p>
+                                <input id="offline_captcha_answer" name="offline_captcha_answer" type="text" inputmode="numeric" placeholder="Jawaban captcha aritmatika" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div style="display:grid; gap:10px;">
+                            <button class="btn" type="submit" id="otpRequestBtn">
+                                <span>Kirim OTP</span>
+                                <span class="btn-arrow" aria-hidden="true">-></span>
+                            </button>
+                        </div>
+                    </form>
+                @endif
 
                 <p class="sub" style="margin-top:12px; font-size:0.84rem;">
-                    <a href="{{ route('login.otp') }}" style="color:var(--brand); text-decoration:none; border-bottom:1px solid rgba(122, 17, 41, 0.35);">
-                        Login dengan OTP Email
+                    <a href="{{ route('login') }}" style="color:var(--brand); text-decoration:none; border-bottom:1px solid rgba(122, 17, 41, 0.35);">
+                        Kembali ke login username/password
                     </a>
                 </p>
             </div>
@@ -765,12 +799,12 @@
             const latitudeInput = document.getElementById('latitudeInput');
             const longitudeInput = document.getElementById('longitudeInput');
             const loginMethodForm = document.getElementById('loginMethodForm');
-            const passwordLoginBtn = document.getElementById('passwordLoginBtn');
-            const passwordInput = document.getElementById('password');
             const captchaModeInput = document.getElementById('captchaModeInput');
             const onlineCaptchaWrap = document.getElementById('onlineCaptchaWrap');
             const offlineCaptchaWrap = document.getElementById('offlineCaptchaWrap');
             const offlineCaptchaInput = document.getElementById('offline_captcha_answer');
+            const resendOtpLink = document.getElementById('resendOtpLink');
+            const resendOtpForm = document.getElementById('resendOtpForm');
             const hasGoogleCaptcha = Boolean(onlineCaptchaWrap && onlineCaptchaWrap.querySelector('.g-recaptcha'));
 
             const syncCaptchaMode = () => {
@@ -802,15 +836,10 @@
                 window.addEventListener('offline', syncCaptchaMode);
             }
 
-            if (loginMethodForm && passwordLoginBtn && passwordInput) {
-                loginMethodForm.addEventListener('submit', (event) => {
-                    const submitter = event.submitter;
-                    const isPasswordLogin = submitter === passwordLoginBtn;
-                    if (isPasswordLogin && passwordInput.value.trim() === '') {
-                        event.preventDefault();
-                        window.alert('Password wajib diisi untuk login password.');
-                        passwordInput.focus();
-                    }
+            if (resendOtpLink && resendOtpForm) {
+                resendOtpLink.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    resendOtpForm.submit();
                 });
             }
 

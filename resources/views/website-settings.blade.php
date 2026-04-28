@@ -371,7 +371,7 @@
             <h2 class="logo">Dashboard Kuburan</h2>
             <div class="user-box">
                 Login sebagai
-                <strong>{{ $authUser['username'] ?? 'user' }}</strong>
+                <strong>{{ (\Illuminate\Support\Facades\Schema::hasTable('employer') ? (\Illuminate\Support\Facades\DB::table('employer')->where('userid', (int) ($authUser['id'] ?? 0))->value('name') ?: ($authUser['username'] ?? 'user')) : ($authUser['username'] ?? 'user')) }}</strong>
             </div>
             @php
                 $levelId = (int) ($authUser['levelid'] ?? 0);

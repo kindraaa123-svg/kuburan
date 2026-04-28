@@ -25,7 +25,7 @@ class HomeController extends Controller
 {
     public function index(Request $request): View
     {
-        $data = $this->buildDashboardData();
+        $data = $this->buildDashboardData(true);
         $facilityData = $this->buildFacilityData();
         $setting = $this->resolveSystemSetting();
 
@@ -87,11 +87,45 @@ class HomeController extends Controller
             ->doesntHave('gravePlots')
             ->orderBy('blockid')
             ->get();
+        $hiddenEmptyBlockIds = collect();
+
+        if ($this->hasUsableTable('facility_map_items')) {
+            $sceneColumns = $this->facilityMapItemSceneColumns();
+            if ($sceneColumns['item_type'] && $sceneColumns['scene_object_key']) {
+                $hiddenEmptyBlockIds = DB::table('facility_map_items')
+                    ->where('is_fixed', true)
+                    ->where('item_type', 'scene')
+                    ->whereNotNull('scene_object_key')
+                    ->where('scene_object_key', 'like', 'empty_block_%')
+                    ->pluck('scene_object_key')
+                    ->map(function ($key): int {
+                        $value = trim((string) $key);
+                        if (preg_match('/^empty_block_(\d+)$/', $value, $matches) === 1) {
+                            return (int) ($matches[1] ?? 0);
+                        }
+
+                        return 0;
+                    })
+                    ->filter(fn (int $id): bool => $id > 0)
+                    ->unique()
+                    ->values();
+
+            }
+        }
+
+        $hiddenBlocksInFacility = $hiddenEmptyBlockIds->isEmpty()
+            ? collect()
+            : Block::query()
+                ->select(['blockid', 'block_name'])
+                ->whereIn('blockid', $hiddenEmptyBlockIds->all())
+                ->orderBy('block_name')
+                ->get();
 
         return view('dashboard', [
             ...$data,
             ...$facilityData,
             'blocksWithoutPlots' => $blocksWithoutPlots,
+            'hiddenBlocksInFacility' => $hiddenBlocksInFacility,
             'setting' => $setting,
             'authUser' => $request->session()->get('auth_user'),
         ]);
@@ -4984,12 +5018,7 @@ class HomeController extends Controller
 
         if ($hideBlocksWithoutPlots) {
             $blocks = $blocks->filter(function ($block): bool {
-                if ($block->gravePlots->isNotEmpty()) {
-                    return true;
-                }
-
-                $hasSavedMapPosition = isset($block->map_x) || isset($block->map_y);
-                return $hasSavedMapPosition;
+                return $block->gravePlots->isNotEmpty();
             })->values();
         }
 

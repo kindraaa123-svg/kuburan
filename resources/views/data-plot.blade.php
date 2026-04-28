@@ -624,7 +624,7 @@
                             <div class="block-head">
                                 <h3>{{ $card['block_name'] }}</h3>
                                 <div class="block-head-right">
-                                    <span class="mini-meta" data-block-meta>Total {{ $card['total_plots'] }}/{{ $card['max_plots'] }} | Terisi {{ $card['occupied_plots'] }}</span>
+                                    <span class="mini-meta" data-block-meta>Total {{ $card['total_plots'] }} | Terisi {{ $card['occupied_plots'] }}</span>
                                     <button
                                         type="button"
                                         class="btn-add-plot"
@@ -711,12 +711,10 @@
                         <input id="row_number" name="row_number" type="text" value="{{ old('row_number') }}" placeholder="Contoh: 1">
                     </div>
                     <div class="field">
-                        <label for="position_x">Posisi X</label>
-                        <input id="position_x" name="position_x" type="number" step="0.01" min="0" required value="{{ old('position_x', 0) }}">
+                        <input id="position_x" name="position_x" type="hidden" step="0.01" min="0" required value="{{ old('position_x', 0) }}">
                     </div>
                     <div class="field">
-                        <label for="position_y">Posisi Y</label>
-                        <input id="position_y" name="position_y" type="number" step="0.01" min="0" required value="{{ old('position_y', 0) }}">
+                        <input id="position_y" name="position_y" type="hidden" step="0.01" min="0" required value="{{ old('position_y', 0) }}">
                     </div>
                     <div class="field">
                         <label for="width">Lebar</label>
@@ -1482,8 +1480,6 @@
     </script>
 </body>
 </html>
-
-
 
 
 

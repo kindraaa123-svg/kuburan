@@ -189,6 +189,34 @@
             cursor: pointer;
             box-shadow: 0 14px 24px rgba(84, 9, 24, 0.24);
         }
+        .head-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .head-btn {
+            min-height: 42px;
+            border-radius: 12px;
+            padding: 0 14px;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .head-btn-export {
+            border: 1px solid rgba(122, 17, 41, 0.28);
+            background: rgba(122, 17, 41, 0.08);
+            color: #7a1129;
+        }
+        .head-btn-import {
+            border: 1px solid #d8c0c7;
+            background: #fff;
+            color: #6f3a48;
+        }
 
         .status {
             margin-top: 12px;
@@ -529,7 +557,11 @@
                     <h1>Data User</h1>
                     <p>Daftar akun user yang terdaftar pada sistem.</p>
                 </div>
-                <button type="button" class="add-btn" id="openAddUserModalBtn">+ Tambah User</button>
+                <div class="head-actions">
+                    <a href="{{ route('dashboard.data-user.export') }}" class="head-btn head-btn-export">Export .xlsx</a>
+                    <button type="button" class="head-btn head-btn-import" id="openImportUserModalBtn">Import .xlsx</button>
+                    <button type="button" class="add-btn" id="openAddUserModalBtn">+ Tambah User</button>
+                </div>
             </div>
 
             @if (session('status'))
@@ -541,6 +573,17 @@
                     Gagal menambahkan user:
                     <ul>
                         @foreach ($errors->createUser->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            @if ($errors->importUser->any())
+                <div class="status error">
+                    Gagal import user:
+                    <ul>
+                        @foreach ($errors->importUser->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
@@ -649,12 +692,40 @@
         </div>
     </div>
 
+    <div class="modal" id="importUserModal" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="importUserModalTitle">
+            <div class="modal-head">
+                <h3 id="importUserModalTitle">Import User (.xlsx)</h3>
+                <button type="button" class="close-btn" id="closeImportUserModalBtn">x</button>
+            </div>
+
+            <form method="POST" action="{{ route('dashboard.data-user.import') }}" enctype="multipart/form-data">
+                @csrf
+                <div class="form-grid">
+                    <div class="field full">
+                        <label for="user_file">File Excel (.xlsx)</label>
+                        <input id="user_file" name="user_file" type="file" accept=".xlsx" required>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelImportUserModalBtn">Batal</button>
+                    <button type="submit" class="btn-primary">Import User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         (() => {
             const modal = document.getElementById('addUserModal');
             const openBtn = document.getElementById('openAddUserModalBtn');
             const closeBtn = document.getElementById('closeAddUserModalBtn');
             const cancelBtn = document.getElementById('cancelAddUserModalBtn');
+            const importModal = document.getElementById('importUserModal');
+            const openImportBtn = document.getElementById('openImportUserModalBtn');
+            const closeImportBtn = document.getElementById('closeImportUserModalBtn');
+            const cancelImportBtn = document.getElementById('cancelImportUserModalBtn');
 
             function openModal() {
                 modal.classList.add('active');
@@ -666,13 +737,31 @@
                 modal.setAttribute('aria-hidden', 'true');
             }
 
+            function openImportModal() {
+                importModal.classList.add('active');
+                importModal.setAttribute('aria-hidden', 'false');
+            }
+
+            function closeImportModal() {
+                importModal.classList.remove('active');
+                importModal.setAttribute('aria-hidden', 'true');
+            }
+
             openBtn.addEventListener('click', openModal);
             closeBtn.addEventListener('click', closeModal);
             cancelBtn.addEventListener('click', closeModal);
+            openImportBtn.addEventListener('click', openImportModal);
+            closeImportBtn.addEventListener('click', closeImportModal);
+            cancelImportBtn.addEventListener('click', closeImportModal);
 
             modal.addEventListener('click', (event) => {
                 if (event.target === modal) {
                     closeModal();
+                }
+            });
+            importModal.addEventListener('click', (event) => {
+                if (event.target === importModal) {
+                    closeImportModal();
                 }
             });
 
@@ -680,16 +769,21 @@
                 if (event.key === 'Escape' && modal.classList.contains('active')) {
                     closeModal();
                 }
+                if (event.key === 'Escape' && importModal.classList.contains('active')) {
+                    closeImportModal();
+                }
             });
 
             @if ($errors->createUser->any())
                 openModal();
             @endif
+            @if ($errors->importUser->any())
+                openImportModal();
+            @endif
         })();
     </script>
 </body>
 </html>
-
 
 
 

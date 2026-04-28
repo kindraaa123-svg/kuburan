@@ -48,5 +48,9 @@ Route::post('/dashboard/akun/password', [HomeController::class, 'updateAccountPa
 Route::get('/deceased/{id}', [HomeController::class, 'deceasedDetail'])->name('deceased.detail');
 Route::get('/media/deceased-photo', [HomeController::class, 'serveDeceasedPhoto'])->name('media.deceased-photo');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::get('/login/otp', [AuthController::class, 'showOtpLogin'])->name('login.otp');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+Route::post('/login/otp/request', [AuthController::class, 'requestOtp'])->name('login.otp.request');
+Route::post('/login/otp/verify', [AuthController::class, 'verifyOtp'])->name('login.otp.verify');
+Route::post('/login/otp/resend', [AuthController::class, 'resendOtp'])->name('login.otp.resend');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

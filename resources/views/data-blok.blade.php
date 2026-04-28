@@ -582,9 +582,6 @@
                             <th>Nama Blok</th>
                             <th>Warna</th>
                             <th>Maks Plot</th>
-                            <th>Posisi X</th>
-                            <th>Posisi Y</th>
-                            <th>Total Petak</th>
                             <th>Terisi</th>
                             <th>Kosong</th>
                             <th>Deskripsi</th>
@@ -603,9 +600,6 @@
                                     </div>
                                 </td>
                                 <td><span class="badge">{{ (int) ($block->max_plots ?? 15) }}</span></td>
-                                <td>{{ isset($block->map_x) ? (int) $block->map_x : '-' }}</td>
-                                <td>{{ isset($block->map_y) ? (int) $block->map_y : '-' }}</td>
-                                <td><span class="badge">{{ (int) $block->total_plots }}</span></td>
                                 <td>{{ (int) $block->occupied_plots }}</td>
                                 <td>{{ (int) $block->empty_plots }}</td>
                                 <td>{{ $block->description ?: '-' }}</td>
@@ -627,7 +621,7 @@
                             </tr>
                         @empty
                             <tr id="emptyRow">
-                                <td colspan="11">Belum ada data blok.</td>
+                                <td colspan="8">Belum ada data blok.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -757,10 +751,6 @@
                 modal.setAttribute('aria-hidden', 'true');
             }
 
-            function renderCoordinate(value) {
-                return Number.isFinite(value) ? String(value) : '-';
-            }
-
             function renderRow(block, index) {
                 const description = block.description ? block.description : '-';
                 return `
@@ -774,9 +764,6 @@
                             </div>
                         </td>
                         <td><span class="badge">${block.max_plots || 15}</span></td>
-                        <td>${renderCoordinate(block.map_x)}</td>
-                        <td>${renderCoordinate(block.map_y)}</td>
-                        <td><span class="badge">${block.total_plots}</span></td>
                         <td>${block.occupied_plots}</td>
                         <td>${block.empty_plots}</td>
                         <td>${description}</td>
@@ -932,7 +919,7 @@
 
                     const remainingRows = tableBody.querySelectorAll('tr[id^=\"row-block-\"]');
                     if (remainingRows.length === 0) {
-                        tableBody.innerHTML = '<tr id="emptyRow"><td colspan="11">Belum ada data blok.</td></tr>';
+                        tableBody.innerHTML = '<tr id="emptyRow"><td colspan="8">Belum ada data blok.</td></tr>';
                     } else {
                         refreshRowNumbers();
                     }
@@ -949,7 +936,6 @@
     </script>
 </body>
 </html>
-
 
 
 
