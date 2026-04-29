@@ -53,4 +53,8 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/login/otp/request', [AuthController::class, 'requestOtp'])->name('login.otp.request');
 Route::post('/login/otp/verify', [AuthController::class, 'verifyOtp'])->name('login.otp.verify');
 Route::post('/login/otp/resend', [AuthController::class, 'resendOtp'])->name('login.otp.resend');
+Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.forgot');
+Route::post('/forgot-password', [AuthController::class, 'sendResetPasswordLink'])->name('password.email');
+Route::get('/reset-password/{user}/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

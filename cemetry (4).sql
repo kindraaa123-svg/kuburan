@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 19, 2026 at 06:04 PM
+-- Generation Time: Apr 29, 2026 at 02:39 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -114,7 +114,82 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `name`, `username`, `ip_address`, 
 (66, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan fasilitas (116): scene:road_top_main (X:26, Y:30); scene:road_left_side (X:35, Y:24); scene:road_right_side (X:1076, Y:27); scene:road_mid_top (X:118, Y:248); scene:road_mid_center (X:136, Y:422); scene:road_bottom (X:118, Y:614); scene:landmark_gatehouse (X:246, Y:318); scene:tree_top_0 (X:20, Y:6); +108 item lain.', '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
 (67, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Logout', 'User logout dari sistem.', '2026-04-19 08:49:36', '2026-04-19 08:49:36'),
 (68, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Login', 'User login ke sistem.', '2026-04-19 09:01:08', '2026-04-19 09:01:08'),
-(69, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Logout', 'User logout dari sistem.', '2026-04-19 09:01:21', '2026-04-19 09:01:21');
+(69, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Logout', 'User logout dari sistem.', '2026-04-19 09:01:21', '2026-04-19 09:01:21'),
+(70, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Login', 'User login ke sistem.', '2026-04-28 02:19:19', '2026-04-28 02:19:19'),
+(71, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Export Data User', 'Mengexport data user ke file Excel.', '2026-04-28 02:41:37', '2026-04-28 02:41:37'),
+(72, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Import Data User', 'Import user dari file Excel. Berhasil: 0, dilewati: 2.', '2026-04-28 02:41:54', '2026-04-28 02:41:54'),
+(73, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan fasilitas (1): #120 f1 (X:1151, Y:730).', '2026-04-28 02:51:13', '2026-04-28 02:51:13'),
+(74, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Blok', 'Mengedit data blok #24. nama blok dari \"Colton Vargas\" ke \"Blok D\", warna peta dari \"#B53AF8\" ke \"#FCE91D\".', '2026-04-28 02:52:10', '2026-04-28 02:52:10'),
+(75, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Tambah Blok', 'Menambah data blok #25 \"Blok E\".', '2026-04-28 02:52:33', '2026-04-28 02:52:33'),
+(76, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Tidak ada perubahan nilai.', '2026-04-28 03:03:36', '2026-04-28 03:03:36'),
+(77, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Tidak ada perubahan nilai.', '2026-04-28 03:03:39', '2026-04-28 03:03:39'),
+(78, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan blok (1): Blok E (X:(kosong)->1157, Y:(kosong)->907).', '2026-04-28 03:06:16', '2026-04-28 03:06:16'),
+(79, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Tidak ada perubahan nilai.', '2026-04-28 03:12:01', '2026-04-28 03:12:01'),
+(80, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Tambah Plot', 'Menambah plot #33 (blok #22, nomor plot \"B-02\").', '2026-04-28 03:20:10', '2026-04-28 03:20:10'),
+(81, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Tambah Plot', 'Menambah plot #34 (blok #22, nomor plot \"B-03\").', '2026-04-28 03:22:08', '2026-04-28 03:22:08'),
+(82, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Plot', 'Mengedit data plot #34. posisi X dari \"23.20\" ke \"220\", posisi Y dari \"93.60\" ke \"23.2\", lebar dari \"60.00\" ke \"60\", tinggi dari \"40.00\" ke \"40\".', '2026-04-28 03:23:44', '2026-04-28 03:23:44'),
+(83, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Tambah Plot', 'Menambah plot #35 (blok #22, nomor plot \"B-04\").', '2026-04-28 03:23:54', '2026-04-28 03:23:54'),
+(84, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan blok (1): Blok B (X:145->115, Y:456->465).', '2026-04-28 03:24:12', '2026-04-28 03:24:12'),
+(85, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan blok (3): Blok A (X:129->85, Y:117->173); Blok B (X:115->957, Y:465->180); Blok C (X:785->960, Y:125->599) | Perubahan fasilitas (6): #1 f2 (X:540->714, Y:694->906); #2 f3 (X:39->0, Y:360->512); #3 f3 (X:427->640, Y:490->480); scene:road_top_main (X:26->0, Y:30->72); scene:road_left_side (X:35->0, Y:24->51); scene:road_right_side (X:1076->1453, Y:27->61).', '2026-04-28 03:39:16', '2026-04-28 03:39:16'),
+(86, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan blok (4): Blok A (X:85->180, Y:173->180); Blok B (X:957->840, Y:180->180); Blok C (X:960->143, Y:599->603); Blok D (X:(kosong)->1176, Y:(kosong)->719) | Perubahan fasilitas (4): #1 f2 (X:714->717, Y:906->1024); #3 f3 (X:640->288, Y:480->498); #121 f3 (X:1, Y:930); scene:road_left_side (X:0->5, Y:51->51).', '2026-04-28 03:45:28', '2026-04-28 03:45:28'),
+(87, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan blok (2): Blok C (X:143->180, Y:603->650); Blok D (X:1176->891, Y:719->609).', '2026-04-28 03:45:49', '2026-04-28 03:45:49'),
+(88, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan blok (4): Blok A (X:180->127, Y:180->182); Blok B (X:840->850, Y:180->180); Blok C (X:180->118, Y:650->657); Blok D (X:891->859, Y:609->646).', '2026-04-28 03:50:38', '2026-04-28 03:50:38'),
+(89, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Tambah Plot', 'Menambah plot #36 (blok #11, nomor plot \"A-11\").', '2026-04-28 03:51:03', '2026-04-28 03:51:03'),
+(90, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Plot', 'Mengedit data plot #36. posisi X dari \"24.00\" ke \"39.2\", posisi Y dari \"199.20\" ke \"196.8\", lebar dari \"60.00\" ke \"60\", tinggi dari \"40.00\" ke \"40\".', '2026-04-28 03:53:45', '2026-04-28 03:53:45'),
+(91, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan blok (4): Blok A (X:127->107, Y:182->173); Blok B (X:850->879, Y:180->173); Blok C (X:118->129, Y:657->596); Blok D (X:859->890, Y:646->598) | Perubahan fasilitas (20): #1 f2 (X:717->714, Y:1024->971); #2 f3 (X:0->9, Y:512->497); #3 f3 (X:288->541, Y:498->680); #122 f1 (X:1403, Y:923); #123 f1 (X:1322, Y:923); #124 f1 (X:1243, Y:922); #125 f1 (X:1163, Y:923); #126 f1 (X:1082, Y:923); +12 item lain.', '2026-04-28 03:57:46', '2026-04-28 03:57:46'),
+(92, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan blok (4): Blok A (X:107->180, Y:173->180); Blok B (X:879->840, Y:173->180); Blok C (X:129->182, Y:596->610); Blok D (X:890->912, Y:598->603).', '2026-04-28 03:57:57', '2026-04-28 03:57:57'),
+(93, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan blok (4): Blok A (X:180->130, Y:180->162); Blok B (X:840->894, Y:180->169); Blok C (X:182->135, Y:610->592); Blok D (X:912->896, Y:603->592) | Perubahan fasilitas (14): #138 f1 (X:722, Y:163); #139 f1 (X:763, Y:163); #140 f1 (X:762, Y:204); #141 f1 (X:763, Y:243); #142 f1 (X:762, Y:283); #143 f1 (X:762, Y:322); #144 f1 (X:762, Y:362); #145 f1 (X:763, Y:402); +6 item lain.', '2026-04-28 04:00:30', '2026-04-28 04:00:30'),
+(94, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Hapus Blok', 'Menghapus data blok #25 \"Blok E\".', '2026-04-28 04:05:07', '2026-04-28 04:05:07'),
+(95, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Tambah Kontak Keluarga', 'Menambah kontak keluarga \"Basil Norman\" untuk almarhum #11 \"Almarhum 1\" pada plot #11.', '2026-04-28 04:41:09', '2026-04-28 04:41:09'),
+(96, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Ubah Kontak Keluarga', 'Memperbarui kontak keluarga #28 menjadi \"Basil Norman\" untuk almarhum #11 \"Almarhum 1\" pada plot #11.', '2026-04-28 04:43:57', '2026-04-28 04:43:57'),
+(97, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Ubah Kontak Keluarga', 'Memperbarui kontak keluarga #28 menjadi \"Basil Norman\" untuk almarhum #11 \"Almarhum 1\" pada plot #11.', '2026-04-28 04:47:46', '2026-04-28 04:47:46'),
+(98, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Update Hak Akses', 'Memperbarui pengaturan hak akses menu sidebar per level.', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(99, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Tambah Blok', 'Menambah data blok #26 \"Blok E\".', '2026-04-28 05:18:23', '2026-04-28 05:18:23'),
+(100, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Hapus Plot', 'Menghapus data plot #40 (blok #11, nomor plot \"A-15\").', '2026-04-28 05:40:09', '2026-04-28 05:40:09'),
+(101, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Tambah Plot', 'Menambah plot #90 (blok #11, nomor plot \"A-15\").', '2026-04-28 08:02:13', '2026-04-28 08:02:13'),
+(102, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Plot', 'Mengedit data plot #14. nomor plot dari \"A-4\" ke \"A-00\", baris dari \"1\" ke \"(kosong)\", posisi X dari \"258.00\" ke \"258\", posisi Y dari \"24.00\" ke \"24\", lebar dari \"60.00\" ke \"60\", tinggi dari \"40.00\" ke \"40\".', '2026-04-28 08:07:46', '2026-04-28 08:07:46'),
+(103, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Plot', 'Mengedit data plot #14. nomor plot dari \"A-00\" ke \"A-4\", posisi X dari \"258.00\" ke \"258\", posisi Y dari \"24.00\" ke \"24\", lebar dari \"60.00\" ke \"60\", tinggi dari \"40.00\" ke \"40\".', '2026-04-28 08:07:52', '2026-04-28 08:07:52'),
+(104, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Blok', 'Mengedit data blok #22. warna peta dari \"#C12F2F\" ke \"#DD5A5A\".', '2026-04-28 08:08:16', '2026-04-28 08:08:16'),
+(105, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Almarhum', 'Mengedit data almarhum #11. Tidak ada perubahan nilai utama.', '2026-04-28 08:20:47', '2026-04-28 08:20:47'),
+(106, 1, 'Superadmin\r\n', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Blok', 'Mengedit data blok #24. deskripsi dari \"Enim in ut duis quid\" ke \"Kuburan SPECIAL\".', '2026-04-28 08:23:47', '2026-04-28 08:23:47'),
+(107, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Profil', 'Mengedit profil akun. nama dari \"(kosong)\" ke \"superadmin\".', '2026-04-28 08:29:43', '2026-04-28 08:29:43'),
+(108, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Profil', 'Mengedit profil akun. nama dari \"(kosong)\" ke \"superadmin\".', '2026-04-28 08:29:48', '2026-04-28 08:29:48'),
+(109, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Profil', 'Mengedit profil akun. nama dari \"(kosong)\" ke \"superadmin\".', '2026-04-28 08:29:55', '2026-04-28 08:29:55'),
+(110, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Profil', 'Mengedit profil akun. nama dari \"(kosong)\" ke \"superadmin\".', '2026-04-28 08:30:48', '2026-04-28 08:30:48'),
+(111, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Logout', 'User logout dari sistem.', '2026-04-28 08:31:35', '2026-04-28 08:31:35'),
+(112, 1, 'Superadmins', 'superadmin', '127.0.0.1', NULL, NULL, 'Login', 'User login ke sistem.', '2026-04-28 08:31:49', '2026-04-28 08:31:49'),
+(113, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Profil', 'Mengedit profil akun. nama dari \"(kosong)\" ke \"superadmin\".', '2026-04-28 08:31:59', '2026-04-28 08:31:59'),
+(114, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Profil', 'Mengedit profil akun. nama dari \"(kosong)\" ke \"superadmin\".', '2026-04-28 08:32:08', '2026-04-28 08:32:08'),
+(115, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Profil', 'Mengedit profil akun. nama dari \"(kosong)\" ke \"superadmin\".', '2026-04-28 08:40:58', '2026-04-28 08:40:58'),
+(116, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Blok', 'Mengedit data blok #26. maksimal plot dari \"15\" ke \"5\".', '2026-04-28 08:58:27', '2026-04-28 08:58:27'),
+(117, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan blok (1): Blok E (X:(kosong)->24, Y:(kosong)->40) | Perubahan fasilitas (108): scene:tree_top_0 (X:20, Y:6); scene:tree_top_1 (X:53, Y:6); scene:tree_top_2 (X:86, Y:6); scene:tree_top_3 (X:119, Y:6); scene:tree_top_4 (X:152, Y:6); scene:tree_top_5 (X:185, Y:6); scene:tree_top_6 (X:218, Y:6); scene:tree_top_7 (X:251, Y:6); +100 item lain.', '2026-04-28 09:07:02', '2026-04-28 09:07:02'),
+(118, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan blok (1): Blok E (X:(kosong)->24, Y:(kosong)->40) | Perubahan fasilitas (1): scene:empty_block_26 (X:24, Y:40).', '2026-04-28 09:11:13', '2026-04-28 09:11:13'),
+(119, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan blok (1): Blok E (X:(kosong)->245, Y:(kosong)->1192).', '2026-04-28 09:22:25', '2026-04-28 09:22:25'),
+(120, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Posisi Blok', 'Mengatur posisi denah blok dari dashboard. Perubahan blok (1): Blok E (X:245->226, Y:1192->1103) | Perubahan fasilitas (1): scene:empty_block_26 (X:226, Y:1103).', '2026-04-28 09:22:33', '2026-04-28 09:22:33'),
+(121, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Export Data User', 'Mengexport data user ke file Excel.', '2026-04-28 09:53:32', '2026-04-28 09:53:32'),
+(122, 1, 'superadmin', 'superadmin', '127.0.0.1', NULL, NULL, 'Logout', 'User logout dari sistem.', '2026-04-28 09:54:36', '2026-04-28 09:54:36'),
+(123, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Login', 'User login ke sistem via OTP email.', '2026-04-28 10:11:54', '2026-04-28 10:11:54'),
+(124, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Logout', 'User logout dari sistem.', '2026-04-28 10:12:31', '2026-04-28 10:12:31'),
+(125, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Login', 'User login ke sistem.', '2026-04-28 10:13:27', '2026-04-28 10:13:27'),
+(126, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Hapus Kontak Keluarga', 'Menghapus kontak keluarga #28 \"Basil Norman\" untuk almarhum #11 \"Almarhum 1\" pada plot #11.', '2026-04-28 10:13:55', '2026-04-28 10:13:55'),
+(127, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Logout', 'User logout dari sistem.', '2026-04-28 10:14:12', '2026-04-28 10:14:12'),
+(128, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Login', 'User login ke sistem.', '2026-04-28 10:25:15', '2026-04-28 10:25:15'),
+(129, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Hapus Kontak Keluarga', 'Menghapus kontak keluarga #11 \"Keluarga 1\" untuk almarhum #11 \"Almarhum 1\" pada plot #11.', '2026-04-28 10:45:20', '2026-04-28 10:45:20'),
+(130, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Hapus Kontak Keluarga', 'Menghapus kontak keluarga #12 \"Keluarga 2\" untuk almarhum #12 \"Almarhum 2\" pada plot #12.', '2026-04-28 10:48:10', '2026-04-28 10:48:10'),
+(131, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Login', 'User login ke sistem.', '2026-04-28 16:38:49', '2026-04-28 16:38:49'),
+(132, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Logout', 'User logout dari sistem.', '2026-04-28 16:40:22', '2026-04-28 16:40:22'),
+(133, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Login', 'User login ke sistem.', '2026-04-28 16:43:52', '2026-04-28 16:43:52'),
+(134, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Almarhum', 'Mengedit data almarhum #11. nama dari \"Almarhum 1\" ke \"Ahmad Subarjo\", gender dari \"female\" ke \"male\".', '2026-04-28 17:18:08', '2026-04-28 17:18:08'),
+(135, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Hapus Kontak Keluarga', 'Menghapus kontak keluarga #17 \"Keluarga 10\" untuk almarhum #17 \"Almarhum 10\" pada plot #20.', '2026-04-28 17:21:53', '2026-04-28 17:21:53'),
+(136, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Hapus Kontak Keluarga', 'Menghapus kontak keluarga #16 \"Keluarga 9\" untuk almarhum #16 \"Almarhum 9\" pada plot #19.', '2026-04-28 17:23:40', '2026-04-28 17:23:40'),
+(137, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Almarhum', 'Mengedit data almarhum #13. nama dari \"Almarhum 3\" ke \"Robertus Salim\", gender dari \"female\" ke \"male\".', '2026-04-28 17:24:29', '2026-04-28 17:24:29'),
+(138, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Almarhum', 'Mengedit data almarhum #15. nama dari \"Almarhum 7\" ke \"Budi Santoso\", gender dari \"female\" ke \"male\".', '2026-04-28 17:25:04', '2026-04-28 17:25:04'),
+(139, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Logout', 'User logout dari sistem.', '2026-04-28 17:26:19', '2026-04-28 17:26:19'),
+(140, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Login', 'User login ke sistem.', '2026-04-28 17:29:23', '2026-04-28 17:29:23'),
+(141, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Hapus Kontak Keluarga', 'Menghapus kontak keluarga #14 \"Keluarga 5\" untuk almarhum #14 \"Almarhum 5\" pada plot #15.', '2026-04-28 17:30:14', '2026-04-28 17:30:14'),
+(142, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Tambah Kontak Keluarga', 'Menambah kontak keluarga \"Jasmine Kline\" untuk almarhum #28 \"Holly Stephens\" pada plot #14.', '2026-04-28 17:32:58', '2026-04-28 17:32:58'),
+(143, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Hapus Kontak Keluarga', 'Menghapus kontak keluarga #29 \"Jasmine Kline\" untuk almarhum #28 \"Holly Stephens\" pada plot #14.', '2026-04-28 17:33:02', '2026-04-28 17:33:02'),
+(144, 1, 'Superadmina', 'superadmin', '127.0.0.1', NULL, NULL, 'Edit Almarhum', 'Mengedit data almarhum #12. nama dari \"Almarhum 2\" ke \"kekekke\".', '2026-04-28 17:37:33', '2026-04-28 17:37:33');
 
 -- --------------------------------------------------------
 
@@ -139,10 +214,11 @@ CREATE TABLE `blocks` (
 --
 
 INSERT INTO `blocks` (`blockid`, `block_name`, `description`, `map_color`, `map_x`, `map_y`, `max_plots`, `created_at`, `updated_at`) VALUES
-(11, 'Blok A', 'Blok utama dengan 10 plot', '#10B981', 129, 117, 15, '2026-04-11 10:32:08', '2026-04-19 03:08:35'),
-(22, 'Blok B', 'Kuburan Premium', '#C12F2F', 145, 456, 15, '2026-04-12 16:11:01', '2026-04-19 07:41:04'),
-(23, 'Blok C', NULL, '#A42382', 785, 125, 15, '2026-04-12 10:00:30', '2026-04-19 02:39:54'),
-(24, 'Colton Vargas', 'Enim in ut duis quid', '#B53AF8', 704, 463, 8, '2026-04-19 02:37:14', '2026-04-19 02:39:48');
+(11, 'Blok A', 'Blok utama dengan 10 plot', '#10B981', 130, 162, 15, '2026-04-11 10:32:08', '2026-04-28 04:00:30'),
+(22, 'Blok B', 'Kuburan Premium', '#DD5A5A', 894, 169, 15, '2026-04-12 16:11:01', '2026-04-28 08:08:16'),
+(23, 'Blok C', NULL, '#A42382', 135, 592, 15, '2026-04-12 10:00:30', '2026-04-28 04:00:30'),
+(24, 'Blok D', 'Kuburan SPECIAL', '#FCE91D', 896, 592, 8, '2026-04-19 02:37:14', '2026-04-28 08:23:47'),
+(26, 'Blok E', NULL, '#4F8FA3', NULL, NULL, 5, '2026-04-28 05:18:23', '2026-04-28 09:22:32');
 
 -- --------------------------------------------------------
 
@@ -189,8 +265,6 @@ CREATE TABLE `deceased` (
   `death_date` date DEFAULT NULL,
   `burial_date` date DEFAULT NULL,
   `religion` varchar(50) DEFAULT NULL,
-  `identity_number` varchar(50) DEFAULT NULL,
-  `address` text DEFAULT NULL,
   `description` text DEFAULT NULL,
   `photo_url` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -201,25 +275,25 @@ CREATE TABLE `deceased` (
 -- Dumping data for table `deceased`
 --
 
-INSERT INTO `deceased` (`deceasedid`, `plotid`, `full_name`, `gender`, `birth_date`, `death_date`, `burial_date`, `religion`, `identity_number`, `address`, `description`, `photo_url`, `created_at`, `updated_at`) VALUES
-(11, 11, 'Almarhum 1', 'female', '1965-04-11', '2026-03-11', '2026-03-12', 'Kristen', 'ID-A-1', 'Alamat dummy 1', 'Deskripsi dummy 1', 'deceased-photos/BwOyROjmbEMp8xEoSfjtw6fsCdOFkpbcMfroANNX.png', '2026-04-11 10:32:08', '2026-04-12 16:46:28'),
-(12, 12, 'Almarhum 2', 'male', '1964-04-11', '2026-03-10', '2026-03-11', 'Islam', 'ID-A-2', 'Alamat dummy 2', 'Deskripsi dummy 2', NULL, '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
-(13, 13, 'Almarhum 3', 'female', '1963-04-11', '2026-03-09', '2026-03-10', 'Kristen', 'ID-A-3', 'Alamat dummy 3', 'Deskripsi dummy 3', NULL, '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
-(14, 15, 'Almarhum 5', 'female', '1961-04-11', '2026-03-07', '2026-03-08', 'Kristen', 'ID-A-5', 'Alamat dummy 5', 'Deskripsi dummy 5', NULL, '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
-(15, 17, 'Almarhum 7', 'female', '1959-04-11', '2026-03-05', '2026-03-06', 'Kristen', 'ID-A-7', 'Alamat dummy 7', 'Deskripsi dummy 7', NULL, '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
-(16, 19, 'Almarhum 9', 'female', '1957-04-11', '2026-03-03', '2026-03-04', 'Kristen', 'ID-A-9', 'Alamat dummy 9', 'Deskripsi dummy 9', NULL, '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
-(17, 20, 'Almarhum 10', 'male', '1956-04-11', '2026-03-02', '2026-03-03', 'Islam', 'ID-A-10', 'Alamat dummy 10', 'Deskripsi dummy 10', NULL, '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
-(18, 21, 'Almarhum Dummy 1', 'female', '1965-04-11', '2026-03-01', '2026-03-02', 'Kristen', 'DUMMY-ID-0001', 'Jl. Dummy No. 1, Kota Contoh', 'Data dummy almarhum ke-1', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
-(19, 22, 'Almarhum Dummy 2', 'male', '1964-04-11', '2026-02-28', '2026-03-01', 'Islam', 'DUMMY-ID-0002', 'Jl. Dummy No. 2, Kota Contoh', 'Data dummy almarhum ke-2', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
-(20, 23, 'Almarhum Dummy 3', 'female', '1963-04-11', '2026-02-27', '2026-02-28', 'Kristen', 'DUMMY-ID-0003', 'Jl. Dummy No. 3, Kota Contoh', 'Data dummy almarhum ke-3', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
-(21, 24, 'Almarhum Dummy 4', 'male', '1962-04-11', '2026-02-26', '2026-02-27', 'Islam', 'DUMMY-ID-0004', 'Jl. Dummy No. 4, Kota Contoh', 'Data dummy almarhum ke-4', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
-(22, 25, 'Almarhum Dummy 5', 'female', '1961-04-11', '2026-02-25', '2026-02-26', 'Kristen', 'DUMMY-ID-0005', 'Jl. Dummy No. 5, Kota Contoh', 'Data dummy almarhum ke-5', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
-(23, 26, 'Almarhum Dummy 6', 'male', '1960-04-11', '2026-02-24', '2026-02-25', 'Islam', 'DUMMY-ID-0006', 'Jl. Dummy No. 6, Kota Contoh', 'Data dummy almarhum ke-6', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
-(24, 27, 'Almarhum Dummy 7', 'female', '1959-04-11', '2026-02-23', '2026-02-24', 'Kristen', 'DUMMY-ID-0007', 'Jl. Dummy No. 7, Kota Contoh', 'Data dummy almarhum ke-7', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
-(25, 28, 'Almarhum Dummy 8', 'male', '1958-04-11', '2026-02-22', '2026-02-23', 'Islam', 'DUMMY-ID-0008', 'Jl. Dummy No. 8, Kota Contoh', 'Data dummy almarhum ke-8', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
-(26, 29, 'Almarhum Dummy 9', 'female', '1957-04-11', '2026-02-21', '2026-02-22', 'Kristen', 'DUMMY-ID-0009', 'Jl. Dummy No. 9, Kota Contoh', 'Data dummy almarhum ke-9', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
-(27, 30, 'Almarhum Dummy 10', 'male', '1956-04-11', '2026-02-20', '2026-02-21', 'Islam', 'DUMMY-ID-0010', 'Jl. Dummy No. 10, Kota Contoh', 'Data dummy almarhum ke-10', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
-(28, 14, 'Holly Stephens', 'female', '1999-09-03', '1983-02-28', '2013-11-25', 'Non est iste impedit', '958', 'Aut ex ipsum optio', 'Blanditiis aut ex il', 'deceased-photos/pcqdW3JMsNBXqVInQacUscw6y2QKAKUMZGay9VP8.png', '2026-04-12 23:05:09', '2026-04-12 23:05:09');
+INSERT INTO `deceased` (`deceasedid`, `plotid`, `full_name`, `gender`, `birth_date`, `death_date`, `burial_date`, `religion`, `description`, `photo_url`, `created_at`, `updated_at`) VALUES
+(11, 11, 'Ahmad Subarjo', 'male', '1965-04-11', '2026-03-11', '2026-03-12', 'Kristen', 'Deskripsi dummy 1', 'deceased-photos/eiWya7QdOCfwt6QFyjve1Pue94AYYtSkPXxw41Zq.jpg', '2026-04-11 10:32:08', '2026-04-28 17:18:08'),
+(12, 12, 'kekekke', 'male', '1964-04-11', '2026-03-10', '2026-03-11', 'Islam', 'Deskripsi dummy 2', NULL, '2026-04-11 10:32:08', '2026-04-28 17:37:33'),
+(13, 13, 'Robertus Salim', 'male', '1963-04-11', '2026-03-09', '2026-03-10', 'Kristen', 'Deskripsi dummy 3', NULL, '2026-04-11 10:32:08', '2026-04-28 17:24:29'),
+(14, 15, 'Almarhum 5', 'female', '1961-04-11', '2026-03-07', '2026-03-08', 'Kristen', 'Deskripsi dummy 5', NULL, '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
+(15, 17, 'Budi Santoso', 'male', '1959-04-11', '2026-03-05', '2026-03-06', 'Kristen', 'Deskripsi dummy 7', NULL, '2026-04-11 10:32:08', '2026-04-28 17:25:04'),
+(16, 19, 'Almarhum 9', 'female', '1957-04-11', '2026-03-03', '2026-03-04', 'Kristen', 'Deskripsi dummy 9', NULL, '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
+(17, 20, 'Almarhum 10', 'male', '1956-04-11', '2026-03-02', '2026-03-03', 'Islam', 'Deskripsi dummy 10', NULL, '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
+(18, 21, 'Almarhum Dummy 1', 'female', '1965-04-11', '2026-03-01', '2026-03-02', 'Kristen', 'Data dummy almarhum ke-1', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
+(19, 22, 'Almarhum Dummy 2', 'male', '1964-04-11', '2026-02-28', '2026-03-01', 'Islam', 'Data dummy almarhum ke-2', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
+(20, 23, 'Almarhum Dummy 3', 'female', '1963-04-11', '2026-02-27', '2026-02-28', 'Kristen', 'Data dummy almarhum ke-3', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
+(21, 24, 'Almarhum Dummy 4', 'male', '1962-04-11', '2026-02-26', '2026-02-27', 'Islam', 'Data dummy almarhum ke-4', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
+(22, 25, 'Almarhum Dummy 5', 'female', '1961-04-11', '2026-02-25', '2026-02-26', 'Kristen', 'Data dummy almarhum ke-5', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
+(23, 26, 'Almarhum Dummy 6', 'male', '1960-04-11', '2026-02-24', '2026-02-25', 'Islam', 'Data dummy almarhum ke-6', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
+(24, 27, 'Almarhum Dummy 7', 'female', '1959-04-11', '2026-02-23', '2026-02-24', 'Kristen', 'Data dummy almarhum ke-7', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
+(25, 28, 'Almarhum Dummy 8', 'male', '1958-04-11', '2026-02-22', '2026-02-23', 'Islam', 'Data dummy almarhum ke-8', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
+(26, 29, 'Almarhum Dummy 9', 'female', '1957-04-11', '2026-02-21', '2026-02-22', 'Kristen', 'Data dummy almarhum ke-9', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
+(27, 30, 'Almarhum Dummy 10', 'male', '1956-04-11', '2026-02-20', '2026-02-21', 'Islam', 'Data dummy almarhum ke-10', NULL, '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
+(28, 14, 'Holly Stephens', 'female', '1999-09-03', '1983-02-28', '2013-11-25', 'Non est iste impedit', 'Blanditiis aut ex il', 'deceased-photos/pcqdW3JMsNBXqVInQacUscw6y2QKAKUMZGay9VP8.png', '2026-04-12 23:05:09', '2026-04-12 23:05:09');
 
 -- --------------------------------------------------------
 
@@ -262,7 +336,7 @@ CREATE TABLE `employer` (
 --
 
 INSERT INTO `employer` (`employerid`, `name`, `email`, `phonenumber`, `userid`) VALUES
-(1, 'Superadmin\r\n', 'superadmin@gmail.com', '0350748', 1),
+(1, 'Superadmina', 'yenatricesn@gmail.com', '0350748', 1),
 (2, 'Admin', 'admin@gmail.com', '0987654', 2),
 (3, 'Eric Dean', 'vufojax@mailinator.com', '+1 (316) 817-5017', 3);
 
@@ -319,125 +393,156 @@ CREATE TABLE `facility_map_items` (
 --
 
 INSERT INTO `facility_map_items` (`facility_map_itemid`, `facility_id`, `item_type`, `scene_object_key`, `map_x`, `map_y`, `map_width`, `map_height`, `map_rotation`, `is_fixed`, `is_removed`, `created_at`, `updated_at`) VALUES
-(1, 2, 'icon', NULL, 540, 694, 103, 93, 0.00, 1, 0, '2026-04-19 07:36:49', '2026-04-19 08:31:14'),
-(2, 3, 'icon', NULL, 39, 360, 1105, 73, 0.00, 1, 0, '2026-04-19 07:36:49', '2026-04-19 08:31:14'),
-(3, 3, 'icon', NULL, 427, 490, 335, 77, 90.31, 1, 0, '2026-04-19 07:36:49', '2026-04-19 08:31:14'),
-(4, 3, 'scene', 'road_top_main', 26, 30, 1113, 61, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(5, 3, 'scene', 'road_left_side', 35, 24, 70, 695, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(6, 3, 'scene', 'road_right_side', 1076, 27, 68, 702, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(7, 3, 'scene', 'road_mid_top', 118, 248, NULL, NULL, 0.00, 1, 1, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(8, 3, 'scene', 'road_mid_center', 136, 422, NULL, NULL, 0.00, 1, 1, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(9, 3, 'scene', 'road_bottom', 118, 614, NULL, NULL, 0.00, 1, 1, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(10, 0, 'scene', 'landmark_gatehouse', 246, 318, NULL, NULL, 0.00, 1, 1, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(11, 1, 'scene', 'tree_top_0', 20, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(12, 1, 'scene', 'tree_top_1', 53, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(13, 1, 'scene', 'tree_top_2', 86, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(14, 1, 'scene', 'tree_top_3', 119, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(15, 1, 'scene', 'tree_top_4', 152, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(16, 1, 'scene', 'tree_top_5', 185, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(17, 1, 'scene', 'tree_top_6', 218, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(18, 1, 'scene', 'tree_top_7', 251, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(19, 1, 'scene', 'tree_top_8', 284, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(20, 1, 'scene', 'tree_top_9', 317, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(21, 1, 'scene', 'tree_top_10', 350, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(22, 1, 'scene', 'tree_top_11', 383, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(23, 1, 'scene', 'tree_top_12', 416, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(24, 1, 'scene', 'tree_top_13', 449, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(25, 1, 'scene', 'tree_top_14', 482, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(26, 1, 'scene', 'tree_top_15', 515, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(27, 1, 'scene', 'tree_top_16', 548, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(28, 1, 'scene', 'tree_top_17', 581, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(29, 1, 'scene', 'tree_top_18', 614, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(30, 1, 'scene', 'tree_top_19', 647, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(31, 1, 'scene', 'tree_top_20', 680, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(32, 1, 'scene', 'tree_top_21', 713, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(33, 1, 'scene', 'tree_top_22', 746, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(34, 1, 'scene', 'tree_top_23', 779, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(35, 1, 'scene', 'tree_top_24', 812, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(36, 1, 'scene', 'tree_top_25', 845, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(37, 1, 'scene', 'tree_top_26', 878, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(38, 1, 'scene', 'tree_top_27', 911, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(39, 1, 'scene', 'tree_top_28', 944, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(40, 1, 'scene', 'tree_top_29', 977, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(41, 1, 'scene', 'tree_top_30', 1010, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(42, 1, 'scene', 'tree_top_31', 1043, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(43, 1, 'scene', 'tree_top_32', 1076, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(44, 1, 'scene', 'tree_top_33', 1109, 6, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(45, 1, 'scene', 'tree_bottom_0', 20, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(46, 1, 'scene', 'tree_bottom_1', 53, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(47, 1, 'scene', 'tree_bottom_2', 86, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(48, 1, 'scene', 'tree_bottom_3', 119, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(49, 1, 'scene', 'tree_bottom_4', 152, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(50, 1, 'scene', 'tree_bottom_5', 185, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(51, 1, 'scene', 'tree_bottom_6', 218, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(52, 1, 'scene', 'tree_bottom_7', 251, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(53, 1, 'scene', 'tree_bottom_8', 284, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(54, 1, 'scene', 'tree_bottom_9', 317, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(55, 1, 'scene', 'tree_bottom_10', 350, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(56, 1, 'scene', 'tree_bottom_11', 383, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(57, 1, 'scene', 'tree_bottom_12', 416, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(58, 1, 'scene', 'tree_bottom_13', 449, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(59, 1, 'scene', 'tree_bottom_14', 482, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(60, 1, 'scene', 'tree_bottom_15', 515, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(61, 1, 'scene', 'tree_bottom_16', 548, 1278, NULL, NULL, 0.00, 1, 1, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(62, 1, 'scene', 'tree_bottom_17', 581, 1278, NULL, NULL, 0.00, 1, 1, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(63, 1, 'scene', 'tree_bottom_18', 614, 1278, NULL, NULL, 0.00, 1, 1, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(64, 1, 'scene', 'tree_bottom_19', 647, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(65, 1, 'scene', 'tree_bottom_20', 680, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(66, 1, 'scene', 'tree_bottom_21', 713, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(67, 1, 'scene', 'tree_bottom_22', 746, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(68, 1, 'scene', 'tree_bottom_23', 779, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(69, 1, 'scene', 'tree_bottom_24', 812, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(70, 1, 'scene', 'tree_bottom_25', 845, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(71, 1, 'scene', 'tree_bottom_26', 878, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(72, 1, 'scene', 'tree_bottom_27', 911, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(73, 1, 'scene', 'tree_bottom_28', 944, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(74, 1, 'scene', 'tree_bottom_29', 977, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(75, 1, 'scene', 'tree_bottom_30', 1010, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(76, 1, 'scene', 'tree_bottom_31', 1043, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(77, 1, 'scene', 'tree_bottom_32', 1076, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(78, 1, 'scene', 'tree_bottom_33', 1109, 738, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(79, 1, 'scene', 'tree_left_0', 6, 42, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(80, 1, 'scene', 'tree_right_0', 1158, 42, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(81, 1, 'scene', 'tree_left_1', 6, 76, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(82, 1, 'scene', 'tree_right_1', 1158, 76, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(83, 1, 'scene', 'tree_left_2', 6, 110, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(84, 1, 'scene', 'tree_right_2', 1158, 110, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(85, 1, 'scene', 'tree_left_3', 6, 144, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(86, 1, 'scene', 'tree_right_3', 1158, 144, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(87, 1, 'scene', 'tree_left_4', 6, 178, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(88, 1, 'scene', 'tree_right_4', 1158, 178, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(89, 1, 'scene', 'tree_left_5', 6, 212, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(90, 1, 'scene', 'tree_right_5', 1158, 212, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(91, 1, 'scene', 'tree_left_6', 6, 246, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(92, 1, 'scene', 'tree_right_6', 1158, 246, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(93, 1, 'scene', 'tree_left_7', 6, 280, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(94, 1, 'scene', 'tree_right_7', 1158, 280, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(95, 1, 'scene', 'tree_left_8', 6, 314, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(96, 1, 'scene', 'tree_right_8', 1158, 314, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(97, 1, 'scene', 'tree_left_9', 6, 348, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(98, 1, 'scene', 'tree_right_9', 1158, 348, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(99, 1, 'scene', 'tree_left_10', 6, 382, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(100, 1, 'scene', 'tree_right_10', 1158, 382, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(101, 1, 'scene', 'tree_left_11', 6, 416, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(102, 1, 'scene', 'tree_right_11', 1158, 416, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(103, 1, 'scene', 'tree_left_12', 6, 450, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(104, 1, 'scene', 'tree_right_12', 1158, 450, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(105, 1, 'scene', 'tree_left_13', 6, 484, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(106, 1, 'scene', 'tree_right_13', 1158, 484, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(107, 1, 'scene', 'tree_left_14', 6, 518, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(108, 1, 'scene', 'tree_right_14', 1158, 518, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(109, 1, 'scene', 'tree_left_15', 6, 552, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(110, 1, 'scene', 'tree_right_15', 1158, 552, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(111, 1, 'scene', 'tree_left_16', 6, 586, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(112, 1, 'scene', 'tree_right_16', 1158, 586, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(113, 1, 'scene', 'tree_left_17', 6, 620, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(114, 1, 'scene', 'tree_right_17', 1158, 620, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(115, 1, 'scene', 'tree_left_18', 6, 654, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(116, 1, 'scene', 'tree_right_18', 1158, 654, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(117, 1, 'scene', 'tree_left_19', 6, 688, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(118, 1, 'scene', 'tree_right_19', 1158, 688, 16, 16, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-19 08:31:14'),
-(119, 2, 'scene', 'entrance_main_gate', 880, 1254, NULL, NULL, 0.00, 1, 1, '2026-04-19 08:31:14', '2026-04-19 08:31:14');
+(1, 2, 'icon', NULL, 714, 971, 103, 93, 0.00, 1, 0, '2026-04-19 07:36:49', '2026-04-28 09:22:32'),
+(2, 3, 'icon', NULL, 9, 497, 1519, 70, 0.00, 1, 0, '2026-04-19 07:36:49', '2026-04-28 09:22:32'),
+(3, 3, 'icon', NULL, 541, 680, 462, 89, 90.31, 1, 0, '2026-04-19 07:36:49', '2026-04-28 09:22:32'),
+(4, 3, 'scene', 'road_top_main', 0, 72, 1524, 73, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-28 09:22:32'),
+(5, 3, 'scene', 'road_left_side', 5, 51, 91, 906, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-28 09:22:32'),
+(6, 3, 'scene', 'road_right_side', 1444, 68, 86, 869, 0.00, 1, 0, '2026-04-19 08:31:14', '2026-04-28 09:22:32'),
+(7, 3, 'scene', 'road_mid_top', 118, 248, NULL, NULL, 0.00, 1, 1, '2026-04-19 08:31:14', '2026-04-28 09:22:32'),
+(8, 3, 'scene', 'road_mid_center', 136, 422, NULL, NULL, 0.00, 1, 1, '2026-04-19 08:31:14', '2026-04-28 09:22:32'),
+(9, 3, 'scene', 'road_bottom', 118, 614, NULL, NULL, 0.00, 1, 1, '2026-04-19 08:31:14', '2026-04-28 09:22:32'),
+(10, 0, 'scene', 'landmark_gatehouse', 246, 318, NULL, NULL, 0.00, 1, 1, '2026-04-19 08:31:14', '2026-04-28 09:22:32'),
+(119, 2, 'scene', 'entrance_main_gate', 880, 1254, NULL, NULL, 0.00, 1, 1, '2026-04-19 08:31:14', '2026-04-28 09:22:32'),
+(122, 1, 'icon', NULL, 1403, 923, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(123, 1, 'icon', NULL, 1322, 923, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(124, 1, 'icon', NULL, 1243, 922, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(125, 1, 'icon', NULL, 1163, 923, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(126, 1, 'icon', NULL, 1082, 923, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(127, 1, 'icon', NULL, 1003, 923, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(128, 1, 'icon', NULL, 923, 924, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(129, 1, 'icon', NULL, 843, 924, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(130, 1, 'icon', NULL, 123, 923, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(131, 1, 'icon', NULL, 203, 924, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(132, 1, 'icon', NULL, 283, 924, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(133, 1, 'icon', NULL, 361, 923, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(134, 1, 'icon', NULL, 443, 924, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(135, 1, 'icon', NULL, 523, 923, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(136, 1, 'icon', NULL, 603, 923, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(137, 1, 'icon', NULL, 681, 924, 36, 36, 0.00, 1, 0, '2026-04-28 03:57:46', '2026-04-28 09:22:32'),
+(138, 1, 'icon', NULL, 722, 163, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(139, 1, 'icon', NULL, 763, 163, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(140, 1, 'icon', NULL, 762, 204, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(141, 1, 'icon', NULL, 763, 243, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(142, 1, 'icon', NULL, 762, 283, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(143, 1, 'icon', NULL, 762, 322, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(144, 1, 'icon', NULL, 762, 362, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(145, 1, 'icon', NULL, 763, 402, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(146, 1, 'icon', NULL, 724, 202, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(147, 1, 'icon', NULL, 722, 243, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(148, 1, 'icon', NULL, 723, 283, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(149, 1, 'icon', NULL, 722, 324, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(150, 1, 'icon', NULL, 723, 403, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(151, 1, 'icon', NULL, 723, 364, 36, 36, 0.00, 1, 0, '2026-04-28 04:00:30', '2026-04-28 09:22:32'),
+(152, 1, 'scene', 'tree_top_0', 20, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(153, 1, 'scene', 'tree_top_1', 53, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(154, 1, 'scene', 'tree_top_2', 86, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(155, 1, 'scene', 'tree_top_3', 119, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(156, 1, 'scene', 'tree_top_4', 152, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(157, 1, 'scene', 'tree_top_5', 185, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(158, 1, 'scene', 'tree_top_6', 218, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(159, 1, 'scene', 'tree_top_7', 251, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(160, 1, 'scene', 'tree_top_8', 284, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(161, 1, 'scene', 'tree_top_9', 317, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(162, 1, 'scene', 'tree_top_10', 350, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(163, 1, 'scene', 'tree_top_11', 383, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(164, 1, 'scene', 'tree_top_12', 416, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(165, 1, 'scene', 'tree_top_13', 449, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(166, 1, 'scene', 'tree_top_14', 482, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(167, 1, 'scene', 'tree_top_15', 515, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(168, 1, 'scene', 'tree_top_16', 548, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(169, 1, 'scene', 'tree_top_17', 581, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(170, 1, 'scene', 'tree_top_18', 614, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(171, 1, 'scene', 'tree_top_19', 647, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(172, 1, 'scene', 'tree_top_20', 680, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(173, 1, 'scene', 'tree_top_21', 713, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(174, 1, 'scene', 'tree_top_22', 746, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(175, 1, 'scene', 'tree_top_23', 779, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(176, 1, 'scene', 'tree_top_24', 812, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(177, 1, 'scene', 'tree_top_25', 845, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(178, 1, 'scene', 'tree_top_26', 878, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(179, 1, 'scene', 'tree_top_27', 911, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(180, 1, 'scene', 'tree_top_28', 944, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(181, 1, 'scene', 'tree_top_29', 977, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(182, 1, 'scene', 'tree_top_30', 1010, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(183, 1, 'scene', 'tree_top_31', 1043, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(184, 1, 'scene', 'tree_top_32', 1076, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(185, 1, 'scene', 'tree_top_33', 1109, 6, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(186, 1, 'scene', 'tree_bottom_0', 20, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(187, 1, 'scene', 'tree_bottom_1', 53, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(188, 1, 'scene', 'tree_bottom_2', 86, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(189, 1, 'scene', 'tree_bottom_3', 119, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(190, 1, 'scene', 'tree_bottom_4', 152, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(191, 1, 'scene', 'tree_bottom_5', 185, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(192, 1, 'scene', 'tree_bottom_6', 218, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(193, 1, 'scene', 'tree_bottom_7', 251, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(194, 1, 'scene', 'tree_bottom_8', 284, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(195, 1, 'scene', 'tree_bottom_9', 317, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(196, 1, 'scene', 'tree_bottom_10', 350, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(197, 1, 'scene', 'tree_bottom_11', 383, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(198, 1, 'scene', 'tree_bottom_12', 416, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(199, 1, 'scene', 'tree_bottom_13', 449, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(200, 1, 'scene', 'tree_bottom_14', 482, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(201, 1, 'scene', 'tree_bottom_15', 515, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(202, 1, 'scene', 'tree_bottom_16', 548, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(203, 1, 'scene', 'tree_bottom_17', 581, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(204, 1, 'scene', 'tree_bottom_18', 614, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(205, 1, 'scene', 'tree_bottom_19', 647, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(206, 1, 'scene', 'tree_bottom_20', 680, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(207, 1, 'scene', 'tree_bottom_21', 713, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(208, 1, 'scene', 'tree_bottom_22', 746, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(209, 1, 'scene', 'tree_bottom_23', 779, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(210, 1, 'scene', 'tree_bottom_24', 812, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(211, 1, 'scene', 'tree_bottom_25', 845, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(212, 1, 'scene', 'tree_bottom_26', 878, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(213, 1, 'scene', 'tree_bottom_27', 911, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(214, 1, 'scene', 'tree_bottom_28', 944, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(215, 1, 'scene', 'tree_bottom_29', 977, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(216, 1, 'scene', 'tree_bottom_30', 1010, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(217, 1, 'scene', 'tree_bottom_31', 1043, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(218, 1, 'scene', 'tree_bottom_32', 1076, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(219, 1, 'scene', 'tree_bottom_33', 1109, 1322, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(220, 1, 'scene', 'tree_left_0', 6, 42, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(221, 1, 'scene', 'tree_right_0', 1914, 42, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(222, 1, 'scene', 'tree_left_1', 6, 76, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(223, 1, 'scene', 'tree_right_1', 1914, 76, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(224, 1, 'scene', 'tree_left_2', 6, 110, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(225, 1, 'scene', 'tree_right_2', 1914, 110, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(226, 1, 'scene', 'tree_left_3', 6, 144, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(227, 1, 'scene', 'tree_right_3', 1914, 144, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(228, 1, 'scene', 'tree_left_4', 6, 178, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(229, 1, 'scene', 'tree_right_4', 1914, 178, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(230, 1, 'scene', 'tree_left_5', 6, 212, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(231, 1, 'scene', 'tree_right_5', 1914, 212, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(232, 1, 'scene', 'tree_left_6', 6, 246, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(233, 1, 'scene', 'tree_right_6', 1914, 246, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(234, 1, 'scene', 'tree_left_7', 6, 280, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(235, 1, 'scene', 'tree_right_7', 1914, 280, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(236, 1, 'scene', 'tree_left_8', 6, 314, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(237, 1, 'scene', 'tree_right_8', 1914, 314, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(238, 1, 'scene', 'tree_left_9', 6, 348, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(239, 1, 'scene', 'tree_right_9', 1914, 348, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(240, 1, 'scene', 'tree_left_10', 6, 382, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(241, 1, 'scene', 'tree_right_10', 1914, 382, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(242, 1, 'scene', 'tree_left_11', 6, 416, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(243, 1, 'scene', 'tree_right_11', 1914, 416, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(244, 1, 'scene', 'tree_left_12', 6, 450, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(245, 1, 'scene', 'tree_right_12', 1914, 450, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(246, 1, 'scene', 'tree_left_13', 6, 484, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(247, 1, 'scene', 'tree_right_13', 1914, 484, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(248, 1, 'scene', 'tree_left_14', 6, 518, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(249, 1, 'scene', 'tree_right_14', 1914, 518, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(250, 1, 'scene', 'tree_left_15', 6, 552, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(251, 1, 'scene', 'tree_right_15', 1914, 552, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(252, 1, 'scene', 'tree_left_16', 6, 586, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(253, 1, 'scene', 'tree_right_16', 1914, 586, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(254, 1, 'scene', 'tree_left_17', 6, 620, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(255, 1, 'scene', 'tree_right_17', 1914, 620, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(256, 1, 'scene', 'tree_left_18', 6, 654, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(257, 1, 'scene', 'tree_right_18', 1914, 654, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(258, 1, 'scene', 'tree_left_19', 6, 688, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(259, 1, 'scene', 'tree_right_19', 1914, 688, NULL, NULL, 0.00, 1, 1, '2026-04-28 09:07:02', '2026-04-28 09:22:32'),
+(261, 0, 'scene', 'empty_block_26', 226, 1103, NULL, NULL, 0.00, 1, 0, '2026-04-28 09:22:32', '2026-04-28 09:22:32');
 
 -- --------------------------------------------------------
 
@@ -463,12 +568,7 @@ CREATE TABLE `families` (
 --
 
 INSERT INTO `families` (`familyid`, `deceased_id`, `family_name`, `relationship_status`, `phone_number`, `email`, `address`, `notes`, `created_at`, `updated_at`) VALUES
-(11, 11, 'Keluarga 1', 'Suami/Istri', '08123000001', 'keluarga1@dummy.test', 'Alamat keluarga 1', 'Kontak dummy', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
-(12, 12, 'Keluarga 2', 'Anak', '08123000002', 'keluarga2@dummy.test', 'Alamat keluarga 2', 'Kontak dummy', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
-(14, 14, 'Keluarga 5', 'Suami/Istri', '08123000005', 'keluarga5@dummy.test', 'Alamat keluarga 5', 'Kontak dummy', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
 (15, 15, 'Keluarga 7', 'Suami/Istri', '08123000007', 'keluarga7@dummy.test', 'Alamat keluarga 7', 'Kontak dummy', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
-(16, 16, 'Keluarga 9', 'Suami/Istri', '08123000009', 'keluarga9@dummy.test', 'Alamat keluarga 9', 'Kontak dummy', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
-(17, 17, 'Keluarga 10', 'Anak', '08123000010', 'keluarga10@dummy.test', 'Alamat keluarga 10', 'Kontak dummy', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
 (18, 18, 'Keluarga Dummy 1', 'Suami/Istri', '08123000001', 'keluarga1@dummy.test', 'Alamat keluarga dummy ke-1', 'Kontak keluarga dummy', '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
 (19, 19, 'Keluarga Dummy 2', 'Anak', '08123000002', 'keluarga2@dummy.test', 'Alamat keluarga dummy ke-2', 'Kontak keluarga dummy', '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
 (20, 20, 'Keluarga Dummy 3', 'Suami/Istri', '08123000003', 'keluarga3@dummy.test', 'Alamat keluarga dummy ke-3', 'Kontak keluarga dummy', '2026-04-11 08:21:44', '2026-04-11 08:21:44'),
@@ -506,18 +606,59 @@ CREATE TABLE `grave_plots` (
 --
 
 INSERT INTO `grave_plots` (`plotid`, `block_id`, `plot_number`, `row_number`, `position_x`, `position_y`, `width`, `height`, `status`, `notes`, `created_at`, `updated_at`) VALUES
-(11, 11, 'A-01', '1', 40.00, 40.00, 60.00, 40.00, 'occupied', 'Plot dummy 1', '2026-04-11 10:32:08', '2026-04-12 16:46:28'),
-(12, 11, 'A-02', '1', 130.00, 40.00, 60.00, 40.00, 'occupied', 'Plot dummy 2', '2026-04-11 10:32:08', '2026-04-11 08:21:44'),
-(13, 11, 'A-03', '1', 220.00, 40.00, 60.00, 40.00, 'occupied', 'Plot dummy 3', '2026-04-11 10:32:08', '2026-04-11 08:21:44'),
-(14, 11, 'A-04', '1', 310.00, 40.00, 60.00, 40.00, 'occupied', 'Plot dummy 4', '2026-04-11 10:32:08', '2026-04-12 23:05:09'),
-(15, 11, 'A-05', '1', 400.00, 40.00, 60.00, 40.00, 'occupied', 'Plot dummy 5', '2026-04-11 10:32:08', '2026-04-11 08:21:44'),
-(16, 11, 'A-06', '2', 40.00, 130.00, 60.00, 40.00, 'empty', 'Plot dummy 6', '2026-04-11 10:32:08', '2026-04-11 15:28:16'),
-(17, 11, 'A-07', '2', 130.00, 130.00, 60.00, 40.00, 'occupied', 'Plot dummy 7', '2026-04-11 10:32:08', '2026-04-11 08:21:44'),
-(18, 11, 'A-08', '2', 220.00, 130.00, 60.00, 40.00, 'empty', 'Plot dummy 8', '2026-04-11 10:32:08', '2026-04-11 10:32:08'),
-(19, 11, 'A-09', '2', 310.00, 130.00, 60.00, 40.00, 'occupied', 'Plot dummy 9', '2026-04-11 10:32:08', '2026-04-11 08:21:44'),
-(20, 11, 'A-10', '2', 400.00, 130.00, 60.00, 40.00, 'occupied', 'Plot dummy 10', '2026-04-11 10:32:08', '2026-04-11 08:21:44'),
-(31, 22, 'B-01', NULL, 24.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-12 10:40:49', '2026-04-12 10:40:49'),
-(32, 23, 'C-01', NULL, 24.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-14 09:29:30', '2026-04-14 09:29:30');
+(11, 11, 'A-1', '1', 24.00, 24.00, 60.00, 40.00, 'occupied', 'Plot dummy 1', '2026-04-11 10:32:08', '2026-04-28 17:18:08'),
+(12, 11, 'A-2', '1', 102.00, 24.00, 60.00, 40.00, 'occupied', 'Plot dummy 2', '2026-04-11 10:32:08', '2026-04-28 17:37:33'),
+(13, 11, 'A-3', '1', 180.00, 24.00, 60.00, 40.00, 'occupied', 'Plot dummy 3', '2026-04-11 10:32:08', '2026-04-28 17:24:29'),
+(14, 11, 'A-4', NULL, 258.00, 24.00, 60.00, 40.00, 'occupied', 'Plot dummy 4', '2026-04-11 10:32:08', '2026-04-28 08:07:52'),
+(15, 11, 'A-5', '1', 336.00, 24.00, 60.00, 40.00, 'occupied', 'Plot dummy 5', '2026-04-11 10:32:08', '2026-04-28 04:14:07'),
+(16, 11, 'A-6', '2', 24.00, 82.00, 60.00, 40.00, 'empty', 'Plot dummy 6', '2026-04-11 10:32:08', '2026-04-28 04:14:07'),
+(17, 11, 'A-7', '2', 102.00, 82.00, 60.00, 40.00, 'occupied', 'Plot dummy 7', '2026-04-11 10:32:08', '2026-04-28 17:25:04'),
+(18, 11, 'A-8', '2', 180.00, 82.00, 60.00, 40.00, 'empty', 'Plot dummy 8', '2026-04-11 10:32:08', '2026-04-28 04:14:07'),
+(19, 11, 'A-9', '2', 258.00, 82.00, 60.00, 40.00, 'occupied', 'Plot dummy 9', '2026-04-11 10:32:08', '2026-04-28 04:14:07'),
+(20, 11, 'A-10', '2', 336.00, 82.00, 60.00, 40.00, 'occupied', 'Plot dummy 10', '2026-04-11 10:32:08', '2026-04-28 04:14:07'),
+(31, 22, 'B-1', '1', 24.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-12 10:40:49', '2026-04-28 04:14:07'),
+(32, 23, 'C-1', '1', 24.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-14 09:29:30', '2026-04-28 04:14:07'),
+(33, 22, 'B-2', '1', 102.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 03:20:10', '2026-04-28 04:14:07'),
+(34, 22, 'B-3', '1', 180.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 03:22:08', '2026-04-28 04:14:07'),
+(35, 22, 'B-4', '1', 258.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 03:23:54', '2026-04-28 04:14:07'),
+(36, 11, 'A-11', '3', 24.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 03:51:03', '2026-04-28 04:14:07'),
+(37, 11, 'A-12', '3', 102.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(38, 11, 'A-13', '3', 180.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(39, 11, 'A-14', '3', 258.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(52, 22, 'B-5', '1', 336.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(53, 22, 'B-6', '2', 24.00, 82.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(54, 22, 'B-7', '2', 102.00, 82.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(55, 22, 'B-8', '2', 180.00, 82.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(56, 22, 'B-9', '2', 258.00, 82.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(57, 22, 'B-10', '2', 336.00, 82.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(58, 22, 'B-11', '3', 24.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(59, 22, 'B-12', '3', 102.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(60, 22, 'B-13', '3', 180.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(61, 22, 'B-14', '3', 258.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(62, 22, 'B-15', '3', 336.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(67, 23, 'C-2', '1', 102.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(68, 23, 'C-3', '1', 180.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(69, 23, 'C-4', '1', 258.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(70, 23, 'C-5', '1', 336.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(71, 23, 'C-6', '2', 24.00, 82.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(72, 23, 'C-7', '2', 102.00, 82.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(73, 23, 'C-8', '2', 180.00, 82.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(74, 23, 'C-9', '2', 258.00, 82.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(75, 23, 'C-10', '2', 336.00, 82.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(76, 23, 'C-11', '3', 24.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(77, 23, 'C-12', '3', 102.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(78, 23, 'C-13', '3', 180.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(79, 23, 'C-14', '3', 258.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(80, 23, 'C-15', '3', 336.00, 140.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(82, 24, 'D-1', '1', 24.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(83, 24, 'D-2', '1', 102.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(84, 24, 'D-3', '1', 180.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(85, 24, 'D-4', '1', 258.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(86, 24, 'D-5', '1', 336.00, 24.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(87, 24, 'D-6', '2', 24.00, 82.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(88, 24, 'D-7', '2', 102.00, 82.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(89, 24, 'D-8', '2', 180.00, 82.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 04:06:20', '2026-04-28 04:14:07'),
+(90, 11, 'A-15', NULL, 334.40, 144.00, 60.00, 40.00, 'empty', NULL, '2026-04-28 08:02:13', '2026-04-28 08:02:13');
 
 -- --------------------------------------------------------
 
@@ -557,21 +698,22 @@ CREATE TABLE `level_sidebar_access` (
 --
 
 INSERT INTO `level_sidebar_access` (`id`, `levelid`, `menu_key`, `created_at`, `updated_at`) VALUES
-(64, 1, 'data-blok', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(65, 1, 'data-plot', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(66, 1, 'data-almarhum', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(67, 1, 'data-kontak-keluarga', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(68, 1, 'data-user', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(69, 1, 'activity-log', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(70, 1, 'restore-data', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(71, 1, 'hak-akses', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(72, 1, 'settings', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(73, 2, 'data-blok', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(74, 2, 'data-plot', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(75, 2, 'data-almarhum', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(76, 2, 'data-kontak-keluarga', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(77, 2, 'data-user', '2026-04-13 07:53:54', '2026-04-13 07:53:54'),
-(78, 2, 'activity-log', '2026-04-13 07:53:54', '2026-04-13 07:53:54');
+(79, 1, 'data-blok', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(80, 1, 'data-plot', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(81, 1, 'data-almarhum', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(82, 1, 'data-kontak-keluarga', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(83, 1, 'data-user', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(84, 1, 'activity-log', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(85, 1, 'backup-database', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(86, 1, 'restore-data', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(87, 1, 'hak-akses', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(88, 1, 'settings', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(89, 2, 'data-blok', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(90, 2, 'data-plot', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(91, 2, 'data-almarhum', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(92, 2, 'data-kontak-keluarga', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(93, 2, 'data-user', '2026-04-28 05:01:14', '2026-04-28 05:01:14'),
+(94, 2, 'activity-log', '2026-04-28 05:01:14', '2026-04-28 05:01:14');
 
 -- --------------------------------------------------------
 
@@ -610,7 +752,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (18, '2026_04_18_000007_add_size_rotation_to_place_table', 11),
 (19, '2026_04_18_000008_add_item_type_and_scene_key_to_place_table', 12),
 (20, '2026_04_18_000009_add_is_removed_to_place_table', 13),
-(21, '2026_04_18_000010_create_restore_data_table', 14),
 (22, '2026_04_19_000011_add_size_rotation_to_facility_map_items_table', 15),
 (23, '2026_04_19_000012_add_scene_columns_to_facility_map_items_table', 16);
 
@@ -621,14 +762,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 --
 -- Error reading structure for table cemetry.place: #1932 - Table &#039;cemetry.place&#039; doesn&#039;t exist in engine
 -- Error reading data for table cemetry.place: #1064 - You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near &#039;FROM `cemetry`.`place`&#039; at line 1
-
--- --------------------------------------------------------
-
---
--- Table structure for table `restore_data`
---
--- Error reading structure for table cemetry.restore_data: #1932 - Table &#039;cemetry.restore_data&#039; doesn&#039;t exist in engine
--- Error reading data for table cemetry.restore_data: #1064 - You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near &#039;FROM `cemetry`.`restore_data`&#039; at line 1
 
 -- --------------------------------------------------------
 
@@ -661,10 +794,11 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('6QTfYuxqVWjg5T3u0hyELG91Onl3Q6ieushxuoWU', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZlduNmM4ZFFqY2ttc0xiNTlNak5DRTVxUFBXZ2J2V0swdDdtTFFIUSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fX0=', 1776614457),
-('f3nLRXcMQ22ViYvQysLrn6mg8bTHPwOTGIhAeJHv', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMDBVZGY0bjlKWE1jOXFnbjcwb0xPNWdjQU1UekpHaUZvNVZqc0lzciI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6OTM6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9tZWRpYS9kZWNlYXNlZC1waG90bz9wYXRoPXN5c3RlbS1sb2dvcyUyRmxvZ28tMjAyNjA0MTkxMDM0MDctTTg3aGpPLnBuZyI7czo1OiJyb3V0ZSI7czoyMDoibWVkaWEuZGVjZWFzZWQtcGhvdG8iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1776613764),
-('og8yY30YmVjhNPFF7QYD7DBsVQl9bmnhvnxNEPOt', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiamt3bjZJdUhNT2d6cHF2ZDJBckw4STN3UHpESlAzYVVPWUs2a0Q1byI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fX0=', 1776614599),
-('tsrjk2RAByJD0KWuSrSRWWIqhaPlLZQoQ1ITzkdh', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiSzRoSFI3UDBKMU9CWFViek40MFFVSFlsdjU2NFJ2ZzNORlQ1SUVGTiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1776608527);
+('E9PkpYAkRqcBJMAnSmz21XrqwO2YxFCkkf4zIOBV', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiOGVPTnFlN0lWMjF6ZExXZmdSMEpFOEhUZUlXMzZaYnduVElZTGU2YyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czoyNDoib2ZmbGluZV9jYXB0Y2hhX3F1ZXN0aW9uIjtzOjY6IjE3ICsgOCI7czoyMjoib2ZmbGluZV9jYXB0Y2hhX2Fuc3dlciI7czoyOiIyNSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fX0=', 1777422551),
+('EJw2q8W5PMBu6ej2Be6nTFRxi42bk3Hrs5wZPWW8', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiOUZaY2JVUG4yTXByZDRsVEpnMUlkS3hkaVZpYVAwYjJ0ZGxHd3Z5WCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6MjQ6Im9mZmxpbmVfY2FwdGNoYV9xdWVzdGlvbiI7czo2OiIxNCArIDEiO3M6MjI6Im9mZmxpbmVfY2FwdGNoYV9hbnN3ZXIiO3M6MjoiMTUiO30=', 1777419515),
+('GXivncb0VJYjoKHBrZjaPL60vLQlu7cLfzbZXC4N', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiYzAycDhxYVlrcm1VWjg3dnBOblE0REMxY3ZSdXBxOEdLS1Q0Mk00TyI7czoyNDoib2ZmbGluZV9jYXB0Y2hhX3F1ZXN0aW9uIjtzOjY6IjYgKyAxMSI7czoyMjoib2ZmbGluZV9jYXB0Y2hhX2Fuc3dlciI7czoyOiIxNyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9mb3Jnb3QtcGFzc3dvcmQiO3M6NToicm91dGUiO3M6MTU6InBhc3N3b3JkLmZvcmdvdCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1777422337),
+('QTSFAunTdCwvBPo7f9pB8HxTkUSc1DW0SaV3LQly', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiVUtraHRkS3pSaXRPV0R2MTZPOGNiU1FtTVNHTXBDRzJ4ZW9sZ1NGWSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czoyNDoib2ZmbGluZV9jYXB0Y2hhX3F1ZXN0aW9uIjtzOjY6IjE3ICsgOCI7czoyMjoib2ZmbGluZV9jYXB0Y2hhX2Fuc3dlciI7czoyOiIyNSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MTEwOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvbWVkaWEvZGVjZWFzZWQtcGhvdG8/cGF0aD1kZWNlYXNlZC1waG90b3MlMkZlaVd5YTdRZE9DZnd0NlFGeWp2ZTFQdWU5NEFZWXRTa1BYeHc0MVpxLmpwZyI7czo1OiJyb3V0ZSI7czoyMDoibWVkaWEuZGVjZWFzZWQtcGhvdG8iO31zOjk6ImF1dGhfdXNlciI7YTo2OntzOjI6ImlkIjtpOjE7czo4OiJ1c2VybmFtZSI7czoxMDoic3VwZXJhZG1pbiI7czo3OiJsZXZlbGlkIjtpOjE7czo0OiJuYW1lIjtzOjExOiJTdXBlcmFkbWluYSI7czo4OiJsYXRpdHVkZSI7TjtzOjk6ImxvbmdpdHVkZSI7Tjt9fQ==', 1777423070),
+('r4GWK0hPHzjAq5QzArFXEyFHwDC1zqImdBsEIIwE', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoibkZFVDE2V3pnSlc5anNyRHRzS3FQMW1pU0ppRm9BUjR1OGVobE5obyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czoyNDoib2ZmbGluZV9jYXB0Y2hhX3F1ZXN0aW9uIjtzOjY6IjE0ICsgMSI7czoyMjoib2ZmbGluZV9jYXB0Y2hhX2Fuc3dlciI7czoyOiIxNSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fX0=', 1777419623);
 
 -- --------------------------------------------------------
 
@@ -686,7 +820,7 @@ CREATE TABLE `system` (
 --
 
 INSERT INTO `system` (`systemid`, `systemname`, `systemlogo`, `systemcontact`, `systemmanager`, `systemaddress`) VALUES
-(1, 'Kuburan', 'storage/system-logos/logo-20260419103407-M87hjO.png', '021-555-0001', 'Manager', 'Alamat Sistem');
+(1, 'Kuburan', 'storage/system-logos/logo-20260428152613-71nzmI.jpg', '021-555-0001', 'Manager', 'Alamat Sistem');
 
 -- --------------------------------------------------------
 
@@ -708,7 +842,7 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`userid`, `username`, `password`, `levelid`, `reset_password_token`, `reset_password_token_expired`) VALUES
-(1, 'superadmin', '$2y$12$43NfKBErNkIW5VYZ5WKuEeYFyba9ixlwvqJkHq2Ek4oHKyC8EcM6S', 1, '', '2026-04-11 15:21:44'),
+(1, 'superadmin', '$2y$12$U/3Lq82kOEeQQ.NHhDXwIO/CE1SAsEyiL9QoFD9SQKA1dDOYawmwi', 1, NULL, NULL),
 (2, 'admin', '$2y$12$eCLMVwnNcYwDgH3JMz5wvO63xGkUpxiDLHYPhnusB9NRJ272.MSHG', 2, NULL, NULL);
 
 --
@@ -839,13 +973,13 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=145;
 
 --
 -- AUTO_INCREMENT for table `blocks`
 --
 ALTER TABLE `blocks`
-  MODIFY `blockid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `blockid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `cemetery_blocks`
@@ -881,19 +1015,19 @@ ALTER TABLE `facility`
 -- AUTO_INCREMENT for table `facility_map_items`
 --
 ALTER TABLE `facility_map_items`
-  MODIFY `facility_map_itemid` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=120;
+  MODIFY `facility_map_itemid` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=262;
 
 --
 -- AUTO_INCREMENT for table `families`
 --
 ALTER TABLE `families`
-  MODIFY `familyid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `familyid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `grave_plots`
 --
 ALTER TABLE `grave_plots`
-  MODIFY `plotid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `plotid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
 
 --
 -- AUTO_INCREMENT for table `level`
@@ -905,7 +1039,7 @@ ALTER TABLE `level`
 -- AUTO_INCREMENT for table `level_sidebar_access`
 --
 ALTER TABLE `level_sidebar_access`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
 
 --
 -- AUTO_INCREMENT for table `migrations`

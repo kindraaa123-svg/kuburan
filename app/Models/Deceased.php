@@ -21,8 +21,6 @@ class Deceased extends Model
         'burial_date',
         'religion',
         'identity_number',
-        'address',
-        'description',
         'photo_url',
     ];
 }

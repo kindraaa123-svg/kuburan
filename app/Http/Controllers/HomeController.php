@@ -403,23 +403,28 @@ class HomeController extends Controller
             ->values()
             ->all();
 
+        $deceasedSelectColumns = [
+            'deceasedid',
+            'plotid',
+            'full_name',
+            'gender',
+            'birth_date',
+            'death_date',
+            'burial_date',
+            'religion',
+            'photo_url',
+        ];
+        $hasIdentityNumberColumn = Schema::hasColumn('deceased', 'identity_number');
+        if ($hasIdentityNumberColumn) {
+            $deceasedSelectColumns[] = 'identity_number';
+        } else {
+            $deceasedSelectColumns[] = DB::raw('NULL as identity_number');
+        }
+
         $deceasedByPlot = empty($plotIds)
             ? collect()
             : Deceased::query()
-                ->select([
-                    'deceasedid',
-                    'plotid',
-                    'full_name',
-                    'gender',
-                    'birth_date',
-                    'death_date',
-                    'burial_date',
-                    'religion',
-                    'identity_number',
-                    'address',
-                    'description',
-                    'photo_url',
-                ])
+                ->select($deceasedSelectColumns)
                 ->whereIn('plotid', $plotIds)
                 ->orderByDesc('deceasedid')
                 ->get()
@@ -485,8 +490,6 @@ class HomeController extends Controller
                     'deceased_burial_date' => $deceased?->burial_date,
                     'deceased_religion' => $deceased?->religion,
                     'deceased_identity_number' => $deceased?->identity_number,
-                    'deceased_address' => $deceased?->address,
-                    'deceased_description' => $deceased?->description,
                     'deceased_photo_url' => $this->resolvePhotoUrl($deceased?->photo_url),
                 ];
             }
@@ -989,7 +992,18 @@ class HomeController extends Controller
             ->find((int) ($family->deceased_id ?? 0));
 
         DB::transaction(function () use ($request, $family, $familyid): void {
-            $familyPayload = (array) $family;
+            $familyPayload = [
+                'familyid' => (int) ($family->familyid ?? $familyid),
+                'deceased_id' => isset($family->deceased_id) ? (int) $family->deceased_id : null,
+                'family_name' => $family->family_name ?? null,
+                'relationship_status' => $family->relationship_status ?? null,
+                'phone_number' => $family->phone_number ?? null,
+                'email' => $family->email ?? null,
+                'address' => $family->address ?? null,
+                'notes' => $family->notes ?? null,
+                'created_at' => $family->created_at ?? null,
+                'updated_at' => $family->updated_at ?? null,
+            ];
             $this->archiveDeletedData(
                 $request,
                 'family',
@@ -1076,7 +1090,7 @@ class HomeController extends Controller
                 ], 'almarhumForm');
         }
 
-        $createdDeceased = Deceased::query()->create([
+        $createdPayload = [
             'plotid' => $plotId,
             'full_name' => $validated['full_name'],
             'gender' => $validated['gender'] ?: null,
@@ -1084,11 +1098,13 @@ class HomeController extends Controller
             'death_date' => $validated['death_date'] ?: null,
             'burial_date' => $validated['burial_date'] ?: null,
             'religion' => $validated['religion'] ?: null,
-            'identity_number' => $validated['identity_number'] ?: null,
-            'address' => $validated['address'] ?: null,
-            'description' => $validated['description'] ?: null,
             'photo_url' => $this->storeDeceasedPhoto($request),
-        ]);
+        ];
+        if (Schema::hasColumn('deceased', 'identity_number')) {
+            $createdPayload['identity_number'] = $validated['identity_number'] ?: null;
+        }
+
+        $createdDeceased = Deceased::query()->create($createdPayload);
 
         GravePlot::query()
             ->where('plotid', $plotId)
@@ -1113,8 +1129,6 @@ class HomeController extends Controller
                     'burial_date' => $createdDeceased->burial_date,
                     'religion' => $createdDeceased->religion,
                     'identity_number' => $createdDeceased->identity_number,
-                    'address' => $createdDeceased->address,
-                    'description' => $createdDeceased->description,
                     'photo_url' => $this->resolvePhotoUrl($createdDeceased->photo_url),
                 ],
             ]);
@@ -1183,6 +1197,7 @@ class HomeController extends Controller
             $photoPath = $newPhotoPath;
         }
 
+        $hasIdentityNumberColumn = Schema::hasColumn('deceased', 'identity_number');
         $oldDeceased = [
             'plotid' => (int) $deceased->plotid,
             'full_name' => (string) $deceased->full_name,
@@ -1191,12 +1206,10 @@ class HomeController extends Controller
             'death_date' => $deceased->death_date,
             'burial_date' => $deceased->burial_date,
             'religion' => $deceased->religion,
-            'identity_number' => $deceased->identity_number,
-            'address' => $deceased->address,
-            'description' => $deceased->description,
+            'identity_number' => $hasIdentityNumberColumn ? $deceased->identity_number : null,
         ];
 
-        $deceased->fill([
+        $updatePayload = [
             'plotid' => $plotId,
             'full_name' => $validated['full_name'],
             'gender' => $validated['gender'] ?: null,
@@ -1204,11 +1217,13 @@ class HomeController extends Controller
             'death_date' => $validated['death_date'] ?: null,
             'burial_date' => $validated['burial_date'] ?: null,
             'religion' => $validated['religion'] ?: null,
-            'identity_number' => $validated['identity_number'] ?: null,
-            'address' => $validated['address'] ?: null,
-            'description' => $validated['description'] ?: null,
             'photo_url' => $photoPath,
-        ]);
+        ];
+        if ($hasIdentityNumberColumn) {
+            $updatePayload['identity_number'] = $validated['identity_number'] ?: null;
+        }
+
+        $deceased->fill($updatePayload);
         $deceased->save();
 
         GravePlot::query()
@@ -1233,9 +1248,9 @@ class HomeController extends Controller
         $this->appendChangeDetail($changes, 'tanggal meninggal', $oldDeceased['death_date'], $deceased->death_date);
         $this->appendChangeDetail($changes, 'tanggal pemakaman', $oldDeceased['burial_date'], $deceased->burial_date);
         $this->appendChangeDetail($changes, 'agama', $oldDeceased['religion'], $deceased->religion);
-        $this->appendChangeDetail($changes, 'NIK', $oldDeceased['identity_number'], $deceased->identity_number);
-        $this->appendChangeDetail($changes, 'alamat', $oldDeceased['address'], $deceased->address);
-        $this->appendChangeDetail($changes, 'deskripsi', $oldDeceased['description'], $deceased->description);
+        if ($hasIdentityNumberColumn) {
+            $this->appendChangeDetail($changes, 'NIK', $oldDeceased['identity_number'], $deceased->identity_number);
+        }
 
         $detail = 'Mengedit data almarhum #' . (int) $deceased->deceasedid . '. ';
         $detail .= empty($changes) ? 'Tidak ada perubahan nilai utama.' : implode(', ', $changes) . '.';
@@ -1253,9 +1268,7 @@ class HomeController extends Controller
                     'death_date' => $deceased->death_date,
                     'burial_date' => $deceased->burial_date,
                     'religion' => $deceased->religion,
-                    'identity_number' => $deceased->identity_number,
-                    'address' => $deceased->address,
-                    'description' => $deceased->description,
+                    'identity_number' => $hasIdentityNumberColumn ? $deceased->identity_number : null,
                     'photo_url' => $this->resolvePhotoUrl($deceased->photo_url),
                 ],
             ]);
@@ -1672,21 +1685,31 @@ class HomeController extends Controller
             $entityTypeFilter = '';
         }
 
-        if ($this->hasUsableTable('restore_data')) {
+        $restoreTable = $this->resolveRestoreDataTable();
+        if ($restoreTable) {
             try {
                 $timezone = config('app.timezone', 'Asia/Jakarta');
-                $query = DB::table('restore_data')
-                    ->select([
-                        'restoreid',
-                        'entity_type',
-                        'entity_id',
-                        'entity_label',
-                        'deleted_by_username',
-                        'ip_address',
-                        'longitude',
-                        'latitude',
-                        'deleted_at',
-                    ]);
+                $restoreSelectColumns = [
+                    'restoreid',
+                    'entity_type',
+                    'entity_id',
+                    'entity_label',
+                    Schema::hasColumn($restoreTable, 'deleted_by_username')
+                        ? 'deleted_by_username'
+                        : DB::raw('NULL as deleted_by_username'),
+                    Schema::hasColumn($restoreTable, 'ip_address')
+                        ? 'ip_address'
+                        : DB::raw('NULL as ip_address'),
+                    Schema::hasColumn($restoreTable, 'longitude')
+                        ? 'longitude'
+                        : DB::raw('NULL as longitude'),
+                    Schema::hasColumn($restoreTable, 'latitude')
+                        ? 'latitude'
+                        : DB::raw('NULL as latitude'),
+                    'deleted_at',
+                ];
+                $query = DB::table($restoreTable)
+                    ->select($restoreSelectColumns);
 
                 if ($entityTypeFilter !== '') {
                     $query->where('entity_type', $entityTypeFilter);
@@ -1716,7 +1739,7 @@ class HomeController extends Controller
                         ];
                     });
             } catch (\Throwable $e) {
-                if (! $this->isUnavailableTableException($e, 'restore_data')) {
+                if (! $this->isUnavailableTableException($e, $restoreTable)) {
                     throw $e;
                 }
 
@@ -1756,7 +1779,8 @@ class HomeController extends Controller
             return redirect()->route('dashboard')
                 ->with('status', 'Hak akses ke menu Restore Data tidak tersedia.');
         }
-        if (! $this->hasUsableTable('restore_data')) {
+        $restoreTable = $this->resolveRestoreDataTable();
+        if (! $restoreTable) {
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json(['message' => 'Tabel restore data belum tersedia.'], 422);
             }
@@ -1766,11 +1790,11 @@ class HomeController extends Controller
         }
 
         try {
-            $item = DB::table('restore_data')
+            $item = DB::table($restoreTable)
                 ->where('restoreid', $restoreid)
                 ->first();
         } catch (\Throwable $e) {
-            if (! $this->isUnavailableTableException($e, 'restore_data')) {
+            if (! $this->isUnavailableTableException($e, $restoreTable)) {
                 throw $e;
             }
 
@@ -1814,11 +1838,11 @@ class HomeController extends Controller
         }
 
         try {
-            DB::table('restore_data')
+            DB::table($restoreTable)
                 ->where('restoreid', (int) $item->restoreid)
                 ->delete();
         } catch (\Throwable $e) {
-            if (! $this->isUnavailableTableException($e, 'restore_data')) {
+            if (! $this->isUnavailableTableException($e, $restoreTable)) {
                 throw $e;
             }
 
@@ -1864,7 +1888,8 @@ class HomeController extends Controller
             return redirect()->route('dashboard')
                 ->with('status', 'Hak akses ke menu Restore Data tidak tersedia.');
         }
-        if (! $this->hasUsableTable('restore_data')) {
+        $restoreTable = $this->resolveRestoreDataTable();
+        if (! $restoreTable) {
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json(['message' => 'Tabel restore data belum tersedia.'], 422);
             }
@@ -1874,11 +1899,11 @@ class HomeController extends Controller
         }
 
         try {
-            $item = DB::table('restore_data')
+            $item = DB::table($restoreTable)
                 ->where('restoreid', $restoreid)
                 ->first();
         } catch (\Throwable $e) {
-            if (! $this->isUnavailableTableException($e, 'restore_data')) {
+            if (! $this->isUnavailableTableException($e, $restoreTable)) {
                 throw $e;
             }
 
@@ -1914,11 +1939,11 @@ class HomeController extends Controller
         }
 
         try {
-            DB::table('restore_data')
+            DB::table($restoreTable)
                 ->where('restoreid', (int) $item->restoreid)
                 ->delete();
         } catch (\Throwable $e) {
-            if (! $this->isUnavailableTableException($e, 'restore_data')) {
+            if (! $this->isUnavailableTableException($e, $restoreTable)) {
                 throw $e;
             }
 
@@ -2193,7 +2218,18 @@ class HomeController extends Controller
 
         $userId = (int) $user->userid;
         $username = $user->username;
-        $user->delete();
+        DB::transaction(function () use ($request, $user, $userId, $username): void {
+            $userPayload = $user->getAttributes();
+            $this->archiveDeletedData(
+                $request,
+                'user',
+                $userId,
+                'User "' . $username . '"',
+                $userPayload
+            );
+
+            $user->delete();
+        });
 
         $this->writeActivityLog(
             $request,
@@ -2566,7 +2602,7 @@ class HomeController extends Controller
 
     private function validateDeceasedPayload(Request $request): array
     {
-        return $request->validateWithBag('almarhumForm', [
+        $rules = [
             'plotid' => ['required', 'integer', 'exists:grave_plots,plotid'],
             'full_name' => ['required', 'string', 'max:150'],
             'gender' => ['nullable', Rule::in(['male', 'female'])],
@@ -2574,11 +2610,13 @@ class HomeController extends Controller
             'death_date' => ['nullable', 'date'],
             'burial_date' => ['nullable', 'date'],
             'religion' => ['nullable', 'string', 'max:50'],
-            'identity_number' => ['nullable', 'string', 'max:50'],
-            'address' => ['nullable', 'string', 'max:2000'],
-            'description' => ['nullable', 'string', 'max:2000'],
             'photo' => ['nullable', 'file', 'image', 'max:3072'],
-        ]);
+        ];
+        if (Schema::hasColumn('deceased', 'identity_number')) {
+            $rules['identity_number'] = ['nullable', 'string', 'max:50'];
+        }
+
+        return $request->validateWithBag('almarhumForm', $rules);
     }
 
     private function storeDeceasedPhoto(Request $request): ?string
@@ -4375,35 +4413,98 @@ class HomeController extends Controller
 
     private function archiveDeletedData(Request $request, string $entityType, mixed $entityId, string $entityLabel, array $payload): void
     {
-        if (! $this->hasUsableTable('restore_data')) {
+        $restoreTable = $this->resolveRestoreDataTable();
+        if (! $restoreTable) {
             return;
         }
 
         $actor = $this->resolveAuthActor($request);
+        $insertPayload = [];
+        if (Schema::hasColumn($restoreTable, 'entity_type')) {
+            $insertPayload['entity_type'] = Str::limit($entityType, 40);
+        }
+        if (Schema::hasColumn($restoreTable, 'entity_id')) {
+            $insertPayload['entity_id'] = $entityId !== null ? Str::limit((string) $entityId, 60) : null;
+        }
+        if (Schema::hasColumn($restoreTable, 'entity_label')) {
+            $insertPayload['entity_label'] = Str::limit($entityLabel, 190);
+        }
+        if (Schema::hasColumn($restoreTable, 'payload')) {
+            $encodedPayload = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+            if (! is_string($encodedPayload) || $encodedPayload === '') {
+                $encodedPayload = '{}';
+            }
+            $insertPayload['payload'] = $encodedPayload;
+        }
+        if (Schema::hasColumn($restoreTable, 'deleted_at')) {
+            $insertPayload['deleted_at'] = now();
+        }
+        if (Schema::hasColumn($restoreTable, 'deleted_by_user_id')) {
+            $insertPayload['deleted_by_user_id'] = $actor['id'] ?? null;
+        }
+        if (Schema::hasColumn($restoreTable, 'deleted_by_name')) {
+            $insertPayload['deleted_by_name'] = Str::limit((string) ($actor['name'] ?? '-'), 255);
+        }
+        if (Schema::hasColumn($restoreTable, 'deleted_by_username')) {
+            $insertPayload['deleted_by_username'] = Str::limit((string) ($actor['username'] ?? '-'), 255);
+        }
+        if (Schema::hasColumn($restoreTable, 'ip_address')) {
+            $insertPayload['ip_address'] = Str::limit((string) ($actor['ip_address'] ?? '-'), 45);
+        }
+        if (Schema::hasColumn($restoreTable, 'longitude')) {
+            $insertPayload['longitude'] = isset($actor['longitude']) && $actor['longitude'] !== '' ? (string) $actor['longitude'] : null;
+        }
+        if (Schema::hasColumn($restoreTable, 'latitude')) {
+            $insertPayload['latitude'] = isset($actor['latitude']) && $actor['latitude'] !== '' ? (string) $actor['latitude'] : null;
+        }
+        if (Schema::hasColumn($restoreTable, 'created_at')) {
+            $insertPayload['created_at'] = now();
+        }
+        if (Schema::hasColumn($restoreTable, 'updated_at')) {
+            $insertPayload['updated_at'] = now();
+        }
 
         try {
-            DB::table('restore_data')->insert([
-                'entity_type' => Str::limit($entityType, 40),
-                'entity_id' => $entityId !== null ? Str::limit((string) $entityId, 60) : null,
-                'entity_label' => Str::limit($entityLabel, 190),
-                'payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
-                'deleted_at' => now(),
-                'deleted_by_user_id' => $actor['id'] ?? null,
-                'deleted_by_name' => Str::limit((string) ($actor['name'] ?? '-'), 255),
-                'deleted_by_username' => Str::limit((string) ($actor['username'] ?? '-'), 255),
-                'ip_address' => Str::limit((string) ($actor['ip_address'] ?? '-'), 45),
-                'longitude' => isset($actor['longitude']) && $actor['longitude'] !== '' ? (string) $actor['longitude'] : null,
-                'latitude' => isset($actor['latitude']) && $actor['latitude'] !== '' ? (string) $actor['latitude'] : null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            if (! empty($insertPayload)) {
+                DB::table($restoreTable)->insert($insertPayload);
+            }
         } catch (\Throwable $e) {
-            if (! $this->isUnavailableTableException($e, 'restore_data')) {
+            if (! $this->isUnavailableTableException($e, $restoreTable)) {
                 throw $e;
             }
 
             report($e);
         }
+    }
+
+    private function resolveRestoreDataTable(): ?string
+    {
+        if ($this->hasUsableTable('restore_data')) {
+            return 'restore_data';
+        }
+
+        $fallbackTable = 'restore_data_entries';
+        if (! Schema::hasTable($fallbackTable)) {
+            Schema::create($fallbackTable, function (\Illuminate\Database\Schema\Blueprint $table): void {
+                $table->bigIncrements('restoreid');
+                $table->string('entity_type', 40);
+                $table->string('entity_id', 60)->nullable();
+                $table->string('entity_label', 190)->nullable();
+                $table->longText('payload')->nullable();
+                $table->timestamp('deleted_at')->nullable();
+                $table->unsignedBigInteger('deleted_by_user_id')->nullable();
+                $table->string('deleted_by_name', 255)->nullable();
+                $table->string('deleted_by_username', 255)->nullable();
+                $table->string('ip_address', 45)->nullable();
+                $table->string('longitude', 50)->nullable();
+                $table->string('latitude', 50)->nullable();
+                $table->timestamps();
+                $table->index(['entity_type', 'deleted_at'], 'restore_entries_type_deleted_at_idx');
+                $table->index('deleted_at', 'restore_entries_deleted_at_idx');
+            });
+        }
+
+        return $this->hasUsableTable($fallbackTable) ? $fallbackTable : null;
     }
 
     private function restoreEntityTypeLabel(string $entityType): string
@@ -4413,6 +4514,7 @@ class HomeController extends Controller
             'plot' => 'Plot',
             'deceased' => 'Almarhum',
             'family' => 'Kontak Keluarga',
+            'user' => 'User',
             default => 'Data',
         };
     }
@@ -4424,6 +4526,7 @@ class HomeController extends Controller
             'plot' => $this->restorePlotEntity($payload),
             'deceased' => $this->restoreDeceasedEntity($payload),
             'family' => $this->restoreFamilyEntity($payload),
+            'user' => $this->restoreUserEntity($payload),
             default => [false, 'Tipe data restore tidak dikenali.'],
         };
     }
@@ -4495,6 +4598,18 @@ class HomeController extends Controller
         }
 
         return $this->restoreTableRow('families', 'familyid', $payload);
+    }
+
+    private function restoreUserEntity(array $payload): array
+    {
+        if (! Schema::hasTable('user')) {
+            return [false, 'Tabel user tidak tersedia.'];
+        }
+        if (! isset($payload['userid'])) {
+            return [false, 'Payload user tidak valid.'];
+        }
+
+        return $this->restoreTableRow('user', 'userid', $payload);
     }
 
     private function restoreTableRow(string $table, string $primaryKey, array $payload): array
@@ -5619,23 +5734,27 @@ XML;
 
     public function deceasedDetail(Request $request, int $id): View
     {
+        $deceasedColumns = [
+            'deceased.deceasedid',
+            'deceased.full_name',
+            'deceased.gender',
+            'deceased.birth_date',
+            'deceased.death_date',
+            'deceased.burial_date',
+            'deceased.religion',
+            'deceased.photo_url',
+            'grave_plots.plot_number',
+            'grave_plots.row_number',
+            'blocks.block_name',
+        ];
+        if (Schema::hasColumn('deceased', 'identity_number')) {
+            $deceasedColumns[] = 'deceased.identity_number';
+        } else {
+            $deceasedColumns[] = DB::raw('NULL as identity_number');
+        }
+
         $deceased = Deceased::query()
-            ->select([
-                'deceased.deceasedid',
-                'deceased.full_name',
-                'deceased.gender',
-                'deceased.birth_date',
-                'deceased.death_date',
-                'deceased.burial_date',
-                'deceased.religion',
-                'deceased.identity_number',
-                'deceased.address',
-                'deceased.description',
-                'deceased.photo_url',
-                'grave_plots.plot_number',
-                'grave_plots.row_number',
-                'blocks.block_name',
-            ])
+            ->select($deceasedColumns)
             ->leftJoin('grave_plots', 'grave_plots.plotid', '=', 'deceased.plotid')
             ->leftJoin('blocks', 'blocks.blockid', '=', 'grave_plots.block_id')
             ->where('deceased.deceasedid', $id)

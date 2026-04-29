@@ -564,6 +564,9 @@
                 @if ($canAccessSidebarMenu('activity-log'))
                 <a href="{{ route('dashboard.activity-log') }}" class="sidebar-menu-item">Activity Log</a>
                 @endif
+                @if ($canAccessSidebarMenu('backup-database'))
+                <a href="{{ route('dashboard.backup-database') }}" class="sidebar-menu-item">Backup Database</a>
+                @endif
                 @if ($canAccessSidebarMenu('restore-data'))
                 <a href="{{ route('dashboard.restore-data') }}" class="sidebar-menu-item">Restore Data</a>
                 @endif
@@ -716,14 +719,8 @@
                     <div class="field">
                         <input id="position_y" name="position_y" type="hidden" step="0.01" min="0" required value="{{ old('position_y', 0) }}">
                     </div>
-                    <div class="field">
-                        <label for="width">Lebar</label>
-                        <input id="width" name="width" type="number" step="0.01" min="1" required value="{{ old('width', 60) }}">
-                    </div>
-                    <div class="field">
-                        <label for="height">Tinggi</label>
-                        <input id="height" name="height" type="number" step="0.01" min="1" required value="{{ old('height', 40) }}">
-                    </div>
+                    <input id="width" name="width" type="hidden" value="{{ old('width', 60) }}">
+                    <input id="height" name="height" type="hidden" value="{{ old('height', 40) }}">
                 </div>
 
                 <div class="modal-actions">
@@ -1480,7 +1477,6 @@
     </script>
 </body>
 </html>
-
 
 
 

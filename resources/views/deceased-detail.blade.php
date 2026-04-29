@@ -347,7 +347,7 @@
                         <div class="item"><small>Tanggal Lahir</small><strong>{{ $deceased->birth_date ?? '-' }}</strong></div>
                         <div class="item"><small>Tanggal Pemakaman</small><strong>{{ $deceased->burial_date ?? '-' }}</strong></div>
                         <div class="item"><small>NIK / Identitas</small><strong>{{ $deceased->identity_number ?? '-' }}</strong></div>
-                        <div class="item"><small>Alamat Almarhum</small><strong>{{ $deceased->address ?? '-' }}</strong></div>
+                        <div class="item"><small>Lokasi Makam</small><strong>{{ ($deceased->block_name ?? '-') . ' / Plot ' . ($deceased->plot_number ?? '-') }}</strong></div>
                     </div>
                 </div>
 

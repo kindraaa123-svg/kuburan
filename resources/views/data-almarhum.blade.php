@@ -420,6 +420,9 @@
                 @if ($canAccessSidebarMenu('activity-log'))
                 <a href="{{ route('dashboard.activity-log') }}" class="sidebar-menu-item">Activity Log</a>
                 @endif
+                @if ($canAccessSidebarMenu('backup-database'))
+                <a href="{{ route('dashboard.backup-database') }}" class="sidebar-menu-item">Backup Database</a>
+                @endif
                 @if ($canAccessSidebarMenu('restore-data'))
                 <a href="{{ route('dashboard.restore-data') }}" class="sidebar-menu-item">Restore Data</a>
                 @endif
@@ -496,8 +499,6 @@
                                             data-burial-date="{{ $plot['deceased_burial_date'] }}"
                                             data-religion="{{ $plot['deceased_religion'] }}"
                                             data-identity-number="{{ $plot['deceased_identity_number'] }}"
-                                            data-address="{{ $plot['deceased_address'] }}"
-                                            data-description="{{ $plot['deceased_description'] }}"
                                             data-photo-url="{{ $plot['deceased_photo_url'] }}"
                                             style="
                                                 left: {{ (float) $plot['x'] }}px;
@@ -576,14 +577,6 @@
                             <img id="photoPreview" src="" alt="Preview foto almarhum">
                         </div>
                     </div>
-                    <div class="field field-full">
-                        <label for="address">Alamat</label>
-                        <textarea id="address" name="address"></textarea>
-                    </div>
-                    <div class="field field-full">
-                        <label for="description">Keterangan</label>
-                        <textarea id="description" name="description"></textarea>
-                    </div>
                 </div>
 
                 <div class="modal-actions">
@@ -627,8 +620,6 @@
                 burial_date: document.getElementById('burial_date'),
                 religion: document.getElementById('religion'),
                 identity_number: document.getElementById('identity_number'),
-                address: document.getElementById('address'),
-                description: document.getElementById('description'),
             };
 
             const setFieldValues = (data) => {
@@ -694,8 +685,6 @@
                 slot.dataset.burialDate = data.burial_date || '';
                 slot.dataset.religion = data.religion || '';
                 slot.dataset.identityNumber = data.identity_number || '';
-                slot.dataset.address = data.address || '';
-                slot.dataset.description = data.description || '';
                 slot.dataset.photoUrl = data.photo_url || '';
                 slot.classList.remove('plot-empty');
                 slot.classList.add('plot-occupied');
@@ -713,8 +702,6 @@
                 slot.dataset.burialDate = '';
                 slot.dataset.religion = '';
                 slot.dataset.identityNumber = '';
-                slot.dataset.address = '';
-                slot.dataset.description = '';
                 slot.dataset.photoUrl = '';
                 slot.classList.remove('plot-occupied');
                 slot.classList.add('plot-empty');
@@ -755,8 +742,6 @@
                             burial_date: button.dataset.burialDate,
                             religion: button.dataset.religion,
                             identity_number: button.dataset.identityNumber,
-                            address: button.dataset.address,
-                            description: button.dataset.description,
                         });
                     } else {
                         modalTitle.textContent = `Tambah Almarhum - ${blockName} / Plot ${plotNumber}`;
@@ -777,8 +762,6 @@
                             burial_date: '',
                             religion: '',
                             identity_number: '',
-                            address: '',
-                            description: '',
                         });
                     }
 
@@ -882,7 +865,6 @@
     </script>
 </body>
 </html>
-
 
 
 

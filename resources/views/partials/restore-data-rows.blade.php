@@ -10,9 +10,9 @@
         <td>{{ $item['data'] }}</td>
         <td class="actions">
             <div class="action-inline">
-                <form method="POST" action="{{ route('dashboard.restore-data.restore', ['restoreid' => $item['id']]) }}" onsubmit="return confirm('Kembalikan data ini?');">
+                <form method="POST" action="{{ route('dashboard.restore-data.restore', ['restoreid' => $item['id']]) }}" onsubmit="return confirm('Restore data ini?');">
                     @csrf
-                    <button type="submit" class="btn btn-restore">Kembalikan</button>
+                    <button type="submit" class="btn btn-restore">Restore</button>
                 </form>
                 <form method="POST" action="{{ route('dashboard.restore-data.force-delete', ['restoreid' => $item['id']]) }}" onsubmit="return confirm('Hapus permanen data ini? Aksi ini tidak bisa dibatalkan.');">
                     @csrf
@@ -27,4 +27,3 @@
         <td colspan="9" class="empty">Belum ada data pada restore data.</td>
     </tr>
 @endforelse
-

@@ -55,6 +55,121 @@ class AuthController extends Controller
         return view('auth.login-otp');
     }
 
+    public function showForgotPassword(Request $request): View|RedirectResponse
+    {
+        return view('auth.forgot-password');
+    }
+
+    public function sendResetPasswordLink(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email', 'max:255'],
+        ]);
+
+        $inputEmail = trim(strtolower((string) $validated['email']));
+        $user = $this->findUserByEmail($inputEmail);
+
+        if (! $user) {
+            return back()
+                ->withErrors(['email' => 'Email tidak terdaftar di sistem.'])
+                ->onlyInput('email');
+        }
+
+        $email = $this->resolveUserEmail($user);
+        if ($email === null) {
+            return back()
+                ->withErrors(['email' => 'Email user belum tersedia. Hubungi admin untuk melengkapi email.'])
+                ->onlyInput('email');
+        }
+
+        $plainToken = Str::random(64);
+        $user->reset_password_token = Hash::make($plainToken);
+        $user->reset_password_token_expired = now()->addMinutes(30)->format('Y-m-d H:i:s');
+        $user->save();
+
+        $resetUrl = route('password.reset', ['user' => (int) $user->userid, 'token' => $plainToken]);
+
+        try {
+            Mail::raw(
+                "Kami menerima permintaan reset password akun Anda.\n\nKlik link berikut untuk reset password:\n{$resetUrl}\n\nLink berlaku 30 menit.\nJika Anda tidak meminta reset password, abaikan email ini.",
+                function ($message) use ($email): void {
+                    $message->to($email)
+                        ->subject('Reset Password Dashboard Kuburan');
+                }
+            );
+        } catch (\Throwable $exception) {
+            return back()
+                ->withErrors(['email' => 'Gagal mengirim link reset password. Coba lagi sebentar.'])
+                ->onlyInput('email');
+        }
+
+        return back()->with('status', 'Link reset password sudah dikirim ke email: ' . $this->maskEmail($email));
+    }
+
+    public function showResetPassword(Request $request, int $user, string $token): View|RedirectResponse
+    {
+        $legacyUser = LegacyUser::query()->find($user);
+        if (! $legacyUser || ! $this->isValidResetToken($legacyUser, $token)) {
+            return redirect()->route('password.forgot')
+                ->withErrors(['email' => 'Link reset password tidak valid atau sudah kedaluwarsa.']);
+        }
+
+        $email = $this->resolveUserEmail($legacyUser) ?? '-';
+
+        return view('auth.reset-password', [
+            'token' => $token,
+            'email' => $email,
+            'userId' => (int) $legacyUser->userid,
+        ]);
+    }
+
+    public function resetPassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'user_id' => ['required', 'integer', 'min:1'],
+            'token' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user = LegacyUser::query()->find((int) $validated['user_id']);
+        $token = (string) $validated['token'];
+
+        if (! $user || ! $this->isValidResetToken($user, $token)) {
+            return redirect()->route('password.forgot')
+                ->withErrors(['email' => 'Link reset password tidak valid atau sudah kedaluwarsa.']);
+        }
+
+        $displayName = $this->resolveUserDisplayName($user);
+
+        $user->password = Hash::make((string) $validated['password']);
+        $user->reset_password_token = null;
+        $user->reset_password_token_expired = null;
+        $user->save();
+
+        $request->session()->regenerate();
+        $request->session()->put('auth_user', [
+            'id' => (int) $user->userid,
+            'username' => $user->username,
+            'levelid' => (int) $user->levelid,
+            'name' => $displayName,
+            'latitude' => null,
+            'longitude' => null,
+        ]);
+
+        $this->writeActivityLog([
+            'user_id' => (int) $user->userid,
+            'name' => $displayName,
+            'username' => $user->username,
+            'ip_address' => $request->ip(),
+            'longitude' => null,
+            'latitude' => null,
+            'action' => 'Reset Password',
+            'detail' => 'User reset password dan otomatis login ke sistem.',
+        ]);
+
+        return redirect('/dashboard')->with('status', 'Password berhasil diubah. Anda sudah login.');
+    }
+
     public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
@@ -527,5 +642,29 @@ class AuthController extends Controller
         }
 
         return LegacyUser::query()->find((int) $userId);
+    }
+
+    private function isValidResetToken(LegacyUser $user, string $plainToken): bool
+    {
+        $storedToken = trim((string) ($user->reset_password_token ?? ''));
+        if ($storedToken === '' || $plainToken === '') {
+            return false;
+        }
+
+        if (! Hash::check($plainToken, $storedToken)) {
+            return false;
+        }
+
+        $expiresRaw = (string) ($user->reset_password_token_expired ?? '');
+        if ($expiresRaw === '') {
+            return false;
+        }
+
+        $expiresAt = strtotime($expiresRaw);
+        if ($expiresAt === false) {
+            return false;
+        }
+
+        return $expiresAt >= time();
     }
 }

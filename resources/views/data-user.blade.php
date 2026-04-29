@@ -532,6 +532,9 @@
                 @if ($canAccessSidebarMenu('activity-log'))
                 <a href="{{ route('dashboard.activity-log') }}" class="sidebar-menu-item">Activity Log</a>
                 @endif
+                @if ($canAccessSidebarMenu('backup-database'))
+                <a href="{{ route('dashboard.backup-database') }}" class="sidebar-menu-item">Backup Database</a>
+                @endif
                 @if ($canAccessSidebarMenu('restore-data'))
                 <a href="{{ route('dashboard.restore-data') }}" class="sidebar-menu-item">Restore Data</a>
                 @endif

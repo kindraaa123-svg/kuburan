@@ -113,6 +113,31 @@
             gap: 16px;
         }
 
+        .guest-hero {
+            margin-top: 24px;
+            padding: 24px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            box-shadow: 0 24px 48px rgba(22, 4, 9, 0.24);
+            background:
+                linear-gradient(130deg, rgba(122, 17, 41, .09), rgba(255, 255, 255, 0)),
+                var(--card);
+        }
+
+        .guest-hero h1 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            line-height: 1.15;
+            font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+        }
+
+        .guest-hero p {
+            margin: 10px 0 0;
+            color: var(--muted);
+            max-width: 840px;
+        }
+
         .hero-main, .hero-side, .panel {
             background: var(--card);
             border: 1px solid var(--line);
@@ -761,6 +786,10 @@
         }
 
         @media (max-width: 1080px) {
+            .guest-hero {
+                margin-top: 16px;
+                padding: 16px;
+            }
             .stats {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
             }
@@ -847,45 +876,19 @@
     </header>
 
     <main class="shell">
-        <section class="hero">
-            <article class="hero-main">
-                <h1>{{ $setting->systemname ?: 'Denah Kuburan Terpadu' }}</h1>
-                <p>
-                    Menampilkan seluruh blok makam dalam satu tampilan peta yang bisa digeser dan di-zoom.
-                    Posisi petak mengikuti koordinat denah yang tersimpan di sistem.
-                </p>
-            </article>
-            <aside class="hero-side">
-                <div class="mini">
-                    <strong>Jumlah Blok</strong>
-                    <span>{{ $blocks->count() }}</span>
-                </div>
-                <div class="mini">
-                    <strong>Total Plot Aktif</strong>
-                    <span>{{ (int) ($summary->total ?? 0) }}</span>
-                </div>
-            </aside>
-        </section>
-
-        <section class="stats">
-            <article class="stat-card">
-                <p>Total Petak</p>
-                <h3>{{ (int) ($summary->total ?? 0) }}</h3>
-            </article>
-            <article class="stat-card">
-                <p>Terisi</p>
-                <h3>{{ (int) ($summary->occupied ?? 0) }}</h3>
-            </article>
-            <article class="stat-card">
-                <p>Kosong</p>
-                <h3>{{ max(0, (int) ($summary->total ?? 0) - (int) ($summary->occupied ?? 0)) }}</h3>
-            </article>
+        <section class="guest-hero">
+            <h1>Denah Kuburan Publik</h1>
+            <p>
+                Halaman ini khusus untuk pengunjung melihat denah kuburan. Klik petak yang terisi untuk melihat detail almarhum,
+                lalu gunakan gesture geser dan zoom pada peta untuk navigasi area.
+            </p>
         </section>
 
         <section class="panel">
             <div class="panel-head">
                 <div>
-                    <h2>Layout Semua Blok</h2>
+                    <h2>Denah Semua Blok</h2>
+                    <p>Tampilan publik denah kuburan</p>
                 </div>
             </div>
 
@@ -1060,8 +1063,6 @@
         </div>
         <a class="hover-action" id="hoverDetailBtn" href="#">Lihat Lebih Detail</a>
     </div>
-
-    <a class="chatbot-fab" href="{{ route('chatbot') }}" aria-label="Buka Chatbot" title="Chatbot">Chat</a>
 
     <script>
         (() => {
