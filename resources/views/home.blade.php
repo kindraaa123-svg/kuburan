@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $setting->systemname ?: 'Denah Kuburan' }}</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap');
@@ -662,6 +663,110 @@
             gap: 6px;
         }
 
+        .ai-chatbot {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 120;
+        }
+
+        .ai-chatbot-toggle {
+            width: 56px;
+            height: 56px;
+            border-radius: 999px;
+            border: 1px solid rgba(109, 15, 36, 0.7);
+            background: linear-gradient(130deg, #a52142 0%, var(--brand) 58%, #4a0615 100%);
+            color: #fff;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(20, 4, 9, 0.35);
+        }
+
+        .ai-chatbot-card {
+            position: absolute;
+            right: 0;
+            bottom: 68px;
+            width: min(360px, calc(100vw - 26px));
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 22px 44px rgba(22, 4, 9, 0.28);
+            display: none;
+        }
+
+        .ai-chatbot-card.active {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        .ai-chatbot-head {
+            padding: 10px 12px;
+            background: rgba(122, 17, 41, 0.08);
+            border-bottom: 1px solid rgba(115, 38, 54, 0.2);
+            font-size: .84rem;
+            font-weight: 700;
+            color: #5c2532;
+        }
+
+        .ai-chatbot-body {
+            height: 300px;
+            overflow: auto;
+            padding: 10px;
+            display: grid;
+            align-content: start;
+            gap: 8px;
+            background: linear-gradient(180deg, #fdf6f7 0%, #ffffff 100%);
+        }
+
+        .ai-chatbot-bubble {
+            max-width: 88%;
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: .84rem;
+            line-height: 1.4;
+            border: 1px solid var(--line);
+            white-space: pre-wrap;
+        }
+
+        .ai-chatbot-bubble.user {
+            justify-self: end;
+            background: rgba(122, 17, 41, 0.1);
+        }
+
+        .ai-chatbot-bubble.bot {
+            justify-self: start;
+            background: rgba(122, 17, 41, 0.06);
+        }
+
+        .ai-chatbot-form {
+            padding: 10px;
+            border-top: 1px solid rgba(115, 38, 54, 0.2);
+            display: flex;
+            gap: 8px;
+        }
+
+        .ai-chatbot-input {
+            flex: 1;
+            min-height: 38px;
+            border-radius: 9px;
+            border: 1px solid rgba(115, 38, 54, 0.25);
+            padding: 0 10px;
+            font-family: inherit;
+            font-size: .84rem;
+        }
+
+        .ai-chatbot-send {
+            min-height: 38px;
+            border-radius: 9px;
+            border: 1px solid #6d0f24;
+            background: linear-gradient(130deg, #a52142 0%, var(--brand) 58%, #4a0615 100%);
+            color: #fff;
+            padding: 0 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
         .hover-cell {
             border: 1px solid #d8e4df;
             border-radius: 8px;
@@ -1063,6 +1168,20 @@
         </div>
         <a class="hover-action" id="hoverDetailBtn" href="#">Lihat Lebih Detail</a>
     </div>
+
+    <section class="ai-chatbot" id="aiChatbot">
+        <button class="ai-chatbot-toggle" id="aiChatbotToggle" type="button" aria-label="Buka chatbot">AI</button>
+        <div class="ai-chatbot-card" id="aiChatbotCard">
+            <div class="ai-chatbot-head">Chatbot AI Pemakaman</div>
+            <div class="ai-chatbot-body" id="aiChatbotBody">
+                <div class="ai-chatbot-bubble bot">Halo, silakan tanya lokasi kuburan, info blok, atau plot kosong.</div>
+            </div>
+            <form class="ai-chatbot-form" id="aiChatbotForm">
+                <input class="ai-chatbot-input" id="aiChatbotInput" type="text" placeholder="Tulis pertanyaan..." autocomplete="off">
+                <button class="ai-chatbot-send" type="submit">Kirim</button>
+            </form>
+        </div>
+    </section>
 
     <script>
         (() => {
@@ -2063,6 +2182,73 @@
                     queueHideHoverCard();
                 });
             }
+        })();
+    </script>
+    <script>
+        (() => {
+            const toggle = document.getElementById('aiChatbotToggle');
+            const card = document.getElementById('aiChatbotCard');
+            const form = document.getElementById('aiChatbotForm');
+            const input = document.getElementById('aiChatbotInput');
+            const body = document.getElementById('aiChatbotBody');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            const askUrl = @json(route('chatbot.ask'));
+
+            if (!toggle || !card || !form || !input || !body) {
+                return;
+            }
+
+            const appendBubble = (role, text) => {
+                const bubble = document.createElement('div');
+                bubble.className = `ai-chatbot-bubble ${role}`;
+                bubble.textContent = text;
+                body.appendChild(bubble);
+                body.scrollTop = body.scrollHeight;
+                return bubble;
+            };
+
+            toggle.addEventListener('click', () => {
+                card.classList.toggle('active');
+                if (card.classList.contains('active')) {
+                    input.focus();
+                }
+            });
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const message = input.value.trim();
+                if (!message) {
+                    return;
+                }
+
+                appendBubble('user', message);
+                input.value = '';
+                input.disabled = true;
+                const loadingBubble = appendBubble('bot', 'Sedang memproses...');
+
+                try {
+                    const response = await fetch(askUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: JSON.stringify({ message }),
+                    });
+
+                    const payload = await response.json().catch(() => ({}));
+                    loadingBubble.textContent = response.ok
+                        ? (payload?.answer || 'Maaf, jawaban tidak tersedia.')
+                        : (payload?.message || 'Terjadi kesalahan saat memproses pertanyaan.');
+                } catch (error) {
+                    loadingBubble.textContent = 'Gagal terhubung ke server chatbot.';
+                } finally {
+                    input.disabled = false;
+                    input.focus();
+                }
+            });
         })();
     </script>
 </body>

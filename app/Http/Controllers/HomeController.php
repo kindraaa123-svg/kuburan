@@ -13,6 +13,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
@@ -54,11 +56,110 @@ class HomeController extends Controller
         ]);
 
         $message = trim((string) $validated['message']);
-        $answer = $this->resolveChatbotAnswer($message);
+        $databaseLocationAnswer = $this->resolveDirectLocationAnswer($message);
+        $answer = $databaseLocationAnswer
+            ?? $this->resolveChatbotAnswerWithGemini($message)
+            ?? $this->resolveChatbotAnswer($message);
 
         return response()->json([
             'answer' => $answer,
         ]);
+    }
+
+    private function resolveDirectLocationAnswer(string $message): ?string
+    {
+        $normalized = Str::lower(trim($message));
+        if ($normalized === '') {
+            return null;
+        }
+
+        $isLocationIntent = str_contains($normalized, 'dimana')
+            || str_contains($normalized, 'di mana')
+            || str_contains($normalized, 'lokasi')
+            || str_contains($normalized, 'letak')
+            || str_contains($normalized, 'berada');
+
+        if (! $isLocationIntent) {
+            return null;
+        }
+
+        $nameCandidate = $this->extractPotentialDeceasedName($message);
+        if ($nameCandidate === null) {
+            return null;
+        }
+
+        $deceasedMatches = $this->findDeceasedByName($nameCandidate);
+        if ($deceasedMatches->isEmpty()) {
+            return 'Data almarhum atas nama "' . $nameCandidate . '" tidak ditemukan di database.';
+        }
+
+        $first = $deceasedMatches->first();
+        $blockLabel = trim((string) ($first->block_name ?? ''));
+        $plotLabel = trim((string) ($first->plot_number ?? ''));
+
+        if ($blockLabel === '' && $plotLabel === '') {
+            return $first->full_name . ' ditemukan, tetapi data blok dan plot belum tersedia.';
+        }
+
+        $rowPart = ! empty($first->row_number) ? 'Baris ' . $first->row_number . ', ' : '';
+        $safeBlock = $blockLabel !== '' ? $blockLabel : 'blok belum ditentukan';
+        $safePlot = $plotLabel !== '' ? 'Plot ' . $plotLabel : 'plot belum ditentukan';
+
+        return $first->full_name . ' berada di ' . $safeBlock . ', ' . $rowPart . $safePlot . '.';
+    }
+
+    private function resolveChatbotAnswerWithGemini(string $message): ?string
+    {
+        $apiKey = trim((string) config('services.gemini.api_key'));
+        if ($apiKey === '') {
+            return null;
+        }
+
+        $baseUrl = rtrim((string) config('services.gemini.base_url', 'https://generativelanguage.googleapis.com/v1beta'), '/');
+        $model = trim((string) config('services.gemini.model', 'gemini-2.5-flash-lite'));
+        $timeout = max(5, (int) config('services.gemini.timeout', 25));
+        $endpoint = $baseUrl . '/models/' . $model . ':generateContent?key=' . urlencode($apiKey);
+
+        try {
+            $response = Http::timeout($timeout)
+                ->acceptJson()
+                ->post($endpoint, [
+                    'contents' => [[
+                        'role' => 'user',
+                        'parts' => [[
+                            'text' => $this->buildChatbotContextPrompt($message),
+                        ]],
+                    ]],
+                    'generationConfig' => [
+                        'temperature' => 0.3,
+                        'maxOutputTokens' => 350,
+                    ],
+                ]);
+
+            if (! $response->successful()) {
+                Log::warning('Gemini chatbot request failed.', [
+                    'status' => $response->status(),
+                    'body' => $response->json(),
+                ]);
+                return null;
+            }
+
+            $text = trim((string) data_get($response->json(), 'candidates.0.content.parts.0.text', ''));
+            return $text !== '' ? $text : null;
+        } catch (\Throwable $exception) {
+            Log::warning('Gemini chatbot exception.', [
+                'message' => $exception->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    private function buildChatbotContextPrompt(string $message): string
+    {
+        return "Kamu adalah asisten website pemakaman. Jawab dalam Bahasa Indonesia, singkat, jelas, dan sopan.\n"
+            . "Fokus hanya pada konteks data pemakaman: lokasi kuburan, blok, plot, dan informasi umum terkait.\n"
+            . "Jika pertanyaan di luar konteks pemakaman, arahkan pengguna untuk bertanya topik pemakaman.\n\n"
+            . "Pertanyaan user: " . $message;
     }
 
     public function dashboard(Request $request): View|RedirectResponse
